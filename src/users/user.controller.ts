@@ -180,6 +180,6 @@ export class UserController {
       maxAge: 60 * 60 * (24 * 7),
     });
 
-    return reply.status(200).send({ message: "Sign up successful" });
+    return reply.status(200).send({ message: "Sign up successful",data:user });
   };
 }
