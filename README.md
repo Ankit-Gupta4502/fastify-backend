@@ -325,6 +325,49 @@ npm run build
 npm start
 ```
 
+### Docker Setup
+
+For easier management, use the provided Docker scripts. See [Docker Guide](./DOCKER.md) and [Scripts Guide](./scripts/README.md) for detailed instructions.
+
+#### Quick Start with Docker
+
+**Development:**
+```bash
+# Start development services
+./scripts/docker-dev.sh start
+
+# Run migrations
+./scripts/docker-dev.sh migrate
+
+# View logs
+./scripts/docker-dev.sh logs
+```
+
+**Production:**
+```bash
+# Build and start production services
+./scripts/docker-prod.sh build
+./scripts/docker-prod.sh start
+
+# Create database backup
+./scripts/docker-prod.sh backup
+
+# View status
+./scripts/docker-prod.sh status
+```
+
+#### Using Docker Compose Directly
+
+**Development:**
+```bash
+docker-compose -f docker-compose.dev.yml up
+```
+
+**Production:**
+```bash
+docker-compose up -d
+```
+
 ## API Endpoints
 
 ### Base URL

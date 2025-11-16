@@ -52,9 +52,12 @@ const start = async () => {
     // register controllers and routes
     const authMiddleware = new AuthMiddleware();
     new UserController(authMiddleware, fastify);
-
+    fastify.get("/health", async () => {
+      return { status: "ok", timestamp: new Date().toISOString() };
+    });
     await fastify.ready();
-    await fastify.listen({ port: 8080 });
+    const port = Number(process.env.PORT) || 8080;
+    await fastify.listen({ port: port, host: '0.0.0.0' });
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

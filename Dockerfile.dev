@@ -1,0 +1,20 @@
+# Development Dockerfile with hot reload support
+
+FROM node:20-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies (including devDependencies for development)
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Copy source code and config files
+COPY . .
+
+# Expose port
+EXPOSE 8080
+
+# Start development server with hot reload
+CMD ["npm", "run", "dev"]
+
