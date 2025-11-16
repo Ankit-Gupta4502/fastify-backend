@@ -1,5 +1,4 @@
-import { integer } from "drizzle-orm/gel-core";
-import { pgTable, serial, text, timestamp, boolean,uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, uuid } from "drizzle-orm/pg-core";
 
 export const services = pgTable("services", {
   id: uuid("id").defaultRandom().primaryKey(),

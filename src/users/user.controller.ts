@@ -2,7 +2,7 @@ import { AuthMiddleware } from "../middleware/auth.middleware";
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { UserValidationSchema } from "./user.validation.schema";
 import { eq } from "drizzle-orm";
-import { encodeJWT, generate4DigitOTP, hashPassword } from "../utils";
+import { encodeJWT, generate4DigitOTP, hashPassword, comparePassword } from "../utils";
 import { otpTable } from "../models/otp.schema";
 import { usersTable } from "../models/user.schema";
 
@@ -65,19 +65,29 @@ export class UserController {
   ) => {
     const payload = request.user;
     const user = await this.getUser(payload?.id!);
+    if (!user) {
+      return reply.status(404).send({ message: "User not found" });
+    }
+    const { password: _, ...userWithoutPassword } = user;
     return reply
       .status(200)
-      .send({ data: user || {}, message: "User details fetched successfully" });
+      .send({ data: userWithoutPassword, message: "User details fetched successfully" });
   };
 
   private sendEmail = async (request: FastifyRequest, reply: FastifyReply) => {
-    const { email } = request.body as { email: string; otp: string };
+    const { email } = request.body as { email: string };
     const random = generate4DigitOTP();
     await this.app.drizzle.insert(otpTable).values({
       email: email,
       code: random,
     });
-    return reply.status(200).send({ message: "OTP sent successfully" });
+    // TODO: Implement actual email sending logic here
+    // For now, this is just generating and storing the OTP
+    return reply.status(200).send({ 
+      message: "OTP sent successfully",
+      // Remove in production - only for development
+      ...(process.env.NODE_ENV === "development" && { otp: random })
+    });
   };
 
   private signIn = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -91,7 +101,8 @@ export class UserController {
     if (!user) {
       return reply.status(422).send({ message: "Invalid email or password" });
     }
-    if (user.password !== password) {
+    const isPasswordValid = await comparePassword(password, user.password);
+    if (!isPasswordValid) {
       return reply
         .status(422)
         .send({ message: "Please enter correct password" });
@@ -111,7 +122,8 @@ export class UserController {
       path: "/",
       maxAge: 60 * 60 * (24 * 7),
     });
-    return reply.status(200).send({ message: "Login successful", data: user });
+    const { password: _, ...userWithoutPassword } = user;
+    return reply.status(200).send({ message: "Login successful", data: userWithoutPassword });
   };
 
   private signUp = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -180,6 +192,8 @@ export class UserController {
       maxAge: 60 * 60 * (24 * 7),
     });
 
-    return reply.status(200).send({ message: "Sign up successful",data:user });
+    // Remove sensitive fields before sending response
+    const { password: _, ...userWithoutPassword } = user;
+    return reply.status(200).send({ message: "Sign up successful", data: userWithoutPassword });
   };
 }
