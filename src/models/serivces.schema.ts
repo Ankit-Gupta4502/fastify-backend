@@ -2,7 +2,6 @@ import { pgTable, text, timestamp, boolean, uuid } from "drizzle-orm/pg-core";
 
 export const services = pgTable("services", {
   id: uuid("id").defaultRandom().primaryKey(),
-  slug: text("slug").notNull().unique(),
   displayName: text("display_name").notNull(),
   authType: text("auth_type").notNull().default("oauth2"),
   enabled: boolean("enabled").notNull().default(true),

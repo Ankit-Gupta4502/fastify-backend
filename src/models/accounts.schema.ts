@@ -19,7 +19,7 @@ export const accounts = pgTable("accounts", {
     .notNull()
     .references(() => services.id, { onDelete: "cascade" }),
 
-  // The id of the account on the provider side (e.g. ig user id / yt channel id)
+  
   providerAccountId: text("provider_account_id").notNull(),
 
   username: text("username"),
@@ -29,7 +29,7 @@ export const accounts = pgTable("accounts", {
   refreshToken: text("refresh_token"),
   expiresAt: timestamp("expires_at", { withTimezone: true }),
 
-  scopes: text("scopes").array(), // optional array of granted scopes
+  scopes: text("scopes").array(),
 
   metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}), // anything extra you want to store
 

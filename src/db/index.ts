@@ -1,22 +1,17 @@
 import fp from "fastify-plugin";
-import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http";
 import * as schema from "../schema/schema";
 
 declare module "fastify" {
   interface FastifyInstance {
-    drizzle: NodePgDatabase<typeof schema>;
+    drizzle: NeonHttpDatabase<typeof schema>;
   }
   interface FastifyRequest {
-    drizzle: NodePgDatabase<typeof schema>;
+    drizzle: NeonHttpDatabase<typeof schema>;
   }
 }
 
 export default fp(async (app) => {
-  const pool =  new Pool({
-    connectionString: process.env.DATABASE_URL,
-  });
-
-  const db: NodePgDatabase<typeof schema> =  drizzle(pool, { schema });
+  const db = drizzle(process.env.DATABASE_URL!,{schema});
   app.decorate("drizzle", db);
 });

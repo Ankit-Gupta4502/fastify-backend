@@ -1,4 +1,4 @@
-import { FastifyReply, FastifyRequest } from "fastify";
+import { FastifyReply, FastifyRequest, preHandlerHookHandler } from "fastify";
 import { ZodType, ZodError } from "zod";
 import { randomInt } from "crypto";
 import bcrypt from "bcrypt";
@@ -109,9 +109,73 @@ export const hashPassword = async (password: string) => {
   return hashedPassword;
 };
 
-export const comparePassword = async (
+export function comparePassword(
   plainPassword: string,
   hashedPassword: string
-): Promise<boolean> => {
-  return await bcrypt.compare(plainPassword, hashedPassword);
-};
+): Promise<boolean> {
+  return bcrypt.compare(plainPassword, hashedPassword);
+}
+
+export function composePreHandler(
+  ...handlers: ((request: FastifyRequest, reply: FastifyReply) => Promise<void | FastifyReply>)[]
+): (request: FastifyRequest, reply: FastifyReply) => Promise<void | FastifyReply> {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    for (const handler of handlers) {
+      const result = await handler(request, reply);
+      if (result !== undefined) {
+        return result;
+      }
+    }
+  };
+}
+
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  message: string;
+  data: T | null;
+  error?: string | null;
+}
+
+export interface SuccessResponseOptions<T> {
+  message: string;
+  data: T;
+  statusCode?: number;
+}
+
+export interface ErrorResponseOptions {
+  message: string;
+  error?: string | null;
+  statusCode?: number;
+}
+
+export function successResponse<T>({
+  message,
+  data,
+  statusCode = 200,
+}: SuccessResponseOptions<T>): { statusCode: number; payload: ApiResponse<T> } {
+  return {
+    statusCode,
+    payload: {
+      success: true,
+      message,
+      data,
+      error: null,
+    },
+  };
+}
+
+export function errorResponse({
+  message,
+  error,
+  statusCode = 400,
+}: ErrorResponseOptions): { statusCode: number; payload: ApiResponse<null> } {
+  return {
+    statusCode,
+    payload: {
+      success: false,
+      message,
+      data: null,
+      error: error || null,
+    },
+  };
+}

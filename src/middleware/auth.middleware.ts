@@ -2,9 +2,8 @@ import {
   FastifyRequest,
   FastifyReply,
   preHandlerHookHandler,
-  HookHandlerDoneFunction,
 } from "fastify";
-import { JwtPayload, verifyJWT } from "../utils";
+import { JwtPayload, verifyJWT, errorResponse } from "../utils";
 
 export class AuthMiddleware {
   public handle: preHandlerHookHandler = async (
@@ -14,17 +13,26 @@ export class AuthMiddleware {
     try {
       const token = request.headers["authorization"];
       if (!token || !token.startsWith("Bearer ")) {
-        return reply.code(401).send({ error: "Unauthorized" });
+        const { statusCode, payload } = errorResponse({
+          message: "Unauthorized",
+          statusCode: 401,
+        });
+        return reply.code(statusCode).send(payload);
       }
       const tokenPayload = await verifyJWT<JwtPayload>(token.split(" ")[1]);
       request["user"] = tokenPayload;
-    } catch (error:any) {
+    } catch (error: any) {
       const message =
         error?.code === "ERR_JWT_EXPIRED" || error?.name === "JWTExpired"
           ? "Token expired"
           : "Invalid token";
 
-      return reply.status(401).send({ error: message, details: error?.message });
+      const { statusCode, payload } = errorResponse({
+        message,
+        error: error?.message,
+        statusCode: 401,
+      });
+      return reply.code(statusCode).send(payload);
     }
   };
 }

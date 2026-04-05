@@ -1,20 +1,28 @@
 import { AuthMiddleware } from "../middleware/auth.middleware";
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { UserValidationSchema } from "./user.validation.schema";
+import { UserValidationSchema, userSwaggerSchemas } from "./user.validation.schema";
 import { eq } from "drizzle-orm";
-import { encodeJWT, generate4DigitOTP, hashPassword, comparePassword } from "../utils";
+import {
+  encodeJWT,
+  generate4DigitOTP,
+  hashPassword,
+  comparePassword,
+  successResponse,
+  errorResponse,
+} from "../utils";
 import { otpTable } from "../models/otp.schema";
 import { usersTable } from "../models/user.schema";
 
 export class UserController {
   private schema: UserValidationSchema;
+
   constructor(
     private readonly authMiddleware: AuthMiddleware,
     private readonly app: FastifyInstance
   ) {
     this.schema = new UserValidationSchema();
     this.app = app;
-    this.register(app);
+    this.register(app)
   }
 
   private register(app: FastifyInstance) {
@@ -22,25 +30,37 @@ export class UserController {
       async (router) => {
         router.post(
           "/sign-in",
-          { preValidation: this.schema.signInUserSchema },
+          {
+            preValidation: this.schema.signInUserSchema.bind(this.schema),
+            schema: userSwaggerSchemas.signIn,
+          },
           this.signIn
         );
 
         router.post(
           "/sign-up",
-          { preValidation: this.schema.signUpUserSchema },
+          {
+            preValidation: this.schema.signUpUserSchema.bind(this.schema),
+            schema: userSwaggerSchemas.signUp,
+          },
           this.signUp
         );
 
         router.get(
           "/detail",
-          { preHandler: this.authMiddleware.handle },
+          {
+            preHandler: this.authMiddleware.handle,
+            schema: userSwaggerSchemas.getUserDetail,
+          },
           this.getUserDetail
         );
 
         router.post(
           "/send-email",
-          { preValidation: this.schema.sendOtpSchema },
+          {
+            preValidation: this.schema.sendOtpSchema.bind(this.schema),
+            schema: userSwaggerSchemas.sendEmail,
+          },
           this.sendEmail
         );
       },
@@ -55,6 +75,13 @@ export class UserController {
   private getUser = async (id: string) => {
     const user = await this.app.drizzle.query.usersTable.findFirst({
       where: (users, { eq }) => eq(users.id, id),
+      with: {
+        accounts: {
+          with: {
+            service: true,
+          },
+        },
+      },
     });
     return user;
   };
@@ -66,12 +93,18 @@ export class UserController {
     const payload = request.user;
     const user = await this.getUser(payload?.id!);
     if (!user) {
-      return reply.status(404).send({ message: "User not found" });
+      const { statusCode, payload: body } = errorResponse({
+        message: "User not found",
+        statusCode: 404,
+      });
+      return reply.status(statusCode).send(body);
     }
     const { password: _, ...userWithoutPassword } = user;
-    return reply
-      .status(200)
-      .send({ data: userWithoutPassword, message: "User details fetched successfully" });
+    const { statusCode, payload: body } = successResponse({
+      message: "User details fetched successfully",
+      data: userWithoutPassword,
+    });
+    return reply.status(statusCode).send(body);
   };
 
   private sendEmail = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -81,13 +114,15 @@ export class UserController {
       email: email,
       code: random,
     });
-    // TODO: Implement actual email sending logic here
-    // For now, this is just generating and storing the OTP
-    return reply.status(200).send({ 
+    const responseData = {
       message: "OTP sent successfully",
-      // Remove in production - only for development
-      ...(process.env.NODE_ENV === "development" && { otp: random })
+      ...(process.env.NODE_ENV === "development" && { otp: random }),
+    };
+    const { statusCode, payload: body } = successResponse({
+      message: "OTP sent successfully",
+      data: responseData,
     });
+    return reply.status(statusCode).send(body);
   };
 
   private signIn = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -99,13 +134,19 @@ export class UserController {
       where: (users, { eq }) => eq(users.email, email),
     });
     if (!user) {
-      return reply.status(422).send({ message: "Invalid email or password" });
+      const { statusCode, payload: body } = errorResponse({
+        message: "Invalid email or password",
+        statusCode: 422,
+      });
+      return reply.status(statusCode).send(body);
     }
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
-      return reply
-        .status(422)
-        .send({ message: "Please enter correct password" });
+      const { statusCode, payload: body } = errorResponse({
+        message: "Please enter correct password",
+        statusCode: 422,
+      });
+      return reply.status(statusCode).send(body);
     }
 
     const token = await encodeJWT(
@@ -123,7 +164,11 @@ export class UserController {
       maxAge: 60 * 60 * (24 * 7),
     });
     const { password: _, ...userWithoutPassword } = user;
-    return reply.status(200).send({ message: "Login successful", data: userWithoutPassword });
+    const { statusCode, payload: body } = successResponse({
+      message: "Login successful",
+      data: userWithoutPassword,
+    });
+    return reply.status(statusCode).send(body);
   };
 
   private signUp = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -145,7 +190,11 @@ export class UserController {
       where: (users, { eq }) => eq(users.email, email),
     });
     if (isEmailExist) {
-      return reply.status(422).send({ message: "Email already exists" });
+      const { statusCode, payload: body } = errorResponse({
+        message: "Email already exists",
+        statusCode: 422,
+      });
+      return reply.status(statusCode).send(body);
     }
 
     const isOtpValid = await this.app.drizzle.query.otpTable.findFirst({
@@ -158,9 +207,11 @@ export class UserController {
     });
 
     if (!isOtpValid) {
-      return reply
-        .status(422)
-        .send({ message: "Invalid OTP code either used or expired" });
+      const { statusCode, payload: body } = errorResponse({
+        message: "Invalid OTP code either used or expired",
+        statusCode: 422,
+      });
+      return reply.status(statusCode).send(body);
     }
     const hashedPassword = await hashPassword(password);
     const [user] = await this.app.drizzle
@@ -192,8 +243,11 @@ export class UserController {
       maxAge: 60 * 60 * (24 * 7),
     });
 
-    // Remove sensitive fields before sending response
     const { password: _, ...userWithoutPassword } = user;
-    return reply.status(200).send({ message: "Sign up successful", data: userWithoutPassword });
+    const { statusCode, payload: body } = successResponse({
+      message: "Sign up successful",
+      data: userWithoutPassword,
+    });
+    return reply.status(statusCode).send(body);
   };
 }
