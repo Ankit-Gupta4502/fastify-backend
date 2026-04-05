@@ -4,7 +4,7 @@ import { YouTubeService } from "../services/youtube.service";
 import {
   YouTubeValidationSchema,
   youtubeSwaggerSchemas,
-} from "./youtube.validation.schema";
+} from "../validation/youtube.validation.schema";
 import { accounts } from "../models/accounts.schema";
 import { services } from "../models/serivces.schema";
 import { eq } from "drizzle-orm";

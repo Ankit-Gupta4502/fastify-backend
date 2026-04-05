@@ -1,6 +1,6 @@
 import { AuthMiddleware } from "../middleware/auth.middleware";
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { UserValidationSchema, userSwaggerSchemas } from "./user.validation.schema";
+import { UserValidationSchema, userSwaggerSchemas } from "../validation/user.validation.schema";
 import { eq } from "drizzle-orm";
 import {
   encodeJWT,

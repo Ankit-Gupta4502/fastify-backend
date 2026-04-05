@@ -4,7 +4,7 @@ import { InstagramService } from "../services/instagram.service";
 import {
   ServicesValidationSchema,
   servicesSwaggerSchemas,
-} from "./services.validation.schema";
+} from "../validation/services.validation.schema";
 import { accounts } from "../models/accounts.schema";
 import { services } from "../models/serivces.schema";
 import { eq } from "drizzle-orm";
