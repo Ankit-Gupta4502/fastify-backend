@@ -7,7 +7,7 @@ export const DEFAULT_FRONTEND_PORT = 3000;
 const isProd = typeof process !== "undefined" && process.env.NODE_ENV === "production";
 
 export const DEFAULT_BACKEND_URL = isProd
-  ? (typeof process !== "undefined" ? process.env.PROD_BASE_URL : undefined) || `http://localhost:${DEFAULT_BACKEND_PORT}`
+  ? (typeof process !== "undefined" ? `${process.env.PROD_BASE_URL}/api` : undefined) || `http://localhost:${DEFAULT_BACKEND_PORT}`
   : `http://localhost:${DEFAULT_BACKEND_PORT}`;
 
 export const DEFAULT_FRONTEND_URL = isProd
