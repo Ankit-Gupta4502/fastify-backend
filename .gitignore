@@ -1,3 +1,10 @@
 .env
+.env.*
 node_modules
 dist
+.turbo
+coverage
+.tanstack
+apps/yoga-app/.vinxi
+apps/yoga-app/.output
+apps/yoga-app/.nitro
