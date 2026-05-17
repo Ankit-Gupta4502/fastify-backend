@@ -30,9 +30,13 @@ export const auth = betterAuth({
       },
     },
   },
+  advanced: {
+    useSecureCookies: process.env.NODE_ENV === "production",
+  },
   emailAndPassword: {
     enabled: true,
   },
+
   ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
     ? {
         socialProviders: {

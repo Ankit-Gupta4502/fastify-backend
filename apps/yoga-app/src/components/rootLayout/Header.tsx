@@ -1,54 +1,99 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles } from "lucide-react";
+import { Sparkles, User, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "../ui/button";
+import { Skeleton } from "../ui/skeleton";
+import { useAuth } from "@/hooks/use-auth";
+import { cn } from "@/lib/utils";
 
 const navigationItems = [
   { label: "Features", href: "#features" },
-  { label: "Register", href: "#register" },
+  { label: "Experts", to: "/experts" },
+  { label: "Pricing", to: "/pricing" },
 ];
 
 export function Header() {
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl transition-all">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-full bg-primary/20 text-primary">
+        <div className="flex items-center gap-10">
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <span className="flex size-8 items-center justify-center rounded-full bg-primary/20 text-primary transition-transform group-hover:scale-110">
               <Sparkles className="size-4" />
             </span>
-            <div className="leading-tight">
-              <p className="font-serif text-xl text-foreground">Solara</p>
-              <p className="text-xs text-muted-foreground">
-                Yoga & mindfulness workspace
-              </p>
-            </div>
+            <span className="text-xl font-bold tracking-tight text-foreground">
+              Solara
+            </span>
           </Link>
-          <nav className="hidden items-center gap-6 md:flex">
+
+          <nav className="hidden items-center gap-8 md:flex">
             {navigationItems.map((item) => (
-              <a
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                href={item.href}
-                key={item.label}
-              >
-                {item.label}
-              </a>
+              "to" in item ? (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  href={item.href}
+                  key={item.label}
+                >
+                  {item.label}
+                </a>
+              )
             ))}
-            <Link
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              to="/"
-            >
-              Login
-            </Link>
           </nav>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button asChild className="hidden rounded-full px-4 sm:inline-flex" variant="ghost">
-            <Link to="/">Sign in</Link>
-          </Button>
-          <Button asChild className="rounded-full px-5">
-            <Link to="/">Get started</Link>
-          </Button>
+        <div className="flex items-center gap-4">
+          {isLoading ? (
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-8 w-28 rounded-full hidden sm:block" />
+              <Skeleton className="h-8 w-24 rounded-full" />
+              <Skeleton className="h-8 w-8 rounded-full" />
+            </div>
+          ) : isAuthenticated ? (
+            <div className="flex items-center gap-3">
+              <div className="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/80 border border-border/50 sm:flex">
+                <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <User className="size-3.5" />
+                </div>
+                <span className="text-sm font-semibold">{user?.name}</span>
+              </div>
+              
+              <Button asChild className="rounded-full px-6 shadow-sm transition-all">
+                <Link to="/dashboard" className="flex items-center gap-2">
+                  <LayoutDashboard className="size-3.5" />
+                  <span>Dashboard</span>
+                </Link>
+              </Button>
+
+              <Button 
+                variant="ghost" 
+                size="icon-sm" 
+                disabled={logout.isPending}
+                onClick={() => logout.mutate()}
+                className="rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                title={logout.isPending ? "Logging out..." : "Log out"}
+              >
+                <LogOut className={cn("size-4", logout.isPending && "animate-pulse")} />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button asChild className="rounded-full px-6" variant="ghost">
+                <Link to="/login">Sign in</Link>
+              </Button>
+              <Button asChild className="rounded-full px-8 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all font-semibold">
+                <Link to="/login">Get started</Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </header>

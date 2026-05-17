@@ -72,7 +72,7 @@ export function Footer() {
                     {"to" in link ? (
                       <Link
                         className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                        to={"/"}
+                        to={link.to}
                       >
                         {link.label}
                       </Link>

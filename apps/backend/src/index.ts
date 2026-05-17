@@ -15,6 +15,7 @@ import { FastifyError } from "fastify";
 import { getDatabaseDriver } from "./config/database";
 import { backendEnvPath } from "./config/env";
 import { DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_URL } from "@yoga-app/shared";
+import {drizzle} from "./db"
 
 export const fastify = Fastify({
   logger: true,
@@ -124,7 +125,6 @@ const start = async () => {
     fastify.get("/health", async () => {
       return { status: "ok", timestamp: new Date().toISOString() };
     });
-
     await fastify.ready();
     const port = Number(process.env.PORT) || DEFAULT_BACKEND_PORT;
     await fastify.listen({ port, host: "0.0.0.0" });

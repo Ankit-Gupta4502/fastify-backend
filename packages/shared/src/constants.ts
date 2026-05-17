@@ -3,8 +3,16 @@ export const APP_NAME = "Yoga App";
 export const DEFAULT_BACKEND_PORT = 8080;
 export const DEFAULT_FRONTEND_PORT = 3000;
 
-export const DEFAULT_BACKEND_URL = `http://localhost:${DEFAULT_BACKEND_PORT}`;
-export const DEFAULT_FRONTEND_URL = `http://localhost:${DEFAULT_FRONTEND_PORT}`;
+// Helper to check for production environment
+const isProd = typeof process !== "undefined" && process.env.NODE_ENV === "production";
+
+export const DEFAULT_BACKEND_URL = isProd
+  ? (typeof process !== "undefined" ? process.env.PROD_BASE_URL : undefined) || `http://localhost:${DEFAULT_BACKEND_PORT}`
+  : `http://localhost:${DEFAULT_BACKEND_PORT}`;
+
+export const DEFAULT_FRONTEND_URL = isProd
+  ? (typeof process !== "undefined" ? process.env.PROD_FRONTEND_URL : undefined) || `http://localhost:${DEFAULT_FRONTEND_PORT}`
+  : `http://localhost:${DEFAULT_FRONTEND_PORT}`;
 
 export const USER_ROLES = {
   USER: "user",

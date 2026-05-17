@@ -212,21 +212,24 @@ export class AuthController {
     const callbackURL = query.callbackURL ?? config.frontend.url;
 
     try {
-      const result = await auth.api.signInSocial({
+      const { response, headers } = await auth.api.signInSocial({
         body: {
           provider: "google",
           callbackURL,
         },
         headers: fromNodeHeaders(request.headers),
+        returnHeaders: true,
       });
 
-      if (result.url) {
-        return reply.redirect(result.url);
+      applyAuthResponseHeaders(reply, headers);
+
+      if (response.url) {
+        return reply.redirect(response.url);
       }
 
       const { statusCode, payload } = successResponse({
         message: "Google sign-in initiated",
-        data: result,
+        data: response,
       });
       return reply.status(statusCode).send(payload);
     } catch (error) {

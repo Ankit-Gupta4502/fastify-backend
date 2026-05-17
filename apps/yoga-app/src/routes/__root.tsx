@@ -10,6 +10,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { APP_NAME } from "@yoga-app/shared";
 import Layout from "@/components/rootLayout/Layout";
 import { ReactQueryProvider } from "../lib/react-query/query-client";
+import { AuthWrapper } from "@/components/auth/AuthWrapper";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -53,19 +54,21 @@ function RootDocument({ children }: { children: ReactNode }) {
       </head>
       <body>
         <ReactQueryProvider>
-          {children}
-          <TanStackDevtools
-            config={{
-              position: "bottom-right",
-            }}
-            plugins={[
-              {
-                name: "Tanstack Router",
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-            ]}
-          />
-          <Scripts />
+          <AuthWrapper>
+            {children}
+            <TanStackDevtools
+              config={{
+                position: "bottom-right",
+              }}
+              plugins={[
+                {
+                  name: "Tanstack Router",
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+              ]}
+            />
+            <Scripts />
+          </AuthWrapper>
         </ReactQueryProvider>
       </body>
     </html>

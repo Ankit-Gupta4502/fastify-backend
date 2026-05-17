@@ -1,6 +1,7 @@
 import fp from "fastify-plugin";
 import { fromNodeHeaders } from "better-auth/node";
 import { auth } from "../lib/auth";
+import { applyAuthResponseHeaders } from "../lib/auth-cookies";
 
 export default fp(async (fastify) => {
   fastify.route({
@@ -28,9 +29,7 @@ export default fp(async (fastify) => {
         const response = await auth.handler(req);
 
         reply.status(response.status);
-        response.headers.forEach((value, key) => {
-          reply.header(key, value);
-        });
+        applyAuthResponseHeaders(reply, response.headers);
 
         const text = await response.text();
         return reply.send(text || null);
