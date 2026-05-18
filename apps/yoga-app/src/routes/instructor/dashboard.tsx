@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Activity, CalendarDays, Clock, Users } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Activity, CalendarDays, Clock, Users, UserCircle } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -38,10 +38,19 @@ function InstructorDashboard() {
             <span className="font-medium">{INSTRUCTOR_TIMEZONE_LABEL}</span>
           </p>
         </div>
-        <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-none px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest self-start md:self-auto">
-          <span className="size-2 rounded-full bg-emerald-500 mr-2 animate-pulse inline-block" />
-          Available
-        </Badge>
+        <div className="flex items-center gap-3 self-start md:self-auto">
+          <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-none px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest">
+            <span className="size-2 rounded-full bg-emerald-500 mr-2 animate-pulse inline-block" />
+            Available
+          </Badge>
+          <Link
+            to="/instructor/profile"
+            className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors border border-border/60 px-3 py-2 rounded-full hover:border-primary/40"
+          >
+            <UserCircle className="size-3.5" />
+            Edit profile
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}

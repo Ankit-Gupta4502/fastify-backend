@@ -8,3 +8,28 @@ export interface InstructorListItem {
   specialty: string[];
   currentRoomId: string | null;
 }
+
+export interface InstructorProfile {
+  name: string;
+  email: string;
+  image: string | null;
+  status: InstructorStatus;
+  specialty: string[];
+  bio: string | null;
+  tagline: string | null;
+  profileImageUrl: string | null;
+  avatarKey: string | null;
+  videoLinks: string[];
+  tags: string[];
+  yearsOfExperience: number | null;
+}
+
+export interface UpdateProfileBody {
+  bio?: string;
+  tagline?: string;
+  profileImageUrl?: string | null;
+  avatarKey?: string | null;
+  videoLinks?: string[];
+  tags?: string[];
+  yearsOfExperience?: number | null;
+}

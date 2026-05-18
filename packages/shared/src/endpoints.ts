@@ -18,6 +18,10 @@ export const API_ENDPOINTS = {
   INSTRUCTORS: {
     LIST: "/instructors",
     MY_SCHEDULE: "/instructor/schedule",
+    MY_PROFILE: "/instructor/profile",
+  },
+  UPLOADS: {
+    ATTACHMENT: "/uploads/attachment",
   },
   PLANS: {
     LIST: "/plans",          // public, no priceCents

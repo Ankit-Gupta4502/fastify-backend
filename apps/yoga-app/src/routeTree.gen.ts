@@ -17,6 +17,7 @@ import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as UserRouteRouteImport } from './routes/_user/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionRoomIdRouteImport } from './routes/session.$roomId'
+import { Route as InstructorProfileRouteImport } from './routes/instructor/profile'
 import { Route as InstructorDashboardRouteImport } from './routes/instructor/dashboard'
 import { Route as ExpertsExpertIdRouteImport } from './routes/experts.$expertId'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
@@ -64,6 +65,11 @@ const SessionRoomIdRoute = SessionRoomIdRouteImport.update({
   id: '/session/$roomId',
   path: '/session/$roomId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const InstructorProfileRoute = InstructorProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => InstructorRouteRoute,
 } as any)
 const InstructorDashboardRoute = InstructorDashboardRouteImport.update({
   id: '/dashboard',
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/experts/$expertId': typeof ExpertsExpertIdRoute
   '/instructor/dashboard': typeof InstructorDashboardRoute
+  '/instructor/profile': typeof InstructorProfileRoute
   '/session/$roomId': typeof SessionRoomIdRoute
 }
 export interface FileRoutesByTo {
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/experts/$expertId': typeof ExpertsExpertIdRoute
   '/instructor/dashboard': typeof InstructorDashboardRoute
+  '/instructor/profile': typeof InstructorProfileRoute
   '/session/$roomId': typeof SessionRoomIdRoute
 }
 export interface FileRoutesById {
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/admin/users': typeof AdminUsersRoute
   '/experts/$expertId': typeof ExpertsExpertIdRoute
   '/instructor/dashboard': typeof InstructorDashboardRoute
+  '/instructor/profile': typeof InstructorProfileRoute
   '/session/$roomId': typeof SessionRoomIdRoute
 }
 export interface FileRouteTypes {
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/experts/$expertId'
     | '/instructor/dashboard'
+    | '/instructor/profile'
     | '/session/$roomId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/experts/$expertId'
     | '/instructor/dashboard'
+    | '/instructor/profile'
     | '/session/$roomId'
   id:
     | '__root__'
@@ -211,6 +222,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/experts/$expertId'
     | '/instructor/dashboard'
+    | '/instructor/profile'
     | '/session/$roomId'
   fileRoutesById: FileRoutesById
 }
@@ -282,6 +294,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/session/$roomId'
       preLoaderRoute: typeof SessionRoomIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/instructor/profile': {
+      id: '/instructor/profile'
+      path: '/profile'
+      fullPath: '/instructor/profile'
+      preLoaderRoute: typeof InstructorProfileRouteImport
+      parentRoute: typeof InstructorRouteRoute
     }
     '/instructor/dashboard': {
       id: '/instructor/dashboard'
@@ -376,10 +395,12 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 
 interface InstructorRouteRouteChildren {
   InstructorDashboardRoute: typeof InstructorDashboardRoute
+  InstructorProfileRoute: typeof InstructorProfileRoute
 }
 
 const InstructorRouteRouteChildren: InstructorRouteRouteChildren = {
   InstructorDashboardRoute: InstructorDashboardRoute,
+  InstructorProfileRoute: InstructorProfileRoute,
 }
 
 const InstructorRouteRouteWithChildren = InstructorRouteRoute._addFileChildren(
@@ -410,12 +431,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

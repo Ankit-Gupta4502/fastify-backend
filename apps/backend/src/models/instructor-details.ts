@@ -45,6 +45,22 @@ export const instructorDetails = pgTable(
       .notNull()
       .default(1),
     availabilityJson: jsonb("availability_json").$type<AvailabilityWindow[]>(),
+
+    // Profile fields
+    bio: text("bio"),
+    tagline: text("tagline"),
+    profileImageUrl: text("profile_image_url"),
+    avatarKey: text("avatar_key"),
+    videoLinks: text("video_links")
+      .array()
+      .notNull()
+      .default([] as unknown as string[]),
+    tags: text("tags")
+      .array()
+      .notNull()
+      .default([] as unknown as string[]),
+    yearsOfExperience: integer("years_of_experience"),
+
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

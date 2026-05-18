@@ -61,6 +61,7 @@ export const systemApi = {
 
 export { roomsApi } from "./rooms";
 export { adminApi } from "./admin";
+export { uploadsApi } from "./uploads";
 export { instructorsApi } from "./instructors";
 export { plansApi, type MyPlanResponse } from "./plans";
 export { paymentsApi } from "./payments";

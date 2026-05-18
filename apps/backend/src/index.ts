@@ -17,6 +17,10 @@ import { RazorpayWebhookController } from "./controllers/webhooks/razorpay.webho
 import { PlansController } from "./controllers/plans/plans.controller";
 import { PaymentsController } from "./controllers/payments/payments.controller";
 import { AdminController } from "./controllers/admin/admin.controller";
+import { UploadsController } from "./controllers/uploads/uploads.controller";
+import fastifyMultipart from "@fastify/multipart";
+import fastifyStatic from "@fastify/static";
+import { join } from "node:path";
 import { errorResponse } from "./utils";
 import { FastifyError } from "fastify";
 import { getDatabaseDriver } from "./config/database";
@@ -87,9 +91,14 @@ const start = async () => {
       credentials: true,
     });
 
-    await fastify.register(db);    
+    await fastify.register(db);
     await fastify.register(cookie);
     await fastify.register(authPlugin);
+    await fastify.register(fastifyMultipart, { limits: { fileSize: 5 * 1024 * 1024 } });
+    await fastify.register(fastifyStatic, {
+      root: join(process.cwd(), "uploads"),
+      prefix: "/uploads/",
+    });
 
     const isProd = process.env.NODE_ENV === "production";
     const prodUrl = process.env.PROD_BASE_URL || "https://api.example.com";
@@ -143,6 +152,7 @@ const start = async () => {
     new PlansController(authMiddleware, fastify);
     new PaymentsController(authMiddleware, fastify);
     new AdminController(authMiddleware, fastify);
+    new UploadsController(authMiddleware, fastify);
 
     fastify.get("/health", async () => {
       return { status: "ok", timestamp: new Date().toISOString() };

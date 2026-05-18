@@ -14,6 +14,16 @@ import {
 } from "../../validation/instructors.validation.schema";
 import { errorResponse, successResponse, validateWithZod } from "../../utils";
 
+const updateProfileBodySchema = z.object({
+  bio: z.string().max(1000).optional(),
+  tagline: z.string().max(120).optional(),
+  profileImageUrl: z.url().optional().nullable(),
+  avatarKey: z.string().optional().nullable(),
+  videoLinks: z.array(z.url()).max(5).optional(),
+  tags: z.array(z.string().max(40)).max(10).optional(),
+  yearsOfExperience: z.number().int().min(0).max(60).optional().nullable(),
+});
+
 export class InstructorsController {
   constructor(
     private readonly authMiddleware: AuthMiddleware,
@@ -44,6 +54,28 @@ export class InstructorsController {
             schema: instructorsSwaggerSchemas.mySchedule,
           },
           this.mySchedule,
+        );
+
+        router.get(
+          "/instructor/profile",
+          {
+            preHandler: [
+              this.authMiddleware.handle,
+              requireRole(USER_ROLES.INSTRUCTOR),
+            ],
+          },
+          this.getProfile,
+        );
+
+        router.put(
+          "/instructor/profile",
+          {
+            preHandler: [
+              this.authMiddleware.handle,
+              requireRole(USER_ROLES.INSTRUCTOR),
+            ],
+          },
+          this.updateProfile,
         );
       },
       { prefix: "/" },
@@ -136,6 +168,62 @@ export class InstructorsController {
       message: "Your upcoming schedule (IST)",
       data,
     });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private getProfile = async (request: FastifyRequest, reply: FastifyReply) => {
+    const me = request.user!;
+
+    const [row] = await drizzle
+      .select({
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        bio: instructorDetails.bio,
+        tagline: instructorDetails.tagline,
+        profileImageUrl: instructorDetails.profileImageUrl,
+        avatarKey: instructorDetails.avatarKey,
+        videoLinks: instructorDetails.videoLinks,
+        tags: instructorDetails.tags,
+        yearsOfExperience: instructorDetails.yearsOfExperience,
+        specialty: instructorDetails.specialty,
+        status: instructorDetails.status,
+      })
+      .from(instructorDetails)
+      .innerJoin(user, eq(instructorDetails.userId, user.id))
+      .where(eq(instructorDetails.userId, me.id));
+
+    if (!row) {
+      const { statusCode, payload } = errorResponse({ message: "Profile not found", statusCode: 404 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const { statusCode, payload } = successResponse({ message: "Profile", data: row });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private updateProfile = async (request: FastifyRequest, reply: FastifyReply) => {
+    const me = request.user!;
+
+    const invalid = validateWithZod(request, reply, { body: updateProfileBodySchema });
+    if (invalid) return invalid;
+
+    const body = request.body as z.infer<typeof updateProfileBodySchema>;
+
+    await drizzle
+      .update(instructorDetails)
+      .set({
+        ...(body.bio !== undefined && { bio: body.bio }),
+        ...(body.tagline !== undefined && { tagline: body.tagline }),
+        ...(body.profileImageUrl !== undefined && { profileImageUrl: body.profileImageUrl }),
+        ...(body.avatarKey !== undefined && { avatarKey: body.avatarKey }),
+        ...(body.videoLinks !== undefined && { videoLinks: body.videoLinks }),
+        ...(body.tags !== undefined && { tags: body.tags }),
+        ...(body.yearsOfExperience !== undefined && { yearsOfExperience: body.yearsOfExperience }),
+      })
+      .where(eq(instructorDetails.userId, me.id));
+
+    const { statusCode, payload } = successResponse({ message: "Profile updated", data: null });
     return reply.status(statusCode).send(payload);
   };
 }

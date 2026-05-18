@@ -1,6 +1,8 @@
 import {
   API_ENDPOINTS,
   type InstructorListItem,
+  type InstructorProfile,
+  type UpdateProfileBody,
 } from "@yoga-app/shared";
 import { apiRequest } from "../lib/http";
 
@@ -15,4 +17,13 @@ export const instructorsApi = {
       : API_ENDPOINTS.INSTRUCTORS.LIST;
     return apiRequest<InstructorListItem[]>(path);
   },
+
+  getProfile: () =>
+    apiRequest<InstructorProfile>(API_ENDPOINTS.INSTRUCTORS.MY_PROFILE),
+
+  updateProfile: (body: UpdateProfileBody) =>
+    apiRequest<null>(API_ENDPOINTS.INSTRUCTORS.MY_PROFILE, {
+      method: "PUT",
+      data: body,
+    }),
 };
