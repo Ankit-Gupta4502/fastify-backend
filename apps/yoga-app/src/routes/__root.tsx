@@ -12,9 +12,26 @@ import { APP_NAME } from "@yoga-app/shared";
 import Layout from "@/components/rootLayout/Layout";
 import { ReactQueryProvider } from "../lib/react-query/query-client";
 import { AuthWrapper } from "@/components/auth/AuthWrapper";
+import { userApi } from "../api";
+import { useAuthStore } from "@/store/auth.store";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+    const store = useAuthStore.getState();
+    if (!store.isLoading) return;
+    try {
+      const result = await userApi.fetchDetail();
+      if (result.success && result.data) {
+        store.setUser(result.data);
+      } else {
+        store.setUser(null);
+      }
+    } catch {
+      store.setUser(null);
+    }
+  },
   head: () => ({
     meta: [
       {

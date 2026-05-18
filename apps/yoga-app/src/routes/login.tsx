@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { MoveRight, Sparkles, Mail, Lock, UserCircle } from "lucide-react";
@@ -18,15 +18,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { ApiRequestError } from "@/lib/http";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
-import { redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/login")({
-  beforeLoad: () => {
-    const state = useAuthStore.getState();
-    if (state.isAuthenticated) {
-      throw redirect({ to: "/" });
-    }
-  },
   component: LoginPage,
 });
 
@@ -35,6 +28,13 @@ function LoginPage() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const { login, register: registerUserMutation, getGoogleUrl } = useAuth();
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuthStore();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate({ to: "/" });
+    }
+  }, [isLoading, isAuthenticated, navigate]);
 
   const loginForm = useForm<LoginBody>(loginFormOptions);
   const registerForm = useForm<RegisterBody>(registerFormOptions);

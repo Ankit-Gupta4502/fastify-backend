@@ -227,7 +227,7 @@ export class WorkshopsController {
         updatedAt: new Date(),
       })
       .where(eq(workshops.id, id))
-      .returning({ id: workshops.id });
+      .returning();
 
     if (!updated) {
       const { statusCode, payload } = errorResponse({ message: "Workshop not found", statusCode: 404 });
@@ -244,7 +244,7 @@ export class WorkshopsController {
     const [deleted] = await drizzle
       .delete(workshops)
       .where(eq(workshops.id, id))
-      .returning({ id: workshops.id });
+      .returning();
 
     if (!deleted) {
       const { statusCode, payload } = errorResponse({ message: "Workshop not found", statusCode: 404 });

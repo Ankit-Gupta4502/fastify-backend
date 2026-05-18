@@ -35,8 +35,8 @@ export const fastify = Fastify({
 });
 
 fastify.setErrorHandler((err: FastifyError, req, reply) => {
-  req.log.error({ err }, "request error");
-
+  req.log.error(err, "request error");
+console.info(JSON.stringify(err),"errr")
   const status =
     err.statusCode && err.statusCode >= 400 && err.statusCode < 600
       ? err.statusCode
