@@ -34,10 +34,7 @@ export class PlansController {
         router.get(
           "/pricing",
           {
-            preHandler: [
-              this.authMiddleware.handle,
-              requireRole(USER_ROLES.USER),
-            ],
+            preHandler: [],
             schema: {
               description: "List plans with pricing (user role only)",
               tags: ["Plans"] as string[],
