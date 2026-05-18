@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { EXPERTS } from "@/constants/experts";
 import { ExpertCard } from "./_components/ExpertCard";
 
-export const Route = createFileRoute("/experts")({
+export const Route = createFileRoute("/experts/")({
   component: ExpertsPage,
 });
 
