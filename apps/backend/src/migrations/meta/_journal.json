@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1779013870886,
-      "tag": "0000_talented_skaar",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1779113188757,
-      "tag": "0001_fine_rocket_raccoon",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1779113757807,
-      "tag": "0002_glossy_boomerang",
+      "when": 1779116430324,
+      "tag": "0000_deep_terror",
       "breakpoints": true
     }
   ]
