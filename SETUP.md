@@ -54,9 +54,15 @@ pnpm --filter @yoga-app/backend db:migrate
 psql "$DATABASE_URL" -f apps/backend/src/migrations/0001_yoga_session_pool.sql
 ```
 
-### pg_cron (weekly quota reset)
+### Weekly quota reset (node-cron)
 
-Install `pg_cron` in your Postgres instance, then uncomment the `cron.schedule(...)` block at the bottom of `0001_yoga_session_pool.sql` and run it. The job resets `sessions_used_this_week = 0` every Monday at 00:05 UTC for users on limited plans.
+The backend uses **node-cron** (no Postgres extension needed) to reset `sessions_used_this_week = 0` every Monday at 00:05 server time for users on limited plans.
+
+- Registered in `src/index.ts` via `registerQuotaResetJob()` from `src/jobs/quota-reset.job.ts`.
+- On every server startup, it also runs a **catch-up check** — if the server was down over a week boundary, any stale counters are reset immediately before the app starts serving traffic.
+- Only affects users whose plan has `sessions_per_week IS NOT NULL` (currently only `group_live`).
+
+No manual SQL or Postgres extension setup required.
 
 ---
 
@@ -176,6 +182,24 @@ Emails sent automatically:
 | `POST` | `/payments/orders` | cookie | Create Razorpay order for a plan |
 | `POST` | `/payments/verify` | cookie | Verify payment signature + activate plan |
 
+### Admin
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/admin/users` | cookie + `admin` role | All users with plan info |
+| `GET` | `/admin/instructors` | cookie + `admin` role | All instructors with status + specialties |
+| `GET` | `/admin/rooms/group` | cookie + `admin` role | All group rooms with instructor name |
+| `POST` | `/admin/rooms/group` | cookie + `admin` role | Create a group room and assign an instructor |
+
+`POST /admin/rooms/group` body:
+```json
+{
+  "instructorId": "<uuid>",
+  "scheduledStartUtc": "2025-06-02T14:00:00.000Z",
+  "scheduledEndUtc":   "2025-06-02T15:00:00.000Z",
+  "capacity": 20
+}
+```
+
 ### Webhooks
 | Method | Path | Auth | Description |
 |---|---|---|---|
@@ -204,6 +228,15 @@ Emails sent automatically:
 | `/billing` | `user` | Plan picker with Razorpay checkout |
 | `/session/:roomId` | any authed | Live 100ms video session (iframe) |
 | `/instructor/dashboard` | `instructor` | Instructor schedule (IST), live stats |
+| `/admin/users` | `admin` | All registered users with role + plan |
+| `/admin/instructors` | `admin` | All instructors with status + specialties |
+| `/admin/rooms` | `admin` | Group class schedule; create new classes with timezone preview |
+
+### Admin panel notes
+
+- Accessing any `/admin/*` route as a non-admin redirects to `/login`.
+- The **create class** dialog accepts a US timezone (ET / CT / MT / PT) and shows a live preview of how the scheduled time will appear in UTC, IST, and the admin's local time before submitting.
+- Creating a class automatically provisions an HMS room via the 100ms API.
 
 ---
 
@@ -230,83 +263,81 @@ Swagger docs are available at `http://localhost:8080/docs` once the backend is r
 
 ---
 
-## 9. Files Added / Changed (this sprint)
+## 9. Files Added / Changed
 
 ### Backend
 ```
 src/
-  constants/sessions.ts               ← enum value arrays (instructor_status, room_type, …)
-  models/
-    plans.ts                          ← plans table
-    rooms.ts                          ← rooms table + pg enums
-    instructor-details.ts             ← instructor_details 1:1 table
-    room-users.ts                     ← room_users + booking_status enum
-    session-quota-log.ts              ← weekly quota log
-    auth.schema.ts                    ← extended user table (plan_id, timezone, quota cols)
-  schema/schema.ts                    ← re-exports all models
-  migrations/
-    0001_yoga_session_pool.sql        ← manual migration (circular FK, partial indexes, seeds)
+  jobs/
+    quota-reset.job.ts              ← node-cron weekly quota reset (replaces pg_cron)
   services/
-    timezone.service.ts               ← formatForUser / formatForInstructor
-    hms.service.ts                    ← createHmsRoom (+ room codes) / generateClientToken
-    quota.service.ts                  ← quota snapshot helper
-    session-pool.service.ts           ← joinRoom / leaveRoom / bookPrivateSession (atomic txns)
-    instructor-fallback.service.ts    ← findSubstitute / swapInstructor
-    razorpay.service.ts               ← Razorpay singleton + signature verifiers
-    booking-email.service.ts          ← confirmation email to student + instructor
+    admin.service.ts                ← listUsers / listInstructors / listGroupRooms / createGroupRoom
+    session-pool.service.ts         ← joinRoom / leaveRoom / bookPrivateSession (atomic txns)
+    timezone.service.ts             ← formatForUser / formatForInstructor
+    hms.service.ts                  ← createHmsRoom (+ room codes) / generateClientToken
+    quota.service.ts                ← quota snapshot helper
+    instructor-fallback.service.ts  ← findSubstitute / swapInstructor
+    razorpay.service.ts             ← Razorpay singleton + signature verifiers
+    booking-email.service.ts        ← confirmation email to student + instructor
   controllers/
-    rooms/rooms.controller.ts         ← GET/POST rooms endpoints
+    admin/admin.controller.ts       ← GET/POST /admin/* endpoints (admin role only)
+    rooms/rooms.controller.ts
     instructors/instructors.controller.ts
     plans/plans.controller.ts
-    payments/payments.controller.ts   ← Razorpay order + verify
+    payments/payments.controller.ts
     webhooks/hms.webhook.controller.ts
-    webhooks/razorpay.webhook.controller.ts ← raw body capture + HMAC verify
-  validation/
-    rooms.validation.schema.ts
-    instructors.validation.schema.ts
-  types/fastify.d.ts                  ← rawBody?: Buffer added
+    webhooks/razorpay.webhook.controller.ts
+  models/
+    auth.schema.ts                  ← extended user table (plan_id, timezone, quota cols)
+    plans.ts / rooms.ts / instructor-details.ts
+    room-users.ts / session-quota-log.ts
+  schema/schema.ts                  ← re-exports all models
+  migrations/
+    0001_yoga_session_pool.sql      ← partial indexes, circular FK, seed plans
 ```
 
 ### Frontend
 ```
 src/
-  constants/
-    endpoints.ts                      ← re-exports from @yoga-app/shared
-    sessions.ts                       ← INSTRUCTOR_IANA / INSTRUCTOR_TIMEZONE_LABEL
-  lib/
-    timezone.ts                       ← formatCompact / relativeFromNow / userTimezone
-    razorpay.ts                       ← lazy script loader + promisified checkout
-    hms.ts                            ← hmsPrebuiltUrl helper
   api/
+    admin.ts                        ← adminApi (listUsers / listInstructors / listGroupRooms / createGroupRoom)
     rooms.ts / instructors.ts / plans.ts / payments.ts
   hooks/
+    use-admin.ts                    ← useAdminUsers / useAdminInstructors / useAdminGroupRooms / useCreateGroupRoom
     use-rooms.ts / use-instructors.ts / use-plans.ts / use-checkout.ts
-  components/
-    dashboard/
-      StatCard.tsx                    ← shared stat tile (user + instructor)
-      NextFlowCard.tsx                ← user's "next flow" hero card
-      PlanCard.tsx                    ← gradient plan / upgrade card
-      UpcomingSessionList.tsx         ← scrollable session list
-    instructor/
-      NextClassCard.tsx               ← instructor's next class hero
-      ScheduleList.tsx                ← full schedule with rejoin buttons
-    rooms/
-      RoomCard.tsx                    ← upcoming room card with join button
+  lib/react-query/
+    query-keys.ts                   ← added admin.* query keys
   routes/
-    _user/dashboard.tsx               ← composed from components, real API data
-    _user/rooms.tsx                   ← browse + join sessions
-    _user/billing.tsx                 ← plan picker + Razorpay flow
-    instructor/route.tsx              ← role guard (instructor only)
-    instructor/dashboard.tsx          ← composed from components, IST schedule
-    session.$roomId.tsx               ← 100ms prebuilt iframe, leave button
+    admin/
+      route.tsx                     ← role guard (admin only) + sidebar layout
+      users.tsx                     ← /admin/users
+      instructors.tsx               ← /admin/instructors
+      rooms.tsx                     ← /admin/rooms
+      _components/                  ← co-located, not picked up as routes
+        admin-nav.tsx
+        users-table.tsx
+        instructors-table.tsx
+        rooms-table.tsx
+        create-room-dialog.tsx      ← US timezone input + live UTC/IST/local preview
+    _user/
+      billing.tsx                   ← thin orchestrator, delegates to components below
+      dashboard.tsx / rooms.tsx
+    instructor/route.tsx / dashboard.tsx
+    session.$roomId.tsx
+  components/
+    billing/                        ← split from billing.tsx
+      billing-header.tsx
+      current-plan-banner.tsx
+      feedback-banner.tsx
+      plan-card.tsx                 ← includes PLAN_COPY + dollars helper
+      secure-footer.tsx
+    dashboard/ rooms/ instructor/ rootLayout/ auth/ ui/
 ```
 
 ### Shared (`packages/shared`)
 ```
 src/
-  endpoints.ts   ← API_ENDPOINTS const
-  rooms.ts       ← UpcomingRoom, JoinRoomResult, … types
-  instructors.ts ← InstructorListItem type
-  plans.ts       ← PlanRecord type
-  payments.ts    ← CreateOrderBody, VerifyPaymentBody (Zod) + result types
+  admin.ts       ← AdminUser / AdminInstructor / AdminRoom / CreateGroupRoomBody types
+  endpoints.ts   ← added ADMIN endpoints
+  rooms.ts / instructors.ts / plans.ts / payments.ts / auth.ts
 ```

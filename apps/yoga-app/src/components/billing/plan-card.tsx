@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn, centsToDisplay } from "@/lib/utils";
 
 export const PLAN_COPY: Record<string, { title: string; tagline: string; perks: string[] }> = {
   group_live: {
@@ -44,9 +44,6 @@ export const PLAN_COPY: Record<string, { title: string; tagline: string; perks: 
   },
 };
 
-export function dollars(cents: number): string {
-  return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-}
 
 interface PlanCardProps {
   plan: PlanRecord;
@@ -83,7 +80,7 @@ export function PlanCard({ plan, isActive, isPending, onSubscribe }: PlanCardPro
         <CardTitle className="text-2xl font-bold tracking-tight">{copy.title}</CardTitle>
         <CardDescription className="pt-2">{copy.tagline}</CardDescription>
         <div className="pt-6 flex items-baseline justify-center gap-1">
-          <span className="text-5xl font-serif font-bold">{dollars(plan.priceCents)}</span>
+          <span className="text-5xl font-serif font-bold">{centsToDisplay(plan.priceCents)}</span>
           <span className="text-muted-foreground font-medium">/mo</span>
         </div>
       </CardHeader>
