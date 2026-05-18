@@ -18,6 +18,7 @@ import { PlansController } from "./controllers/plans/plans.controller";
 import { PaymentsController } from "./controllers/payments/payments.controller";
 import { AdminController } from "./controllers/admin/admin.controller";
 import { UploadsController } from "./controllers/uploads/uploads.controller";
+import { WorkshopsController } from "./controllers/workshops/workshops.controller";
 import fastifyMultipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
 import { join } from "node:path";
@@ -86,7 +87,7 @@ const start = async () => {
 
     fastify.register(fastifyCors, {
       origin: frontendUrl,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
       credentials: true,
     });
@@ -153,6 +154,7 @@ const start = async () => {
     new PaymentsController(authMiddleware, fastify);
     new AdminController(authMiddleware, fastify);
     new UploadsController(authMiddleware, fastify);
+    new WorkshopsController(authMiddleware, fastify);
 
     fastify.get("/health", async () => {
       return { status: "ok", timestamp: new Date().toISOString() };

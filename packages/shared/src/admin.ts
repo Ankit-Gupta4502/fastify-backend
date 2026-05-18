@@ -14,6 +14,7 @@ export interface AdminInstructor {
   status: string;
   specialty: string[];
   maxConcurrentSessions: number;
+  isApproved: boolean;
 }
 
 export interface AdminRoom {

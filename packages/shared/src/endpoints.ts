@@ -35,7 +35,16 @@ export const API_ENDPOINTS = {
   ADMIN: {
     USERS: "/admin/users",
     INSTRUCTORS: "/admin/instructors",
+    APPROVE_INSTRUCTOR: (id: string) => `/admin/instructors/${id}/approve`,
     GROUP_ROOMS: "/admin/rooms/group",
+  },
+  WORKSHOPS: {
+    LIST: "/workshops",
+    JOIN: (id: string) => `/workshops/${id}/join`,
+    ADMIN_LIST: "/admin/workshops",
+    ADMIN_CREATE: "/admin/workshops",
+    ADMIN_UPDATE: (id: string) => `/admin/workshops/${id}`,
+    ADMIN_DELETE: (id: string) => `/admin/workshops/${id}`,
   },
   SYSTEM: {
     HEALTH: "/health",

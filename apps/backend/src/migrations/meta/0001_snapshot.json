@@ -1,254 +1,9 @@
 {
-  "id": "00000000-0000-0000-0000-000000000000",
-  "prevId": "",
+  "id": "9c837fb0-cf21-4dfc-ae4e-50bae94a88e1",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.reviews": {
-      "name": "reviews",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rating": {
-          "name": "rating",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "comment": {
-          "name": "comment",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "video_url": {
-          "name": "video_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "''"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.verification": {
-      "name": "verification",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "identifier": {
-          "name": "identifier",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "value": {
-          "name": "value",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.user": {
-      "name": "user",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email_verified": {
-          "name": "email_verified",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "role": {
-          "name": "role",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'user'"
-        },
-        "image": {
-          "name": "image",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "plan_id": {
-          "name": "plan_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "preferred_instructor_id": {
-          "name": "preferred_instructor_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "timezone": {
-          "name": "timezone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'UTC'"
-        },
-        "sessions_used_this_week": {
-          "name": "sessions_used_this_week",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "week_reset_at": {
-          "name": "week_reset_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "date_trunc('week'::text, now())"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "user_plan_id_plans_id_fk": {
-          "name": "user_plan_id_plans_id_fk",
-          "tableFrom": "user",
-          "tableTo": "plans",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "plan_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "user_preferred_instructor_id_user_id_fk": {
-          "name": "user_preferred_instructor_id_user_id_fk",
-          "tableFrom": "user",
-          "tableTo": "user",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "preferred_instructor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "user_email_unique": {
-          "columns": [
-            "email"
-          ],
-          "nullsNotDistinct": false,
-          "name": "user_email_unique"
-        }
-      },
-      "checkConstraints": {},
-      "policies": {},
-      "isRLSEnabled": false
-    },
     "public.account": {
       "name": "account",
       "schema": "",
@@ -340,7 +95,6 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "schemaTo": "public",
           "columnsFrom": [
             "user_id"
           ],
@@ -353,12 +107,153 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {},
       "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.workshops": {
-      "name": "workshops",
+    "public.instructor_details": {
+      "name": "instructor_details",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "instructor_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'available'"
+        },
+        "current_room_id": {
+          "name": "current_room_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "specialty": {
+          "name": "specialty",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "max_concurrent_sessions": {
+          "name": "max_concurrent_sessions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "availability_json": {
+          "name": "availability_json",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tagline": {
+          "name": "tagline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "profile_image_url": {
+          "name": "profile_image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avatar_key": {
+          "name": "avatar_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "video_links": {
+          "name": "video_links",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "years_of_experience": {
+          "name": "years_of_experience",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_approved": {
+          "name": "is_approved",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_instructor_status": {
+          "name": "idx_instructor_status",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "instructor_details_user_id_user_id_fk": {
+          "name": "instructor_details_user_id_user_id_fk",
+          "tableFrom": "instructor_details",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.plans": {
+      "name": "plans",
       "schema": "",
       "columns": {
         "id": {
@@ -374,43 +269,60 @@
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
-          "type": "text",
+        "price_cents": {
+          "name": "price_cents",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
-        "price": {
-          "name": "price",
+        "sessions_per_week": {
+          "name": "sessions_per_week",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "image": {
-          "name": "image",
-          "type": "text",
+        "allows_private": {
+          "name": "allows_private",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "allows_time_flexibility": {
+          "name": "allows_time_flexibility",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "max_room_capacity": {
+          "name": "max_room_capacity",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
         "created_at": {
           "name": "created_at",
-          "type": "text",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
+      "uniqueConstraints": {
+        "plans_name_unique": {
+          "name": "plans_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
       "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.workshop_user": {
@@ -461,7 +373,6 @@
           "name": "workshop_user_workshop_id_workshops_id_fk",
           "tableFrom": "workshop_user",
           "tableTo": "workshops",
-          "schemaTo": "public",
           "columnsFrom": [
             "workshop_id"
           ],
@@ -474,8 +385,188 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {},
       "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.reviews": {
+      "name": "reviews",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rating": {
+          "name": "rating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "video_url": {
+          "name": "video_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "''"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.room_users": {
+      "name": "room_users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "room_id": {
+          "name": "room_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "joined_at": {
+          "name": "joined_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "left_at": {
+          "name": "left_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "booking_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "hms_peer_id": {
+          "name": "hms_peer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_room_users_room": {
+          "name": "idx_room_users_room",
+          "columns": [
+            {
+              "expression": "room_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_room_users_user": {
+          "name": "idx_room_users_user",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "joined_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "room_users_room_id_rooms_id_fk": {
+          "name": "room_users_room_id_rooms_id_fk",
+          "tableFrom": "room_users",
+          "tableTo": "rooms",
+          "columnsFrom": [
+            "room_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "room_users_user_id_user_id_fk": {
+          "name": "room_users_user_id_user_id_fk",
+          "tableFrom": "room_users",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.rooms": {
@@ -568,24 +659,21 @@
           "columns": [
             {
               "expression": "type",
+              "isExpression": false,
               "asc": true,
-              "nulls": "last",
-              "opclass": "int4_ops",
-              "isExpression": false
+              "nulls": "last"
             },
             {
               "expression": "status",
+              "isExpression": false,
               "asc": true,
-              "nulls": "last",
-              "opclass": "int4_ops",
-              "isExpression": false
+              "nulls": "last"
             },
             {
               "expression": "current_occupancy",
+              "isExpression": false,
               "asc": true,
-              "nulls": "last",
-              "opclass": "int4_ops",
-              "isExpression": false
+              "nulls": "last"
             }
           ],
           "isUnique": false,
@@ -598,10 +686,9 @@
           "columns": [
             {
               "expression": "scheduled_start",
+              "isExpression": false,
               "asc": true,
-              "nulls": "last",
-              "opclass": "timestamptz_ops",
-              "isExpression": false
+              "nulls": "last"
             }
           ],
           "isUnique": false,
@@ -615,7 +702,6 @@
           "name": "rooms_instructor_id_user_id_fk",
           "tableFrom": "rooms",
           "tableTo": "user",
-          "schemaTo": "public",
           "columnsFrom": [
             "instructor_id"
           ],
@@ -629,7 +715,6 @@
           "name": "rooms_original_instructor_id_user_id_fk",
           "tableFrom": "rooms",
           "tableTo": "user",
-          "schemaTo": "public",
           "columnsFrom": [
             "original_instructor_id"
           ],
@@ -643,148 +728,20 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "rooms_hms_room_id_unique": {
+          "name": "rooms_hms_room_id_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "hms_room_id"
-          ],
-          "nullsNotDistinct": false,
-          "name": "rooms_hms_room_id_unique"
+          ]
         }
       },
+      "policies": {},
       "checkConstraints": {
         "current_occupancy_non_negative": {
           "name": "current_occupancy_non_negative",
-          "value": "current_occupancy >= 0"
+          "value": "\"rooms\".\"current_occupancy\" >= 0"
         }
       },
-      "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.room_users": {
-      "name": "room_users",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "room_id": {
-          "name": "room_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "joined_at": {
-          "name": "joined_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "left_at": {
-          "name": "left_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "status": {
-          "name": "status",
-          "type": "booking_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'active'"
-        },
-        "hms_peer_id": {
-          "name": "hms_peer_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "idx_room_users_room": {
-          "name": "idx_room_users_room",
-          "columns": [
-            {
-              "expression": "room_id",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "uuid_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_room_users_user": {
-          "name": "idx_room_users_user",
-          "columns": [
-            {
-              "expression": "user_id",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "timestamptz_ops",
-              "isExpression": false
-            },
-            {
-              "expression": "joined_at",
-              "asc": true,
-              "nulls": "last",
-              "opclass": "timestamptz_ops",
-              "isExpression": false
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "room_users_room_id_rooms_id_fk": {
-          "name": "room_users_room_id_rooms_id_fk",
-          "tableFrom": "room_users",
-          "tableTo": "rooms",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "room_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "room_users_user_id_user_id_fk": {
-          "name": "room_users_user_id_user_id_fk",
-          "tableFrom": "room_users",
-          "tableTo": "user",
-          "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
-      "policies": {},
       "isRLSEnabled": false
     },
     "public.session": {
@@ -800,7 +757,7 @@
         },
         "expires_at": {
           "name": "expires_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
         },
@@ -812,14 +769,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
         },
@@ -848,7 +805,6 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "schemaTo": "public",
           "columnsFrom": [
             "user_id"
           ],
@@ -862,15 +818,15 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "session_token_unique": {
+          "name": "session_token_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "token"
-          ],
-          "nullsNotDistinct": false,
-          "name": "session_token_unique"
+          ]
         }
       },
-      "checkConstraints": {},
       "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.session_quota_log": {
@@ -930,17 +886,15 @@
           "columns": [
             {
               "expression": "user_id",
+              "isExpression": false,
               "asc": true,
-              "nulls": "last",
-              "opclass": "date_ops",
-              "isExpression": false
+              "nulls": "last"
             },
             {
               "expression": "week_start",
+              "isExpression": false,
               "asc": true,
-              "nulls": "last",
-              "opclass": "date_ops",
-              "isExpression": false
+              "nulls": "last"
             }
           ],
           "isUnique": false,
@@ -954,7 +908,6 @@
           "name": "session_quota_log_user_id_user_id_fk",
           "tableFrom": "session_quota_log",
           "tableTo": "user",
-          "schemaTo": "public",
           "columnsFrom": [
             "user_id"
           ],
@@ -968,7 +921,6 @@
           "name": "session_quota_log_room_id_rooms_id_fk",
           "tableFrom": "session_quota_log",
           "tableTo": "rooms",
-          "schemaTo": "public",
           "columnsFrom": [
             "room_id"
           ],
@@ -980,13 +932,23 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {},
+      "uniqueConstraints": {
+        "uq_quota_user_week_room": {
+          "name": "uq_quota_user_week_room",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "week_start",
+            "room_id"
+          ]
+        }
+      },
       "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.plans": {
-      "name": "plans",
+    "public.user": {
+      "name": "user",
       "schema": "",
       "columns": {
         "id": {
@@ -1002,37 +964,64 @@
           "primaryKey": false,
           "notNull": true
         },
-        "price_cents": {
-          "name": "price_cents",
-          "type": "integer",
+        "email": {
+          "name": "email",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "sessions_per_week": {
-          "name": "sessions_per_week",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "allows_private": {
-          "name": "allows_private",
+        "email_verified": {
+          "name": "email_verified",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": false
         },
-        "allows_time_flexibility": {
-          "name": "allows_time_flexibility",
-          "type": "boolean",
+        "role": {
+          "name": "role",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": false
+          "default": "'user'"
         },
-        "max_room_capacity": {
-          "name": "max_room_capacity",
-          "type": "integer",
+        "image": {
+          "name": "image",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "plan_id": {
+          "name": "plan_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preferred_instructor_id": {
+          "name": "preferred_instructor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timezone": {
+          "name": "timezone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'UTC'"
+        },
+        "sessions_used_this_week": {
+          "name": "sessions_used_this_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "week_reset_at": {
+          "name": "week_reset_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "date_trunc('week', now())"
         },
         "created_at": {
           "name": "created_at",
@@ -1040,114 +1029,166 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_plan_id_plans_id_fk": {
+          "name": "user_plan_id_plans_id_fk",
+          "tableFrom": "user",
+          "tableTo": "plans",
+          "columnsFrom": [
+            "plan_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_preferred_instructor_id_user_id_fk": {
+          "name": "user_preferred_instructor_id_user_id_fk",
+          "tableFrom": "user",
+          "tableTo": "user",
+          "columnsFrom": [
+            "preferred_instructor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.verification": {
+      "name": "verification",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "identifier": {
+          "name": "identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "plans_name_unique": {
-          "columns": [
-            "name"
-          ],
-          "nullsNotDistinct": false,
-          "name": "plans_name_unique"
-        }
-      },
-      "checkConstraints": {},
+      "uniqueConstraints": {},
       "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.instructor_details": {
-      "name": "instructor_details",
+    "public.workshops": {
+      "name": "workshops",
       "schema": "",
       "columns": {
-        "user_id": {
-          "name": "user_id",
+        "id": {
+          "name": "id",
           "type": "uuid",
           "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true
         },
-        "status": {
-          "name": "status",
-          "type": "instructor_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'available'"
-        },
-        "current_room_id": {
-          "name": "current_room_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "specialty": {
-          "name": "specialty",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{\"\"}'"
-        },
-        "max_concurrent_sessions": {
-          "name": "max_concurrent_sessions",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "availability_json": {
-          "name": "availability_json",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "bio": {
-          "name": "bio",
+        "description": {
+          "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "tagline": {
-          "name": "tagline",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "profile_image_url": {
-          "name": "profile_image_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "avatar_key": {
-          "name": "avatar_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "video_links": {
-          "name": "video_links",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{\"\"}'"
-        },
-        "tags": {
-          "name": "tags",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{\"\"}'"
-        },
-        "years_of_experience": {
-          "name": "years_of_experience",
+        "price": {
+          "name": "price",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "is_approved": {
-          "name": "is_approved",
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "meet_link": {
+          "name": "meet_link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scheduled_at": {
+          "name": "scheduled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_attendees": {
+          "name": "max_attendees",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 50
+        },
+        "is_active": {
+          "name": "is_active",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -1155,6 +1196,13 @@
         },
         "created_at": {
           "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -1165,47 +1213,47 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {},
       "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     }
   },
   "enums": {
     "public.booking_status": {
       "name": "booking_status",
+      "schema": "public",
       "values": [
         "active",
         "completed",
         "dropped"
-      ],
-      "schema": "public"
+      ]
     },
     "public.instructor_status": {
       "name": "instructor_status",
+      "schema": "public",
       "values": [
         "available",
         "busy",
         "offline"
-      ],
-      "schema": "public"
+      ]
     },
     "public.room_status": {
       "name": "room_status",
+      "schema": "public",
       "values": [
         "idle",
         "active",
         "full",
         "ended"
-      ],
-      "schema": "public"
+      ]
     },
     "public.room_type": {
       "name": "room_type",
+      "schema": "public",
       "values": [
         "group",
         "private"
-      ],
-      "schema": "public"
+      ]
     }
   },
   "schemas": {},
@@ -1214,31 +1262,8 @@
   "policies": {},
   "views": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
-  },
-  "internal": {
-    "tables": {
-      "instructor_details": {
-        "columns": {
-          "specialty": {
-            "isArray": true,
-            "dimensions": 1,
-            "rawType": "text"
-          },
-          "video_links": {
-            "isArray": true,
-            "dimensions": 1,
-            "rawType": "text"
-          },
-          "tags": {
-            "isArray": true,
-            "dimensions": 1,
-            "rawType": "text"
-          }
-        }
-      }
-    }
+    "tables": {}
   }
 }

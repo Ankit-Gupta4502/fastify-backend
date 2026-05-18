@@ -15,6 +15,12 @@ export const adminApi = {
   listInstructors: () =>
     apiRequest<AdminInstructor[]>(API_ENDPOINTS.ADMIN.INSTRUCTORS),
 
+  approveInstructor: (id: string, approve: boolean) =>
+    apiRequest<null>(API_ENDPOINTS.ADMIN.APPROVE_INSTRUCTOR(id), {
+      method: "PATCH",
+      data: { approve },
+    }),
+
   listGroupRooms: () =>
     apiRequest<AdminRoom[]>(API_ENDPOINTS.ADMIN.GROUP_ROOMS),
 

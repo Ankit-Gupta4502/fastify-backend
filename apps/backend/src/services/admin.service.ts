@@ -34,6 +34,7 @@ export async function listInstructors(db: AppDatabase) {
       status: instructorDetails.status,
       specialty: instructorDetails.specialty,
       maxConcurrentSessions: instructorDetails.maxConcurrentSessions,
+      isApproved: instructorDetails.isApproved,
     })
     .from(instructorDetails)
     .innerJoin(user, eq(instructorDetails.userId, user.id))
@@ -44,6 +45,20 @@ export async function listInstructors(db: AppDatabase) {
     specialty: r.specialty ?? [],
     maxConcurrentSessions: r.maxConcurrentSessions ?? 1,
   }));
+}
+
+export async function approveInstructor(
+  db: AppDatabase,
+  instructorId: string,
+  approve: boolean,
+) {
+  const [updated] = await db
+    .update(instructorDetails)
+    .set({ isApproved: approve })
+    .where(eq(instructorDetails.userId, instructorId))
+    .returning({ userId: instructorDetails.userId });
+
+  return updated ?? null;
 }
 
 export async function listGroupRooms(db: AppDatabase) {

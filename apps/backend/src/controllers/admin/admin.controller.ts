@@ -10,7 +10,12 @@ import {
   listInstructors,
   listGroupRooms,
   createGroupRoom,
+  approveInstructor,
 } from "../../services/admin.service";
+
+const approveInstructorBodySchema = z.object({
+  approve: z.boolean(),
+});
 
 const createGroupRoomBodySchema = z.object({
   instructorId: z.string().uuid(),
@@ -37,6 +42,7 @@ export class AdminController {
       async (router) => {
         router.get("/users", { preHandler }, this.getUsers);
         router.get("/instructors", { preHandler }, this.getInstructors);
+        router.patch("/instructors/:id/approve", { preHandler }, this.approveInstructor);
         router.get("/rooms/group", { preHandler }, this.getGroupRooms);
         router.post("/rooms/group", { preHandler }, this.createGroupRoom);
       },
@@ -53,6 +59,26 @@ export class AdminController {
   private getInstructors = async (_req: FastifyRequest, reply: FastifyReply) => {
     const data = await listInstructors(drizzle);
     const { statusCode, payload } = successResponse({ message: "Instructors", data });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private approveInstructor = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: approveInstructorBodySchema });
+    if (invalid) return invalid;
+
+    const { id } = request.params as { id: string };
+    const { approve } = request.body as z.infer<typeof approveInstructorBodySchema>;
+
+    const updated = await approveInstructor(drizzle, id, approve);
+    if (!updated) {
+      const { statusCode, payload } = errorResponse({ message: "Instructor not found", statusCode: 404 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const { statusCode, payload } = successResponse({
+      message: approve ? "Instructor approved" : "Instructor approval revoked",
+      data: null,
+    });
     return reply.status(statusCode).send(payload);
   };
 

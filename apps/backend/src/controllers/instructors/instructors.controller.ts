@@ -93,7 +93,10 @@ export class InstructorsController {
 
     const query = request.query as z.infer<typeof listInstructorsQuerySchema>;
 
-    const conditions = [eq(user.role, USER_ROLES.INSTRUCTOR)];
+    const conditions = [
+      eq(user.role, USER_ROLES.INSTRUCTOR),
+      eq(instructorDetails.isApproved, true),
+    ];
     if (query.status) {
       conditions.push(eq(instructorDetails.status, query.status));
     }

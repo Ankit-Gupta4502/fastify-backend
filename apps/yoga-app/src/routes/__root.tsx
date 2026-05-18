@@ -4,6 +4,7 @@ import {
   Outlet,
   Scripts,
   createRootRoute,
+  useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
@@ -38,7 +39,22 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 });
 
+const SHELL_HIDDEN_PREFIXES = ["/_user", "/instructor", "/admin", "/session/"];
+
 function RootLayout() {
+  const { matches } = useRouterState();
+  const hideShell = matches.some((m) =>
+    SHELL_HIDDEN_PREFIXES.some((prefix) => m.routeId.startsWith(prefix))
+  );
+
+  if (hideShell) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <Outlet />
+      </div>
+    );
+  }
+
   return (
     <Layout>
       <Outlet />

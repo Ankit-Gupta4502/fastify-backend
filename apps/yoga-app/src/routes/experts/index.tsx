@@ -1,12 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { EXPERTS } from "@/constants/experts";
+import { useInstructors } from "@/hooks/use-instructors";
 import { ExpertCard } from "./_components/ExpertCard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/experts/")({
   component: ExpertsPage,
 });
 
 function ExpertsPage() {
+  const { data, isLoading } = useInstructors({ status: "available" });
+  const instructors = data?.data ?? [];
+
   return (
     <div className="py-12 space-y-12">
       <div className="max-w-2xl space-y-4">
@@ -22,9 +26,18 @@ function ExpertsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {EXPERTS.map((expert) => (
-          <ExpertCard key={expert.id} expert={expert} />
-        ))}
+        {isLoading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-80 rounded-3xl" />
+            ))
+          : instructors.map((instructor, i) => (
+              <ExpertCard key={instructor.id} instructor={instructor} index={i} />
+            ))}
+        {!isLoading && instructors.length === 0 && (
+          <p className="text-muted-foreground col-span-3 text-center py-12">
+            No instructors available right now. Check back soon.
+          </p>
+        )}
       </div>
     </div>
   );

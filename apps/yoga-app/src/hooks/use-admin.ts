@@ -35,6 +35,17 @@ export function useAdminGroupRooms() {
   return useQuery(adminQueryOptions.groupRooms());
 }
 
+export function useApproveInstructor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, approve }: { id: string; approve: boolean }) =>
+      adminApi.approveInstructor(id, approve),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.instructors() });
+    },
+  });
+}
+
 export function useCreateGroupRoom() {
   const qc = useQueryClient();
   return useMutation({

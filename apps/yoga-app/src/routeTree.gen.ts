@@ -20,6 +20,7 @@ import { Route as SessionRoomIdRouteImport } from './routes/session.$roomId'
 import { Route as InstructorProfileRouteImport } from './routes/instructor/profile'
 import { Route as InstructorDashboardRouteImport } from './routes/instructor/dashboard'
 import { Route as ExpertsExpertIdRouteImport } from './routes/experts/$expertId'
+import { Route as AdminWorkshopsRouteImport } from './routes/admin/workshops'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminRoomsRouteImport } from './routes/admin/rooms'
 import { Route as AdminInstructorsRouteImport } from './routes/admin/instructors'
@@ -81,6 +82,11 @@ const ExpertsExpertIdRoute = ExpertsExpertIdRouteImport.update({
   path: '/experts/$expertId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminWorkshopsRoute = AdminWorkshopsRouteImport.update({
+  id: '/workshops',
+  path: '/workshops',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/admin/instructors': typeof AdminInstructorsRoute
   '/admin/rooms': typeof AdminRoomsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/workshops': typeof AdminWorkshopsRoute
   '/experts/$expertId': typeof ExpertsExpertIdRoute
   '/instructor/dashboard': typeof InstructorDashboardRoute
   '/instructor/profile': typeof InstructorProfileRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/admin/instructors': typeof AdminInstructorsRoute
   '/admin/rooms': typeof AdminRoomsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/workshops': typeof AdminWorkshopsRoute
   '/experts/$expertId': typeof ExpertsExpertIdRoute
   '/instructor/dashboard': typeof InstructorDashboardRoute
   '/instructor/profile': typeof InstructorProfileRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/admin/instructors': typeof AdminInstructorsRoute
   '/admin/rooms': typeof AdminRoomsRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/workshops': typeof AdminWorkshopsRoute
   '/experts/$expertId': typeof ExpertsExpertIdRoute
   '/instructor/dashboard': typeof InstructorDashboardRoute
   '/instructor/profile': typeof InstructorProfileRoute
@@ -182,6 +191,7 @@ export interface FileRouteTypes {
     | '/admin/instructors'
     | '/admin/rooms'
     | '/admin/users'
+    | '/admin/workshops'
     | '/experts/$expertId'
     | '/instructor/dashboard'
     | '/instructor/profile'
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/admin/instructors'
     | '/admin/rooms'
     | '/admin/users'
+    | '/admin/workshops'
     | '/experts/$expertId'
     | '/instructor/dashboard'
     | '/instructor/profile'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/admin/instructors'
     | '/admin/rooms'
     | '/admin/users'
+    | '/admin/workshops'
     | '/experts/$expertId'
     | '/instructor/dashboard'
     | '/instructor/profile'
@@ -317,6 +329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExpertsExpertIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/workshops': {
+      id: '/admin/workshops'
+      path: '/workshops'
+      fullPath: '/admin/workshops'
+      preLoaderRoute: typeof AdminWorkshopsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/users': {
       id: '/admin/users'
       path: '/users'
@@ -382,12 +401,14 @@ interface AdminRouteRouteChildren {
   AdminInstructorsRoute: typeof AdminInstructorsRoute
   AdminRoomsRoute: typeof AdminRoomsRoute
   AdminUsersRoute: typeof AdminUsersRoute
+  AdminWorkshopsRoute: typeof AdminWorkshopsRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminInstructorsRoute: AdminInstructorsRoute,
   AdminRoomsRoute: AdminRoomsRoute,
   AdminUsersRoute: AdminUsersRoute,
+  AdminWorkshopsRoute: AdminWorkshopsRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(

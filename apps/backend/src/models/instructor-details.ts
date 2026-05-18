@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -60,6 +61,8 @@ export const instructorDetails = pgTable(
       .notNull()
       .default([] as unknown as string[]),
     yearsOfExperience: integer("years_of_experience"),
+
+    isApproved: boolean("is_approved").notNull().default(false),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

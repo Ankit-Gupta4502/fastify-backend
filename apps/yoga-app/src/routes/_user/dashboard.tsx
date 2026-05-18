@@ -2,9 +2,6 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { Calendar, Clock, Flame, Wallet } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
-import { Button } from "@/components/ui/button";
-import { Link } from "@tanstack/react-router";
-import { Sparkles } from "lucide-react";
 import { StatCard } from "@/components/shared/StatCard";
 import { NextFlowCard } from "./_components/dashboard/NextFlowCard";
 import { PlanCard } from "./_components/dashboard/PlanCard";
@@ -50,31 +47,15 @@ function UserDashboard() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 pb-12">
+    <div className="space-y-8 pb-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl md:text-4xl font-serif font-bold tracking-tight">
-            Namaste, {user?.name?.split(" ")[0]}
-          </h1>
-          <p className="text-muted-foreground">
-            Your time zone: <span className="font-medium">{tz}</span>
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button asChild variant="outline" className="rounded-full gap-2">
-            <Link to="/billing">
-              <Wallet className="size-4" />
-              Billing
-            </Link>
-          </Button>
-          <Button asChild className="rounded-full gap-2 shadow-lg shadow-primary/20">
-            <Link to="/rooms">
-              <Sparkles className="size-4" />
-              Browse sessions
-            </Link>
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Namaste, {user?.name?.split(" ")[0]}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Your time zone: <span className="font-medium">{tz}</span>
+        </p>
       </div>
 
       {/* Stats */}

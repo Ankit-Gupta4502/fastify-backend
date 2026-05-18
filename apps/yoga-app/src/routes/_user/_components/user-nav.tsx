@@ -1,17 +1,16 @@
 import { Link } from "@tanstack/react-router";
-import { Users, GraduationCap, CalendarDays, BookOpen, ShieldCheck, LogOut, Sparkles } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Wallet, LogOut, Sparkles, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
 const navItems = [
-  { label: "Users", to: "/admin/users", icon: Users },
-  { label: "Instructors", to: "/admin/instructors", icon: GraduationCap },
-  { label: "Classes", to: "/admin/rooms", icon: CalendarDays },
-  { label: "Workshops", to: "/admin/workshops", icon: BookOpen },
+  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
+  { label: "Sessions", to: "/rooms", icon: CalendarDays },
+  { label: "Billing", to: "/billing", icon: Wallet },
 ] as const;
 
-export function AdminNav() {
+export function UserNav() {
   const { user, logout } = useAuth();
 
   return (
@@ -27,10 +26,9 @@ export function AdminNav() {
       </div>
 
       {/* Section label */}
-      <div className="px-5 pt-6 pb-2 flex items-center gap-2">
-        <ShieldCheck className="size-3.5 text-primary" />
-        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary">
-          Admin Panel
+      <div className="px-5 pt-6 pb-2">
+        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
+          My Space
         </span>
       </div>
 
@@ -58,7 +56,7 @@ export function AdminNav() {
       <div className="border-t border-border/40 p-4 space-y-1">
         <div className="flex items-center gap-3 px-3 py-2 rounded-xl">
           <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-            <ShieldCheck className="size-4" />
+            <User className="size-4" />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold truncate leading-tight">{user?.name}</p>

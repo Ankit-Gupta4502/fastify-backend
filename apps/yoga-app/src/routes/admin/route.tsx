@@ -18,10 +18,12 @@ export const Route = createFileRoute("/admin")({
 
 function AdminLayout() {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] animate-in fade-in duration-300">
+    <div className="flex h-screen overflow-hidden animate-in fade-in duration-300">
       <AdminNav />
-      <main className="flex-1 overflow-y-auto p-8">
-        <Outlet />
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

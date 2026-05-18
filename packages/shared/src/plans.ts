@@ -1,4 +1,4 @@
-export type PlanName = "group_live" | "private" | "on_demand";
+export type PlanName = "group_live" | "private";
 
 export interface PlanRecord {
   id: string;

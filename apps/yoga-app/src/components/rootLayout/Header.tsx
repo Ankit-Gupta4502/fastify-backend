@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles, User, LogOut, LayoutDashboard, Wallet, Video, ShieldCheck } from "lucide-react";
+import { Sparkles, User, LogOut, LayoutDashboard, ShieldCheck, Tag } from "lucide-react";
 import { USER_ROLES } from "@yoga-app/shared";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
@@ -58,24 +58,17 @@ export function Header() {
             {isAuthenticated && !isInstructor && !isAdmin && (
               <>
                 <Link
-                  to="/rooms"
-                  className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <Video className="size-3.5" />
-                  Rooms
-                </Link>
-                <Link
                   to="/experts"
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Experts
                 </Link>
                 <Link
-                  to="/billing"
+                  to="/pricing"
                   className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  <Wallet className="size-3.5" />
-                  Billing
+                  <Tag className="size-3.5" />
+                  Pricing
                 </Link>
               </>
             )}

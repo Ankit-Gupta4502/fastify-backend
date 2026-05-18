@@ -28,5 +28,10 @@ export const queryKeys = {
     users: () => [...queryKeys.admin.all, "users"] as const,
     instructors: () => [...queryKeys.admin.all, "instructors"] as const,
     groupRooms: () => [...queryKeys.admin.all, "group-rooms"] as const,
+    workshops: () => [...queryKeys.admin.all, "workshops"] as const,
+  },
+  workshops: {
+    all: ["workshops"] as const,
+    list: () => [...queryKeys.workshops.all, "list"] as const,
   },
 } as const;
