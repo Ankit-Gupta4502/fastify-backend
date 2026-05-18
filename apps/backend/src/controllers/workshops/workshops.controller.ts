@@ -40,6 +40,7 @@ export class WorkshopsController {
       async (router) => {
         // ── Public ──────────────────────────────────────────────
         router.get("/workshops", this.listActive);
+        router.get("/workshops/:id", this.getWorkshop);
         router.post("/workshops/:id/join", this.joinWorkshop);
 
         // ── Admin ────────────────────────────────────────────────
@@ -87,6 +88,43 @@ export class WorkshopsController {
     }));
 
     const { statusCode, payload } = successResponse({ message: "Active workshops", data });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private getWorkshop = async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+
+    const [row] = await drizzle
+      .select({
+        id: workshops.id,
+        name: workshops.name,
+        description: workshops.description,
+        price: workshops.price,
+        image: workshops.image,
+        meetLink: workshops.meetLink,
+        scheduledAt: workshops.scheduledAt,
+        maxAttendees: workshops.maxAttendees,
+      })
+      .from(workshops)
+      .where(and(eq(workshops.id, id), eq(workshops.isActive, true)));
+
+    if (!row) {
+      const { statusCode, payload } = errorResponse({ message: "Workshop not found", statusCode: 404 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const [attendees] = await drizzle
+      .select({ n: count() })
+      .from(registeredWorkshops)
+      .where(eq(registeredWorkshops.workshopId, id));
+
+    const data = {
+      ...row,
+      scheduledAt: row.scheduledAt ? row.scheduledAt.toISOString() : null,
+      attendeeCount: Number(attendees?.n ?? 0),
+    };
+
+    const { statusCode, payload } = successResponse({ message: "Workshop", data });
     return reply.status(statusCode).send(payload);
   };
 

@@ -33,5 +33,6 @@ export const queryKeys = {
   workshops: {
     all: ["workshops"] as const,
     list: () => [...queryKeys.workshops.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.workshops.all, "detail", id] as const,
   },
 } as const;

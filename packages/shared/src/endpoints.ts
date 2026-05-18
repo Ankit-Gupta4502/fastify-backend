@@ -40,6 +40,7 @@ export const API_ENDPOINTS = {
   },
   WORKSHOPS: {
     LIST: "/workshops",
+    DETAIL: (id: string) => `/workshops/${id}`,
     JOIN: (id: string) => `/workshops/${id}/join`,
     ADMIN_LIST: "/admin/workshops",
     ADMIN_CREATE: "/admin/workshops",

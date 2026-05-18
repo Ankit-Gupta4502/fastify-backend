@@ -12,6 +12,9 @@ export const workshopsApi = {
   list: () =>
     apiRequest<Workshop[]>(API_ENDPOINTS.WORKSHOPS.LIST),
 
+  detail: (id: string) =>
+    apiRequest<Workshop>(API_ENDPOINTS.WORKSHOPS.DETAIL(id)),
+
   join: (id: string, body: WorkshopJoinBody) =>
     apiRequest<null>(API_ENDPOINTS.WORKSHOPS.JOIN(id), { method: "POST", data: body }),
 

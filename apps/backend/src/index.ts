@@ -36,7 +36,6 @@ export const fastify = Fastify({
 
 fastify.setErrorHandler((err: FastifyError, req, reply) => {
   req.log.error(err, "request error");
-console.info(JSON.stringify(err),"errr")
   const status =
     err.statusCode && err.statusCode >= 400 && err.statusCode < 600
       ? err.statusCode
@@ -46,8 +45,7 @@ console.info(JSON.stringify(err),"errr")
     message: status === 500 ? "Internal server error" : err.message,
     statusCode: status,
   });
-
-  reply.code(status).send(payload);
+  reply.code(status).send({...payload,err});
 });
 
 const schema = {

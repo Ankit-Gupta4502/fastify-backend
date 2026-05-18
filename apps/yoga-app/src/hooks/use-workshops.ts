@@ -11,6 +11,15 @@ export function useWorkshops() {
   });
 }
 
+export function useWorkshop(id: string) {
+  return useQuery({
+    queryKey: queryKeys.workshops.detail(id),
+    queryFn: () => workshopsApi.detail(id),
+    staleTime: 60_000,
+    enabled: !!id,
+  });
+}
+
 export function useJoinWorkshop() {
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: WorkshopJoinBody }) =>
