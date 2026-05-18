@@ -36,7 +36,7 @@ export const authApi = {
     apiRequest<SessionPayload>(ENDPOINTS.AUTH.SESSION),
 
   logout: () =>
-    apiRequest<{ success: boolean }>(ENDPOINTS.AUTH.LOGIN.replace("login", "logout"), {
+    apiRequest<{ success: boolean }>(ENDPOINTS.AUTH.LOGOUT, {
       method: "POST",
     }),
     
@@ -55,6 +55,11 @@ export const userApi = {
 
 // System Fetchers
 export const systemApi = {
-  fetchHealth: () => 
+  fetchHealth: () =>
     apiGet<HealthResponse>(ENDPOINTS.SYSTEM.HEALTH),
 };
+
+export { roomsApi } from "./rooms";
+export { instructorsApi } from "./instructors";
+export { plansApi, type MyPlanResponse } from "./plans";
+export { paymentsApi } from "./payments";

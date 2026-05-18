@@ -8,15 +8,35 @@ export {
   accountRelations,
 } from "../models/auth.schema";
 
-export {
-  reviewRelations,
-  review
-}
-from "../models/review.schema";
+export { reviewRelations, review } from "../models/review.schema";
 
-
-export {
-  registeredWorkshops
-} from "../models/workshop.user";
+export { registeredWorkshops } from "../models/workshop.user";
 
 export { workshops, workShopRegisteredUsers } from "../models/workshops";
+
+export { plans, plansRelations } from "../models/plans";
+
+export {
+  rooms,
+  roomsRelations,
+  roomTypeEnum,
+  roomStatusEnum,
+} from "../models/rooms";
+
+export {
+  instructorDetails,
+  instructorDetailsRelations,
+  instructorStatusEnum,
+  type AvailabilityWindow,
+} from "../models/instructor-details";
+
+export {
+  roomUsers,
+  roomUsersRelations,
+  bookingStatusEnum,
+} from "../models/room-users";
+
+export {
+  sessionQuotaLog,
+  sessionQuotaLogRelations,
+} from "../models/session-quota-log";

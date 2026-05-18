@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, Sparkles, Zap, Shield, HelpCircle } from "lucide-react";
+import { Check, Shield, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -92,7 +92,7 @@ function PricingPage() {
           <Card 
             key={tier.name} 
             className={cn(
-              "relative border-none shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-full rounded-[2rem]",
+              "relative border-none shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-full rounded-4xl",
               tier.popular ? "bg-card scale-105 z-10 ring-2 ring-primary/20" : "bg-card/50 backdrop-blur-sm"
             )}
           >
@@ -111,7 +111,7 @@ function PricingPage() {
               </div>
             </CardHeader>
 
-            <CardContent className="flex-grow space-y-4 px-8">
+            <CardContent className="grow space-y-4 px-8">
               {tier.features.map((feature) => (
                 <div key={feature} className="flex items-start gap-3">
                   <div className="size-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">

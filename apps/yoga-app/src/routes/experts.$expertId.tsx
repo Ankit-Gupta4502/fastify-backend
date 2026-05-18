@@ -3,7 +3,7 @@ import { ArrowLeft, Star, Users, CheckCircle2, Calendar, MessageSquare } from "l
 import { EXPERTS } from "@/constants/experts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 
 export const Route = createFileRoute("/experts/$expertId")({
   loader: ({ params }) => {
@@ -29,7 +29,7 @@ function ExpertDetailPage() {
       <div className="grid lg:grid-cols-3 gap-12">
         {/* Left: Image and Quick Stats */}
         <div className="space-y-8">
-          <div className="aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl border border-border/40 relative">
+          <div className="aspect-3/4 rounded-3xl overflow-hidden shadow-2xl border border-border/40 relative">
             <div className="absolute inset-0 bg-primary/10 flex items-center justify-center text-primary/40 font-bold text-2xl">
               {expert.name}
             </div>

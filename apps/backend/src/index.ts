@@ -10,6 +10,12 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import authPlugin from "./plugins/auth.plugin";
 import { AuthController } from "./controllers/auth/auth.controller";
+import { RoomsController } from "./controllers/rooms/rooms.controller";
+import { InstructorsController } from "./controllers/instructors/instructors.controller";
+import { HmsWebhookController } from "./controllers/webhooks/hms.webhook.controller";
+import { RazorpayWebhookController } from "./controllers/webhooks/razorpay.webhook.controller";
+import { PlansController } from "./controllers/plans/plans.controller";
+import { PaymentsController } from "./controllers/payments/payments.controller";
 import { errorResponse } from "./utils";
 import { FastifyError } from "fastify";
 import { getDatabaseDriver } from "./config/database";
@@ -49,6 +55,13 @@ const schema = {
     GOOGLE_CLIENT_ID: { type: "string" },
     GOOGLE_CLIENT_SECRET: { type: "string" },
     DATABASE_DRIVER: { type: "string" },
+    HMS_APP_ACCESS_KEY: { type: "string" },
+    HMS_APP_SECRET: { type: "string" },
+    HMS_TEMPLATE_ID_GROUP: { type: "string" },
+    HMS_TEMPLATE_ID_PRIVATE: { type: "string" },
+    RAZORPAY_KEY_ID: { type: "string" },
+    RAZORPAY_KEY_SECRET: { type: "string" },
+    RAZORPAY_WEBHOOK_SECRET: { type: "string" },
   },
 };
 
@@ -121,6 +134,12 @@ const start = async () => {
 
     const authMiddleware = new AuthMiddleware();
     new UserController(authMiddleware, fastify);
+    new RoomsController(authMiddleware, fastify);
+    new InstructorsController(authMiddleware, fastify);
+    new HmsWebhookController(fastify);
+    new RazorpayWebhookController(fastify);
+    new PlansController(authMiddleware, fastify);
+    new PaymentsController(authMiddleware, fastify);
 
     fastify.get("/health", async () => {
       return { status: "ok", timestamp: new Date().toISOString() };

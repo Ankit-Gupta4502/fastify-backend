@@ -1,6 +1,17 @@
 import { relations } from "drizzle-orm";
-import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  type AnyPgColumn,
+} from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { DEFAULT_USER_ROLE } from "../constants/roles";
+import { DEFAULT_USER_TIMEZONE } from "../constants/sessions";
+import { plans } from "./plans";
 
 export const user = pgTable("user", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -9,6 +20,17 @@ export const user = pgTable("user", {
   emailVerified: boolean("email_verified").default(false).notNull(),
   role: text("role").notNull().default(DEFAULT_USER_ROLE),
   image: text("image"),
+  planId: uuid("plan_id").references(() => plans.id),
+  preferredInstructorId: uuid("preferred_instructor_id").references(
+    (): AnyPgColumn => user.id,
+  ),
+  timezone: text("timezone").notNull().default(DEFAULT_USER_TIMEZONE),
+  sessionsUsedThisWeek: integer("sessions_used_this_week")
+    .notNull()
+    .default(0),
+  weekResetAt: timestamp("week_reset_at", { withTimezone: true })
+    .notNull()
+    .default(sql`date_trunc('week', now())`),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -60,9 +82,18 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ one, many }) => ({
   sessions: many(session),
   accounts: many(account),
+  plan: one(plans, {
+    fields: [user.planId],
+    references: [plans.id],
+  }),
+  preferredInstructor: one(user, {
+    relationName: "preferredInstructor",
+    fields: [user.preferredInstructorId],
+    references: [user.id],
+  }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

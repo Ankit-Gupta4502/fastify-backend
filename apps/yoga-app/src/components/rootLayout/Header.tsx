@@ -1,18 +1,21 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles, User, LogOut, LayoutDashboard } from "lucide-react";
+import { Sparkles, User, LogOut, LayoutDashboard, Wallet, Video } from "lucide-react";
+import { USER_ROLES } from "@yoga-app/shared";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
-const navigationItems = [
-  { label: "Features", href: "#features" },
+const publicAnchors = [{ label: "Features", href: "#features" }] as const;
+
+const publicLinks = [
   { label: "Experts", to: "/experts" },
   { label: "Pricing", to: "/pricing" },
-];
+] as const;
 
 export function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const isInstructor = user?.role === USER_ROLES.INSTRUCTOR;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl transition-all">
@@ -28,25 +31,53 @@ export function Header() {
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
-            {navigationItems.map((item) => (
-              "to" in item ? (
+            {!isAuthenticated && (
+              <>
+                {publicAnchors.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {item.label}
+                  </a>
+                ))}
+                {publicLinks.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.to}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </>
+            )}
+
+            {isAuthenticated && !isInstructor && (
+              <>
                 <Link
-                  key={item.label}
-                  to={item.to}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  to="/rooms"
+                  className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  {item.label}
+                  <Video className="size-3.5" />
+                  Rooms
                 </Link>
-              ) : (
-                <a
+                <Link
+                  to="/experts"
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  href={item.href}
-                  key={item.label}
                 >
-                  {item.label}
-                </a>
-              )
-            ))}
+                  Experts
+                </Link>
+                <Link
+                  to="/billing"
+                  className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <Wallet className="size-3.5" />
+                  Billing
+                </Link>
+              </>
+            )}
           </nav>
         </div>
 
@@ -64,18 +95,26 @@ export function Header() {
                   <User className="size-3.5" />
                 </div>
                 <span className="text-sm font-semibold">{user?.name}</span>
+                {isInstructor && (
+                  <span className="text-[9px] font-bold uppercase tracking-widest bg-primary/15 text-primary px-2 py-0.5 rounded-full">
+                    Instructor
+                  </span>
+                )}
               </div>
-              
+
               <Button asChild className="rounded-full px-6 shadow-sm transition-all">
-                <Link to="/dashboard" className="flex items-center gap-2">
+                <Link
+                  to={isInstructor ? "/instructor/dashboard" : "/dashboard"}
+                  className="flex items-center gap-2"
+                >
                   <LayoutDashboard className="size-3.5" />
                   <span>Dashboard</span>
                 </Link>
               </Button>
 
-              <Button 
-                variant="ghost" 
-                size="icon-sm" 
+              <Button
+                variant="ghost"
+                size="icon-sm"
                 disabled={logout.isPending}
                 onClick={() => logout.mutate()}
                 className="rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
@@ -89,7 +128,10 @@ export function Header() {
               <Button asChild className="rounded-full px-6" variant="ghost">
                 <Link to="/login">Sign in</Link>
               </Button>
-              <Button asChild className="rounded-full px-8 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all font-semibold">
+              <Button
+                asChild
+                className="rounded-full px-8 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all font-semibold"
+              >
                 <Link to="/login">Get started</Link>
               </Button>
             </div>
