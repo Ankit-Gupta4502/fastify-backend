@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles, User, LogOut, LayoutDashboard, Wallet, Video } from "lucide-react";
+import { Sparkles, User, LogOut, LayoutDashboard, Wallet, Video, ShieldCheck } from "lucide-react";
 import { USER_ROLES } from "@yoga-app/shared";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
@@ -16,6 +16,7 @@ const publicLinks = [
 export function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const isInstructor = user?.role === USER_ROLES.INSTRUCTOR;
+  const isAdmin = user?.role === USER_ROLES.ADMIN;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl transition-all">
@@ -54,7 +55,7 @@ export function Header() {
               </>
             )}
 
-            {isAuthenticated && !isInstructor && (
+            {isAuthenticated && !isInstructor && !isAdmin && (
               <>
                 <Link
                   to="/rooms"
@@ -100,17 +101,31 @@ export function Header() {
                     Instructor
                   </span>
                 )}
+                {isAdmin && (
+                  <span className="text-[9px] font-bold uppercase tracking-widest bg-primary/15 text-primary px-2 py-0.5 rounded-full">
+                    Admin
+                  </span>
+                )}
               </div>
 
-              <Button asChild className="rounded-full px-6 shadow-sm transition-all">
-                <Link
-                  to={isInstructor ? "/instructor/dashboard" : "/dashboard"}
-                  className="flex items-center gap-2"
-                >
-                  <LayoutDashboard className="size-3.5" />
-                  <span>Dashboard</span>
-                </Link>
-              </Button>
+              {isAdmin ? (
+                <Button asChild className="rounded-full px-6 shadow-sm transition-all">
+                  <Link to="/admin/rooms" className="flex items-center gap-2">
+                    <ShieldCheck className="size-3.5" />
+                    <span>Admin</span>
+                  </Link>
+                </Button>
+              ) : (
+                <Button asChild className="rounded-full px-6 shadow-sm transition-all">
+                  <Link
+                    to={isInstructor ? "/instructor/dashboard" : "/dashboard"}
+                    className="flex items-center gap-2"
+                  >
+                    <LayoutDashboard className="size-3.5" />
+                    <span>Dashboard</span>
+                  </Link>
+                </Button>
+              )}
 
               <Button
                 variant="ghost"

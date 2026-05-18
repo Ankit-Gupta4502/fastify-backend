@@ -13,11 +13,15 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ExpertsRouteImport } from './routes/experts'
 import { Route as InstructorRouteRouteImport } from './routes/instructor/route'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as UserRouteRouteImport } from './routes/_user/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionRoomIdRouteImport } from './routes/session.$roomId'
 import { Route as InstructorDashboardRouteImport } from './routes/instructor/dashboard'
 import { Route as ExpertsExpertIdRouteImport } from './routes/experts.$expertId'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminRoomsRouteImport } from './routes/admin/rooms'
+import { Route as AdminInstructorsRouteImport } from './routes/admin/instructors'
 import { Route as UserRoomsRouteImport } from './routes/_user/rooms'
 import { Route as UserDashboardRouteImport } from './routes/_user/dashboard'
 import { Route as UserBillingRouteImport } from './routes/_user/billing'
@@ -40,6 +44,11 @@ const ExpertsRoute = ExpertsRouteImport.update({
 const InstructorRouteRoute = InstructorRouteRouteImport.update({
   id: '/instructor',
   path: '/instructor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UserRouteRoute = UserRouteRouteImport.update({
@@ -66,6 +75,21 @@ const ExpertsExpertIdRoute = ExpertsExpertIdRouteImport.update({
   path: '/$expertId',
   getParentRoute: () => ExpertsRoute,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminRoomsRoute = AdminRoomsRouteImport.update({
+  id: '/rooms',
+  path: '/rooms',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminInstructorsRoute = AdminInstructorsRouteImport.update({
+  id: '/instructors',
+  path: '/instructors',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const UserRoomsRoute = UserRoomsRouteImport.update({
   id: '/rooms',
   path: '/rooms',
@@ -84,6 +108,7 @@ const UserBillingRoute = UserBillingRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
   '/experts': typeof ExpertsRouteWithChildren
   '/login': typeof LoginRoute
@@ -91,12 +116,16 @@ export interface FileRoutesByFullPath {
   '/billing': typeof UserBillingRoute
   '/dashboard': typeof UserDashboardRoute
   '/rooms': typeof UserRoomsRoute
+  '/admin/instructors': typeof AdminInstructorsRoute
+  '/admin/rooms': typeof AdminRoomsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/experts/$expertId': typeof ExpertsExpertIdRoute
   '/instructor/dashboard': typeof InstructorDashboardRoute
   '/session/$roomId': typeof SessionRoomIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
   '/experts': typeof ExpertsRouteWithChildren
   '/login': typeof LoginRoute
@@ -104,6 +133,9 @@ export interface FileRoutesByTo {
   '/billing': typeof UserBillingRoute
   '/dashboard': typeof UserDashboardRoute
   '/rooms': typeof UserRoomsRoute
+  '/admin/instructors': typeof AdminInstructorsRoute
+  '/admin/rooms': typeof AdminRoomsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/experts/$expertId': typeof ExpertsExpertIdRoute
   '/instructor/dashboard': typeof InstructorDashboardRoute
   '/session/$roomId': typeof SessionRoomIdRoute
@@ -112,6 +144,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_user': typeof UserRouteRouteWithChildren
+  '/admin': typeof AdminRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
   '/experts': typeof ExpertsRouteWithChildren
   '/login': typeof LoginRoute
@@ -119,6 +152,9 @@ export interface FileRoutesById {
   '/_user/billing': typeof UserBillingRoute
   '/_user/dashboard': typeof UserDashboardRoute
   '/_user/rooms': typeof UserRoomsRoute
+  '/admin/instructors': typeof AdminInstructorsRoute
+  '/admin/rooms': typeof AdminRoomsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/experts/$expertId': typeof ExpertsExpertIdRoute
   '/instructor/dashboard': typeof InstructorDashboardRoute
   '/session/$roomId': typeof SessionRoomIdRoute
@@ -127,6 +163,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/instructor'
     | '/experts'
     | '/login'
@@ -134,12 +171,16 @@ export interface FileRouteTypes {
     | '/billing'
     | '/dashboard'
     | '/rooms'
+    | '/admin/instructors'
+    | '/admin/rooms'
+    | '/admin/users'
     | '/experts/$expertId'
     | '/instructor/dashboard'
     | '/session/$roomId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/instructor'
     | '/experts'
     | '/login'
@@ -147,6 +188,9 @@ export interface FileRouteTypes {
     | '/billing'
     | '/dashboard'
     | '/rooms'
+    | '/admin/instructors'
+    | '/admin/rooms'
+    | '/admin/users'
     | '/experts/$expertId'
     | '/instructor/dashboard'
     | '/session/$roomId'
@@ -154,6 +198,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_user'
+    | '/admin'
     | '/instructor'
     | '/experts'
     | '/login'
@@ -161,6 +206,9 @@ export interface FileRouteTypes {
     | '/_user/billing'
     | '/_user/dashboard'
     | '/_user/rooms'
+    | '/admin/instructors'
+    | '/admin/rooms'
+    | '/admin/users'
     | '/experts/$expertId'
     | '/instructor/dashboard'
     | '/session/$roomId'
@@ -169,6 +217,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   UserRouteRoute: typeof UserRouteRouteWithChildren
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   InstructorRouteRoute: typeof InstructorRouteRouteWithChildren
   ExpertsRoute: typeof ExpertsRouteWithChildren
   LoginRoute: typeof LoginRoute
@@ -206,6 +255,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InstructorRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_user': {
       id: '/_user'
       path: ''
@@ -240,6 +296,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/experts/$expertId'
       preLoaderRoute: typeof ExpertsExpertIdRouteImport
       parentRoute: typeof ExpertsRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/rooms': {
+      id: '/admin/rooms'
+      path: '/rooms'
+      fullPath: '/admin/rooms'
+      preLoaderRoute: typeof AdminRoomsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/instructors': {
+      id: '/admin/instructors'
+      path: '/instructors'
+      fullPath: '/admin/instructors'
+      preLoaderRoute: typeof AdminInstructorsRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/_user/rooms': {
       id: '/_user/rooms'
@@ -281,6 +358,22 @@ const UserRouteRouteWithChildren = UserRouteRoute._addFileChildren(
   UserRouteRouteChildren,
 )
 
+interface AdminRouteRouteChildren {
+  AdminInstructorsRoute: typeof AdminInstructorsRoute
+  AdminRoomsRoute: typeof AdminRoomsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminInstructorsRoute: AdminInstructorsRoute,
+  AdminRoomsRoute: AdminRoomsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 interface InstructorRouteRouteChildren {
   InstructorDashboardRoute: typeof InstructorDashboardRoute
 }
@@ -307,6 +400,7 @@ const ExpertsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   UserRouteRoute: UserRouteRouteWithChildren,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   InstructorRouteRoute: InstructorRouteRouteWithChildren,
   ExpertsRoute: ExpertsRouteWithChildren,
   LoginRoute: LoginRoute,

@@ -28,6 +28,11 @@ export const API_ENDPOINTS = {
     CREATE_ORDER: "/payments/orders",
     VERIFY: "/payments/verify",
   },
+  ADMIN: {
+    USERS: "/admin/users",
+    INSTRUCTORS: "/admin/instructors",
+    GROUP_ROOMS: "/admin/rooms/group",
+  },
   SYSTEM: {
     HEALTH: "/health",
   },

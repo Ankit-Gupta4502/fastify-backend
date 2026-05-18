@@ -22,4 +22,10 @@ export const queryKeys = {
     list: () => [...queryKeys.plans.all, "list"] as const,
     mine: () => [...queryKeys.plans.all, "mine"] as const,
   },
+  admin: {
+    all: ["admin"] as const,
+    users: () => [...queryKeys.admin.all, "users"] as const,
+    instructors: () => [...queryKeys.admin.all, "instructors"] as const,
+    groupRooms: () => [...queryKeys.admin.all, "group-rooms"] as const,
+  },
 } as const;

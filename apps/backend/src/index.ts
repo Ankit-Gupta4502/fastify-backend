@@ -16,12 +16,14 @@ import { HmsWebhookController } from "./controllers/webhooks/hms.webhook.control
 import { RazorpayWebhookController } from "./controllers/webhooks/razorpay.webhook.controller";
 import { PlansController } from "./controllers/plans/plans.controller";
 import { PaymentsController } from "./controllers/payments/payments.controller";
+import { AdminController } from "./controllers/admin/admin.controller";
 import { errorResponse } from "./utils";
 import { FastifyError } from "fastify";
 import { getDatabaseDriver } from "./config/database";
 import { backendEnvPath } from "./config/env";
 import { DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_URL } from "@yoga-app/shared";
 import {drizzle} from "./db"
+import { registerQuotaResetJob } from "./jobs/quota-reset.job"
 
 export const fastify = Fastify({
   logger: true,
@@ -140,10 +142,13 @@ const start = async () => {
     new RazorpayWebhookController(fastify);
     new PlansController(authMiddleware, fastify);
     new PaymentsController(authMiddleware, fastify);
+    new AdminController(authMiddleware, fastify);
 
     fastify.get("/health", async () => {
       return { status: "ok", timestamp: new Date().toISOString() };
     });
+    registerQuotaResetJob(drizzle, fastify.log);
+
     await fastify.ready();
     const port = Number(process.env.PORT) || DEFAULT_BACKEND_PORT;
     await fastify.listen({ port, host: "0.0.0.0" });
