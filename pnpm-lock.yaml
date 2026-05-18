@@ -193,6 +193,9 @@ importers:
       tw-merge:
         specifier: 0.0.1-alpha.3
         version: 0.0.1-alpha.3
+      zod:
+        specifier: ^4.0.10
+        version: 4.3.6
       zustand:
         specifier: ^5.0.8
         version: 5.0.13(@types/react@19.2.14)(immer@9.0.21)(react@19.2.6)(use-sync-external-store@1.6.0(react@19.2.6))

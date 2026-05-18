@@ -14,6 +14,7 @@ RUN corepack enable && pnpm install --frozen-lockfile
 COPY apps/yoga-app ./apps/yoga-app
 COPY packages/shared ./packages/shared
 
+RUN pnpm --filter @yoga-app/shared build
 RUN pnpm --filter @yoga-app/web build
 
 FROM node:20-alpine AS runtime
