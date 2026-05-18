@@ -2,9 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Activity, CalendarDays, Clock, Users, UserCircle } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { Badge } from "@/components/ui/badge";
-import { StatCard } from "@/components/dashboard/StatCard";
-import { NextClassCard } from "@/components/instructor/NextClassCard";
-import { ScheduleList } from "@/components/instructor/ScheduleList";
+import { StatCard } from "@/components/shared/StatCard";
+import { NextClassCard } from "./_components/NextClassCard";
+import { ScheduleList } from "./_components/ScheduleList";
 import { useInstructorSchedule } from "@/hooks/use-rooms";
 import { INSTRUCTOR_IANA, INSTRUCTOR_TIMEZONE_LABEL } from "@/constants/sessions";
 

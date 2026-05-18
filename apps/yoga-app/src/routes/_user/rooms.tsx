@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RoomCard } from "@/components/rooms/RoomCard";
+import { RoomCard } from "./_components/rooms/RoomCard";
 import { useUpcomingRooms, useJoinRoom } from "@/hooks/use-rooms";
 
 export const Route = createFileRoute("/_user/rooms")({

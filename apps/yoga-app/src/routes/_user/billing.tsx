@@ -4,11 +4,11 @@ import type { PlanRecord } from "@yoga-app/shared";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMyPlan, usePlansWithPricing } from "@/hooks/use-plans";
 import { useCheckout } from "@/hooks/use-checkout";
-import { BillingHeader } from "@/components/billing/billing-header";
-import { CurrentPlanBanner } from "@/components/billing/current-plan-banner";
-import { FeedbackBanner } from "@/components/billing/feedback-banner";
-import { PlanCard } from "@/components/billing/plan-card";
-import { SecureFooter } from "@/components/billing/secure-footer";
+import { BillingHeader } from "./_components/billing/billing-header";
+import { CurrentPlanBanner } from "./_components/billing/current-plan-banner";
+import { FeedbackBanner } from "./_components/billing/feedback-banner";
+import { PlanCard } from "./_components/billing/plan-card";
+import { SecureFooter } from "./_components/billing/secure-footer";
 
 export const Route = createFileRoute("/_user/billing")({
   component: BillingPage,

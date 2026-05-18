@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { EXPERTS } from "@/constants/experts";
-import { ExpertCard } from "@/components/experts/ExpertCard";
+import { ExpertCard } from "./_components/ExpertCard";
 
 export const Route = createFileRoute("/experts")({
   component: ExpertsPage,
