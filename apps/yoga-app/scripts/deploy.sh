@@ -4,11 +4,20 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 APP_DIR="$ROOT_DIR/apps/yoga-app"
 
-# Load environment variables from app-specific .env if it exists
+# Load environment variables — app-specific .env takes precedence over root .env
+ENV_FILE=""
 if [ -f "$APP_DIR/.env" ]; then
-  echo "==> Loading environment variables from $APP_DIR/.env"
-  # Export variables from the local .env file
-  export $(grep -v '^#' "$APP_DIR/.env" | xargs)
+  ENV_FILE="$APP_DIR/.env"
+elif [ -f "$ROOT_DIR/.env" ]; then
+  ENV_FILE="$ROOT_DIR/.env"
+fi
+
+if [ -n "$ENV_FILE" ]; then
+  echo "==> Loading environment variables from $ENV_FILE"
+  set -a
+  # Strip leading/trailing whitespace around keys and skip comments/blanks
+  source <(grep -v '^\s*#' "$ENV_FILE" | grep -v '^\s*$' | sed 's/^[[:space:]]*//; s/[[:space:]]*=/=/')
+  set +a
 fi
 
 cd "$APP_DIR"
