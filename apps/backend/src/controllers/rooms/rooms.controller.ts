@@ -220,6 +220,16 @@ export class RoomsController {
         endUtc: new Date(body.endUtc),
       });
 
+      // Fire-and-forget: notify both student and instructor
+      sendBookingConfirmationEmails({
+        userId: user.id,
+        userName: user.name,
+        userEmail: user.email,
+        roomId: result.roomId,
+      }).catch((err: unknown) =>
+        request.log.error({ err }, "private booking email failed"),
+      );
+
       const { statusCode, payload } = successResponse({
         message: "Private session booked",
         data: result,

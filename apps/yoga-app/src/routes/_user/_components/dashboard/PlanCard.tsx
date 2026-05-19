@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Flame } from "lucide-react";
+import { Flame, VideoIcon } from "lucide-react";
 import type { PlanRecord } from "@yoga-app/shared";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,12 @@ interface PlanCardProps {
   plan: PlanRecord | null;
   sessionsUsed: number;
   sessionLimit: number | null;
+  onBookPrivate?: () => void;
 }
 
-export function PlanCard({ plan, sessionsUsed, sessionLimit }: PlanCardProps) {
+export function PlanCard({ plan, sessionsUsed, sessionLimit, onBookPrivate }: PlanCardProps) {
   const planLabel = plan ? plan.name.replace(/_/g, " ") : "Free trial";
+  const canBookPrivate = plan?.allowsPrivate === true;
 
   return (
     <Card className="border-none shadow-lg bg-linear-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden relative rounded-3xl">
@@ -31,6 +33,16 @@ export function PlanCard({ plan, sessionsUsed, sessionLimit }: PlanCardProps) {
               : `${sessionsUsed} of ${sessionLimit} sessions used this week.`
             : "You're on a free trial — upgrade for full access."}
         </p>
+
+        {canBookPrivate && (
+          <Button
+            onClick={onBookPrivate}
+            className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-xl font-bold py-5"
+          >
+            <VideoIcon className="size-4 mr-2" />
+            Book Private 1:1
+          </Button>
+        )}
 
         <Button
           asChild

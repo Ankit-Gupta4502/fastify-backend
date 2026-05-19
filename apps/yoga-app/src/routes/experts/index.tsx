@@ -8,7 +8,7 @@ export const Route = createFileRoute("/experts/")({
 });
 
 function ExpertsPage() {
-  const { data, isLoading } = useInstructors({ status: "available" });
+  const { data, isLoading } = useInstructors();
   const instructors = data?.data ?? [];
 
   return (
@@ -35,7 +35,7 @@ function ExpertsPage() {
             ))}
         {!isLoading && instructors.length === 0 && (
           <p className="text-muted-foreground col-span-3 text-center py-12">
-            No instructors available right now. Check back soon.
+            No instructors yet. Check back soon.
           </p>
         )}
       </div>

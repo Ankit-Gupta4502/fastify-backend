@@ -3,6 +3,7 @@ import type { AppDatabase } from "../types/database.types";
 import { user, plans, rooms, instructorDetails } from "../schema/schema";
 import { createHmsRoom } from "./hms.service";
 import { ROOM_STATUS, ROOM_TYPE } from "../constants/sessions";
+import { notifyEligibleGroupUsers } from "./room-notification.service";
 
 export async function listUsers(db: AppDatabase) {
   const rows = await db
@@ -56,7 +57,7 @@ export async function approveInstructor(
     .update(instructorDetails)
     .set({ isApproved: approve })
     .where(eq(instructorDetails.userId, instructorId))
-    .returning({ userId: instructorDetails.userId });
+    .returning();
 
   return updated ?? null;
 }
@@ -94,6 +95,11 @@ export async function createGroupRoom(
     capacity: number;
   },
 ) {
+  const [instructor] = await db
+    .select({ name: user.name })
+    .from(user)
+    .where(eq(user.id, params.instructorId));
+
   const hms = await createHmsRoom(false);
 
   const [inserted] = await db
@@ -109,6 +115,13 @@ export async function createGroupRoom(
       hmsRoomCode: hms.hmsRoomCode,
     })
     .returning();
+
+  // Fire-and-forget: notify eligible group-plan users about the new class
+  notifyEligibleGroupUsers(db, inserted.id, {
+    scheduledStart: params.scheduledStartUtc,
+    instructorId: params.instructorId,
+    instructorName: instructor?.name ?? "your instructor",
+  }).catch((err) => console.error("group room notification failed", err));
 
   return { roomId: inserted.id };
 }

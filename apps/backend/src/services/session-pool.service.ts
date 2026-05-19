@@ -13,6 +13,8 @@ import {
   ROOM_STATUS,
   ROOM_TYPE,
 } from "../constants/sessions";
+
+const MIN_ADVANCE_MS = 2 * 60 * 60 * 1000; // 2 hours
 import { formatForAudience } from "./timezone.service";
 
 export class SessionPoolError extends Error {
@@ -239,7 +241,48 @@ export async function bookPrivateSession(
   params: BookPrivateParams,
 ): Promise<{ roomId: string }> {
   return db.transaction(async (trx) => {
-    // Reject overlapping bookings for this instructor
+    // 1. Enforce 2-hour advance booking window
+    if (params.startUtc.getTime() - Date.now() < MIN_ADVANCE_MS) {
+      throw new SessionPoolError(
+        "TOO_SOON",
+        "Sessions must be scheduled at least 2 hours in advance.",
+        422,
+      );
+    }
+
+    // 2. Verify user has a plan that allows private sessions
+    const [userPlan] = await trx
+      .select({ allowsPrivate: plans.allowsPrivate })
+      .from(user)
+      .leftJoin(plans, eq(user.planId, plans.id))
+      .where(eq(user.id, params.userId));
+
+    if (!userPlan) {
+      throw new SessionPoolError("USER_NOT_FOUND", "User not found", 404);
+    }
+    if (!userPlan.allowsPrivate) {
+      throw new SessionPoolError(
+        "PLAN_NOT_ALLOWED",
+        "Your plan does not include private 1:1 sessions. Please upgrade to a premium plan.",
+        403,
+      );
+    }
+
+    // 3. Verify instructor is approved (status is not tracked in real-time)
+    const [instructor] = await trx
+      .select({ isApproved: instructorDetails.isApproved })
+      .from(instructorDetails)
+      .where(eq(instructorDetails.userId, params.instructorId));
+
+    if (!instructor?.isApproved) {
+      throw new SessionPoolError(
+        "INSTRUCTOR_NOT_FOUND",
+        "Instructor not found or not available for booking",
+        404,
+      );
+    }
+
+    // 4. Reject overlapping bookings for this instructor at the requested time
     const conflict = await trx.execute(sql`
       SELECT 1 FROM "rooms"
       WHERE "instructor_id" = ${params.instructorId}
@@ -253,12 +296,13 @@ export async function bookPrivateSession(
       (conflict as unknown as unknown[]);
     if ((conflictRows as unknown[]).length > 0) {
       throw new SessionPoolError(
-        "INSTRUCTOR_UNAVAILABLE",
-        "Instructor is not available in the requested window",
+        "INSTRUCTOR_BUSY",
+        "Instructor already has a session in this time window",
         409,
       );
     }
 
+    // 4. Create the private room
     const inserted = await trx
       .insert(rooms)
       .values({
@@ -272,6 +316,7 @@ export async function bookPrivateSession(
       .returning();
     const created = inserted[0];
 
+    // 5. Record the user booking
     await trx.insert(roomUsers).values({
       roomId: created.id,
       userId: params.userId,

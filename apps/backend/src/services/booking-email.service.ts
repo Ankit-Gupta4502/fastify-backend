@@ -36,6 +36,11 @@ export async function sendBookingConfirmationEmails(
   const instructorTime = formatForInstructor(row.scheduledStart);
   const sessionType = row.type === "private" ? "Private 1:1" : "Group";
 
+  const instructorSubject =
+    row.type === "private"
+      ? `New private 1:1 session booked with you — ${APP_NAME}`
+      : `New participant joined your session — ${APP_NAME}`;
+
   await Promise.allSettled([
     EmailService.sendEmail({
       to: params.userEmail,
@@ -50,7 +55,7 @@ export async function sendBookingConfirmationEmails(
     }),
     EmailService.sendEmail({
       to: row.instructorEmail,
-      subject: `New participant joined your session — ${APP_NAME}`,
+      subject: instructorSubject,
       html: instructorNotificationHtml({
         instructorName: row.instructorName,
         studentName: params.userName,

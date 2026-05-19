@@ -6,6 +6,7 @@ import { StatCard } from "@/components/shared/StatCard";
 import { NextFlowCard } from "./_components/dashboard/NextFlowCard";
 import { PlanCard } from "./_components/dashboard/PlanCard";
 import { UpcomingSessionList } from "./_components/dashboard/UpcomingSessionList";
+import { BookPrivateSessionDialog } from "./_components/dashboard/BookPrivateSessionDialog";
 import { useUpcomingRooms, useJoinRoom } from "@/hooks/use-rooms";
 import { useMyPlan } from "@/hooks/use-plans";
 import { userTimezone } from "@/lib/timezone";
@@ -23,6 +24,7 @@ function UserDashboard() {
   const join = useJoinRoom();
   const [joinError, setJoinError] = useState<string | null>(null);
   const [joiningId, setJoiningId] = useState<string | null>(null);
+  const [bookPrivateOpen, setBookPrivateOpen] = useState(false);
 
   const rooms = upcoming.data?.data ?? [];
   const planRow = myPlan.data?.data;
@@ -110,7 +112,12 @@ function UserDashboard() {
           joinPending={join.isPending}
           onJoin={handleJoin}
         />
-        <PlanCard plan={plan} sessionsUsed={used} sessionLimit={limit} />
+        <PlanCard
+          plan={plan}
+          sessionsUsed={used}
+          sessionLimit={limit}
+          onBookPrivate={() => setBookPrivateOpen(true)}
+        />
       </div>
 
       {/* Rest of upcoming rooms */}
@@ -121,6 +128,11 @@ function UserDashboard() {
         joiningId={joiningId}
         joinPending={join.isPending}
         onJoin={handleJoin}
+      />
+
+      <BookPrivateSessionDialog
+        open={bookPrivateOpen}
+        onOpenChange={setBookPrivateOpen}
       />
     </div>
   );
