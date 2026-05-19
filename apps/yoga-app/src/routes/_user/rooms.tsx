@@ -1,30 +1,18 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Sparkles, RefreshCw, Search, Users, Clock, ChevronUp, ChevronDown } from "lucide-react";
+import { Sparkles, RefreshCw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useUpcomingRooms, useEnrolRoom, useJoinRoom } from "@/hooks/use-rooms";
-import { formatCompact, relativeFromNow, userTimezone } from "@/lib/timezone";
-import type { UpcomingRoom } from "@yoga-app/shared";
+import { userTimezone } from "@/lib/timezone";
+import { SortTh, type SortKey, type SortDir } from "./_components/rooms/SortTh";
+import { SessionRow } from "./_components/rooms/SessionRow";
+import { SkeletonRow } from "./_components/rooms/SkeletonRow";
 
 export const Route = createFileRoute("/_user/rooms")({
   component: RoomsPage,
 });
-
-type SortKey = "time" | "instructor" | "spots";
-type SortDir = "asc" | "desc";
-
-const LIVE_JOIN_WINDOW_MS = 15 * 60 * 1000;
-
-function canJoinLive(room: UpcomingRoom): boolean {
-  const now = Date.now();
-  const start = new Date(room.scheduledStartUtc).getTime();
-  const end = new Date(room.scheduledEndUtc).getTime();
-  return now >= start - LIVE_JOIN_WINDOW_MS && now < end;
-}
 
 function RoomsPage() {
   const router = useRouter();
@@ -178,136 +166,5 @@ function RoomsPage() {
         )}
       </div>
     </div>
-  );
-}
-
-/* ─── Sub-components ──────────────────────────────────────────────────────── */
-
-interface SortThProps {
-  label: string;
-  sortKey: SortKey;
-  current: SortKey;
-  dir: SortDir;
-  onSort: (k: SortKey) => void;
-}
-
-function SortTh({ label, sortKey, current, dir, onSort }: SortThProps) {
-  const active = current === sortKey;
-  return (
-    <th
-      className="px-4 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider cursor-pointer select-none hover:text-foreground transition-colors"
-      onClick={() => onSort(sortKey)}
-    >
-      <span className="inline-flex items-center gap-1">
-        {label}
-        <span className={cn("transition-opacity", active ? "opacity-100" : "opacity-0")}>
-          {active && dir === "asc" ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
-        </span>
-      </span>
-    </th>
-  );
-}
-
-interface SessionRowProps {
-  room: UpcomingRoom;
-  tz: string;
-  acting: boolean;
-  onEnrol: (id: string) => void;
-  onJoinLive: (id: string) => void;
-}
-
-function SessionRow({ room, tz, acting, onEnrol, onJoinLive }: SessionRowProps) {
-  const full = room.spotsLeft <= 0 || room.status === "full";
-  const live = canJoinLive(room);
-  const isActive = room.status === "active";
-
-  return (
-    <tr className="border-b border-border/40 last:border-0 hover:bg-secondary/20 transition-colors group">
-      <td className="px-4 py-3.5 whitespace-nowrap">
-        <div className="space-y-0.5">
-          <div className="font-medium text-foreground">{formatCompact(room.scheduledStartUtc, tz)}</div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Clock className="size-3" />
-            {relativeFromNow(room.scheduledStartUtc)}
-          </div>
-        </div>
-      </td>
-
-      <td className="px-4 py-3.5 font-semibold whitespace-nowrap">{room.instructor.name}</td>
-
-      <td className="px-4 py-3.5">
-        <div className="flex flex-wrap gap-1">
-          {room.instructor.specialty.slice(0, 3).map((s) => (
-            <Badge key={s} className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
-              {s}
-            </Badge>
-          ))}
-        </div>
-      </td>
-
-      <td className="px-4 py-3.5 whitespace-nowrap">
-        <div className="flex items-center gap-1.5 text-muted-foreground">
-          <Users className="size-3.5" />
-          <span className="text-foreground font-medium">{room.spotsLeft}</span>
-          <span className="text-xs">/ {room.capacity}</span>
-        </div>
-      </td>
-
-      <td className="px-4 py-3.5">
-        <span className={cn(
-          "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full",
-          isActive ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-            : full ? "bg-secondary text-muted-foreground"
-            : room.isEnrolled ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-            : "bg-primary/10 text-primary",
-        )}>
-          <span className={cn(
-            "size-1.5 rounded-full",
-            isActive ? "bg-emerald-500 animate-pulse"
-              : full ? "bg-muted-foreground/40"
-              : room.isEnrolled ? "bg-blue-500"
-              : "bg-primary/40",
-          )} />
-          {isActive ? "Live" : full ? "Full" : room.isEnrolled ? "Enrolled" : "Upcoming"}
-        </span>
-      </td>
-
-      <td className="px-4 py-3.5 text-right">
-        {room.isEnrolled ? (
-          <Button
-            size="sm"
-            disabled={!live || acting}
-            onClick={() => onJoinLive(room.id)}
-            className={cn(
-              "rounded-full px-5 font-bold",
-              live
-                ? "opacity-100 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md"
-                : "opacity-60 group-hover:opacity-80",
-            )}
-          >
-            {acting ? "Joining…" : live ? "Join Live" : "Enrolled ✓"}
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            disabled={full || acting}
-            onClick={() => onEnrol(room.id)}
-            className="rounded-full px-5 font-bold opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            {acting ? "Reserving…" : full ? "Full" : "Reserve"}
-          </Button>
-        )}
-      </td>
-    </tr>
-  );
-}
-
-function SkeletonRow() {
-  return (
-    <tr className="border-b border-border/40">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <td key={i} className="px-4 py-4"><Skeleton className="h-4 w-full rounded-lg" /></td>
-      ))}
-    </tr>
   );
 }

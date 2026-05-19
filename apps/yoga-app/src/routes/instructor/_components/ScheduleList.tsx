@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { Activity } from "lucide-react";
 import type { InstructorScheduleRoom } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
@@ -10,9 +9,11 @@ import { INSTRUCTOR_IANA, INSTRUCTOR_TIMEZONE_LABEL } from "@/constants/sessions
 interface ScheduleListProps {
   rooms: InstructorScheduleRoom[];
   isLoading: boolean;
+  joiningId: string | null;
+  onJoin: (roomId: string) => void;
 }
 
-export function ScheduleList({ rooms, isLoading }: ScheduleListProps) {
+export function ScheduleList({ rooms, isLoading, joiningId, onJoin }: ScheduleListProps) {
   return (
     <div className="space-y-5">
       <div className="flex items-baseline justify-between">
@@ -61,18 +62,24 @@ export function ScheduleList({ rooms, isLoading }: ScheduleListProps) {
               </div>
 
               <Button
-                asChild
                 size="sm"
-                variant={room.status === "active" ? "default" : "outline"}
-                className="rounded-full shrink-0"
+                variant={room.canJoinLive ? "default" : "outline"}
+                disabled={!room.canJoinLive || joiningId === room.id}
+                className={cn(
+                  "rounded-full shrink-0",
+                  room.canJoinLive && room.status === "active"
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    : "",
+                )}
+                onClick={() => room.canJoinLive && onJoin(room.id)}
               >
-                <Link
-                  to="/session/$roomId"
-                  params={{ roomId: room.id }}
-                  search={{ code: undefined }}
-                >
-                  {room.status === "active" ? "Rejoin" : "Open"}
-                </Link>
+                {joiningId === room.id
+                  ? "Opening…"
+                  : room.status === "active"
+                  ? "Rejoin"
+                  : room.canJoinLive
+                  ? "Open"
+                  : "Upcoming"}
               </Button>
             </div>
           ))}

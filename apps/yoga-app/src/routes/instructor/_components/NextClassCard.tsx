@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { Sparkles, TrendingUp } from "lucide-react";
 import type { InstructorScheduleRoom } from "@yoga-app/shared";
 import {
@@ -11,15 +10,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { formatCompact, relativeFromNow } from "@/lib/timezone";
 import { INSTRUCTOR_IANA, INSTRUCTOR_TIMEZONE_LABEL } from "@/constants/sessions";
 
 interface NextClassCardProps {
   room: InstructorScheduleRoom | undefined;
   isLoading: boolean;
+  joiningId: string | null;
+  onJoin: (roomId: string) => void;
 }
 
-export function NextClassCard({ room, isLoading }: NextClassCardProps) {
+export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassCardProps) {
   return (
     <Card className="border-none shadow-sm bg-card/50 rounded-3xl overflow-hidden">
       <CardHeader className="pb-2">
@@ -70,15 +72,28 @@ export function NextClassCard({ room, isLoading }: NextClassCardProps) {
               </div>
             </div>
 
-            <Button
-              asChild
-              size="lg"
-              className="rounded-full px-8 font-bold shadow-lg shadow-primary/20 shrink-0"
-            >
-              <Link to="/session/$roomId" params={{ roomId: room.id }} search={{ code: undefined }}>
-                Open studio
-              </Link>
-            </Button>
+            {room.canJoinLive ? (
+              <Button
+                size="lg"
+                disabled={joiningId === room.id}
+                onClick={() => onJoin(room.id)}
+                className={cn(
+                  "rounded-full px-8 font-bold shrink-0",
+                  "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20",
+                )}
+              >
+                {joiningId === room.id ? "Opening…" : room.status === "active" ? "Rejoin Studio" : "Open Studio"}
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                variant="outline"
+                disabled
+                className="rounded-full px-8 font-bold shrink-0 opacity-60"
+              >
+                {formatCompact(room.scheduledStartUtc, INSTRUCTOR_IANA)}
+              </Button>
+            )}
           </div>
         )}
       </CardContent>

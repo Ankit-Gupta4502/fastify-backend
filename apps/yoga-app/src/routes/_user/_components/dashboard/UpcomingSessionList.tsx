@@ -6,14 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatCompact } from "@/lib/timezone";
 
-const LIVE_JOIN_WINDOW_MS = 15 * 60 * 1000;
-
-function canJoinLive(room: UpcomingRoom): boolean {
-  const now = Date.now();
-  const start = new Date(room.scheduledStartUtc).getTime();
-  const end = new Date(room.scheduledEndUtc).getTime();
-  return now >= start - LIVE_JOIN_WINDOW_MS && now < end;
-}
 
 interface UpcomingSessionListProps {
   rooms: UpcomingRoom[];
@@ -51,7 +43,7 @@ export function UpcomingSessionList({
         <div className="space-y-3">
           {rooms.map((room) => {
             const full = room.spotsLeft <= 0 || room.status === "full";
-            const live = canJoinLive(room);
+            const live = room.canJoinLive;
             const acting = actingId === room.id;
 
             return (

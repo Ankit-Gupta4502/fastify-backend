@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { canJoinLive, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { formatCompact, relativeFromNow } from "@/lib/timezone";
 
 
@@ -93,16 +93,16 @@ export function NextFlowCard({
             {room.isEnrolled ? (
               <Button
                 size="lg"
-                disabled={!canJoinLive(room) || actingId === room.id}
+                disabled={!room.canJoinLive || actingId === room.id}
                 onClick={() => onJoinLive(room.id)}
                 className={cn(
                   "rounded-full px-8 font-bold shrink-0",
-                  canJoinLive(room)
+                  room.canJoinLive
                     ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20"
                     : "shadow-none",
                 )}
               >
-                {actingId === room.id ? "Joining…" : canJoinLive(room) ? "Join Live" : "Enrolled ✓"}
+                {actingId === room.id ? "Joining…" : room.canJoinLive ? "Join Live" : "Enrolled ✓"}
               </Button>
             ) : (
               <Button

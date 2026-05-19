@@ -1,11 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
 import { Activity, CalendarDays, Clock, Users, UserCircle } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/shared/StatCard";
 import { NextClassCard } from "./_components/NextClassCard";
 import { ScheduleList } from "./_components/ScheduleList";
-import { useInstructorSchedule } from "@/hooks/use-rooms";
+import { useInstructorSchedule, useJoinRoom } from "@/hooks/use-rooms";
 import { INSTRUCTOR_IANA, INSTRUCTOR_TIMEZONE_LABEL } from "@/constants/sessions";
 
 export const Route = createFileRoute("/instructor/dashboard")({
@@ -14,13 +15,33 @@ export const Route = createFileRoute("/instructor/dashboard")({
 
 function InstructorDashboard() {
   const { user } = useAuthStore();
+  const router = useRouter();
   const schedule = useInstructorSchedule();
+  const join = useJoinRoom();
   const rooms = schedule.data?.data ?? [];
+
+  const [joiningId, setJoiningId] = useState<string | null>(null);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   const total = rooms.length;
   const live = rooms.filter((r) => r.status === "active").length;
   const seats = rooms.reduce((sum, r) => sum + r.currentOccupancy, 0);
   const nextRoom = rooms.find((r) => r.status !== "active") ?? rooms[0];
+
+  const handleJoin = (roomId: string) => {
+    setJoinError(null);
+    setJoiningId(roomId);
+    join.mutate(roomId, {
+      onSuccess: (result) => {
+        const code = result.data?.hmsRoomCode ?? undefined;
+        router.navigate({ to: "/session/$roomId", params: { roomId }, search: { code } });
+      },
+      onError: (err) => {
+        setJoinError(err instanceof Error ? err.message : "Could not open studio");
+        setJoiningId(null);
+      },
+    });
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 pb-12">
@@ -88,9 +109,15 @@ function InstructorDashboard() {
         />
       </div>
 
-      <NextClassCard room={nextRoom} isLoading={schedule.isLoading} />
+      {joinError && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/5 text-destructive px-4 py-3 text-sm">
+          {joinError}
+        </div>
+      )}
 
-      <ScheduleList rooms={rooms} isLoading={schedule.isLoading} />
+      <NextClassCard room={nextRoom} isLoading={schedule.isLoading} joiningId={joiningId} onJoin={handleJoin} />
+
+      <ScheduleList rooms={rooms} isLoading={schedule.isLoading} joiningId={joiningId} onJoin={handleJoin} />
     </div>
   );
 }

@@ -88,22 +88,30 @@ export async function listUpcomingGroupRooms(
     .orderBy(rooms.scheduledStart)
     .limit(20);
 
-  return rows.map((r) => ({
-    id: r.id,
-    status: r.status,
-    capacity: r.capacity,
-    currentOccupancy: r.currentOccupancy,
-    spotsLeft: r.capacity - r.currentOccupancy,
-    scheduledStartUtc: r.scheduledStartUtc,
-    scheduledEndUtc: r.scheduledEndUtc,
-    scheduledStart: formatForAudience(r.scheduledStartUtc, audience),
-    isEnrolled: r.enrolledUserId !== null,
-    instructor: {
-      id: r.instructorId,
-      name: r.instructorName,
-      specialty: r.specialty ?? [],
-    },
-  }));
+  const serverNow = Date.now();
+
+  return rows.map((r) => {
+    const canJoinFrom = r.scheduledStartUtc.getTime() - LIVE_JOIN_WINDOW_MS;
+    const canJoinLive = serverNow >= canJoinFrom && serverNow < r.scheduledEndUtc.getTime();
+
+    return {
+      id: r.id,
+      status: r.status,
+      capacity: r.capacity,
+      currentOccupancy: r.currentOccupancy,
+      spotsLeft: r.capacity - r.currentOccupancy,
+      scheduledStartUtc: r.scheduledStartUtc,
+      scheduledEndUtc: r.scheduledEndUtc,
+      scheduledStart: formatForAudience(r.scheduledStartUtc, audience),
+      isEnrolled: r.enrolledUserId !== null,
+      canJoinLive,
+      instructor: {
+        id: r.instructorId,
+        name: r.instructorName,
+        specialty: r.specialty ?? [],
+      },
+    };
+  });
 }
 
 // ─── Enrol (reserve spot) ─────────────────────────────────────────────────────

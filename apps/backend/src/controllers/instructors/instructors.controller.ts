@@ -5,6 +5,8 @@ import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { requireRole } from "../../middleware/role.middleware";
 import { USER_ROLES } from "../../constants/roles";
 import { ROOM_STATUS } from "../../constants/sessions";
+
+const LIVE_JOIN_WINDOW_MS = 15 * 60 * 1000;
 import { drizzle } from "../../db";
 import { instructorDetails, rooms, user } from "../../schema/schema";
 import { formatForInstructor } from "../../services/timezone.service";
@@ -161,11 +163,17 @@ export class InstructorsController {
       )
       .orderBy(rooms.scheduledStart);
 
-    const data = rows.map((r) => ({
-      ...r,
-      scheduledStart: formatForInstructor(r.scheduledStartUtc),
-      scheduledEnd: formatForInstructor(r.scheduledEndUtc),
-    }));
+    const serverNow = Date.now();
+    const data = rows.map((r) => {
+      const canJoinFrom = r.scheduledStartUtc.getTime() - LIVE_JOIN_WINDOW_MS;
+      const canJoinLive = serverNow >= canJoinFrom && serverNow < r.scheduledEndUtc.getTime();
+      return {
+        ...r,
+        scheduledStart: formatForInstructor(r.scheduledStartUtc),
+        scheduledEnd: formatForInstructor(r.scheduledEndUtc),
+        canJoinLive,
+      };
+    });
 
     const { statusCode, payload } = successResponse({
       message: "Your upcoming schedule (IST)",
