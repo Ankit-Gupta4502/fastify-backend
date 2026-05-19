@@ -30,13 +30,23 @@ export function useInstructorSchedule() {
   return useQuery(roomQueryOptions.mySchedule());
 }
 
+export function useEnrolRoom() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (roomId: string) => roomsApi.enrol(roomId),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.rooms.all });
+      void qc.invalidateQueries({ queryKey: queryKeys.plans.mine() });
+    },
+  });
+}
+
 export function useJoinRoom() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (roomId: string) => roomsApi.join(roomId),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.rooms.all });
-      void qc.invalidateQueries({ queryKey: queryKeys.plans.mine() });
     },
   });
 }

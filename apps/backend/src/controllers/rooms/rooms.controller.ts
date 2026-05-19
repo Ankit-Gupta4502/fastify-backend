@@ -7,12 +7,12 @@ import { DEFAULT_USER_TIMEZONE } from "../../constants/sessions";
 import { drizzle } from "../../db";
 import {
   bookPrivateSession,
-  joinRoom,
+  enrollRoom,
+  enterLiveRoom,
   leaveRoom,
   listUpcomingGroupRooms,
   SessionPoolError,
 } from "../../services/session-pool.service";
-import { generateClientToken } from "../../services/hms.service";
 import {
   privateBookingBodySchema,
   roomIdParamsSchema,
@@ -42,6 +42,18 @@ export class RoomsController {
         );
 
         router.post(
+          "/:id/enrol",
+          {
+            preHandler: [
+              this.authMiddleware.handle,
+              requireRole(USER_ROLES.USER, USER_ROLES.INSTRUCTOR, USER_ROLES.ADMIN),
+            ],
+            schema: roomsSwaggerSchemas.enrol,
+          },
+          this.enrolRoom,
+        );
+
+        router.post(
           "/:id/join",
           {
             preHandler: [
@@ -50,7 +62,7 @@ export class RoomsController {
             ],
             schema: roomsSwaggerSchemas.join,
           },
-          this.joinGroupRoom,
+          this.joinLive,
         );
 
         router.post(
@@ -59,7 +71,7 @@ export class RoomsController {
             preHandler: this.authMiddleware.handle,
             schema: roomsSwaggerSchemas.leave,
           },
-          this.leaveGroupRoom,
+          this.leaveRoom,
         );
 
         router.post(
@@ -82,76 +94,79 @@ export class RoomsController {
     request: FastifyRequest,
     reply: FastifyReply,
   ) => {
-    const user = request.user;
-    if (!user) {
-      const { statusCode, payload } = errorResponse({
-        message: "Unauthorized",
-        statusCode: 401,
-      });
+    const me = request.user;
+    if (!me) {
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
       return reply.status(statusCode).send(payload);
     }
 
-    const timezone =
-      (user as { timezone?: string }).timezone || DEFAULT_USER_TIMEZONE;
+    const timezone = (me as { timezone?: string }).timezone || DEFAULT_USER_TIMEZONE;
     const data = await listUpcomingGroupRooms(drizzle, {
-      role: user.role,
+      role: me.role,
       timezone,
+      userId: me.id,
     });
 
-    const { statusCode, payload } = successResponse({
-      message: "Upcoming group rooms",
-      data,
-    });
+    const { statusCode, payload } = successResponse({ message: "Upcoming group rooms", data });
     return reply.status(statusCode).send(payload);
   };
 
-  private joinGroupRoom = async (
-    request: FastifyRequest,
-    reply: FastifyReply,
-  ) => {
-    const invalid = validateWithZod(request, reply, {
-      params: roomIdParamsSchema,
-    });
+  private enrolRoom = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { params: roomIdParamsSchema });
     if (invalid) return invalid;
 
-    const user = request.user;
-    if (!user) {
-      const { statusCode, payload } = errorResponse({
-        message: "Unauthorized",
-        statusCode: 401,
-      });
+    const me = request.user;
+    if (!me) {
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
       return reply.status(statusCode).send(payload);
     }
 
     const { id: roomId } = request.params as z.infer<typeof roomIdParamsSchema>;
 
     try {
-      const result = await joinRoom(drizzle, { userId: user.id, roomId });
+      const result = await enrollRoom(drizzle, { userId: me.id, roomId });
 
-      const clientToken = result.hmsRoomId
-        ? generateClientToken({
-            hmsRoomId: result.hmsRoomId,
-            userId: user.id,
-            audience: "user",
-          })
-        : null;
-
-      // Fire-and-forget: email failures must not block the join response
+      // Fire-and-forget confirmation email
       sendBookingConfirmationEmails({
-        userId: user.id,
-        userName: user.name,
-        userEmail: user.email,
+        userId: me.id,
+        userName: me.name,
+        userEmail: me.email,
         roomId,
       }).catch((err: unknown) =>
-        request.log.error({ err }, "booking email failed"),
+        request.log.error({ err }, "enrolment email failed"),
       );
+
+      const { statusCode, payload } = successResponse({
+        message: "Enrolled in session",
+        data: result,
+        statusCode: 201,
+      });
+      return reply.status(statusCode).send(payload);
+    } catch (err) {
+      return this.handleSessionPoolError(err, reply);
+    }
+  };
+
+  private joinLive = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { params: roomIdParamsSchema });
+    if (invalid) return invalid;
+
+    const me = request.user;
+    if (!me) {
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const { id: roomId } = request.params as z.infer<typeof roomIdParamsSchema>;
+
+    try {
+      const result = await enterLiveRoom(drizzle, { userId: me.id, roomId });
 
       const { statusCode, payload } = successResponse({
         message: "Joined room",
         data: {
           roomId: result.roomId,
-          hmsRoomId: result.hmsRoomId,
-          hmsClientToken: clientToken,
+          hmsRoomCode: result.hmsRoomCode,
         },
       });
       return reply.status(statusCode).send(payload);
@@ -160,53 +175,34 @@ export class RoomsController {
     }
   };
 
-  private leaveGroupRoom = async (
-    request: FastifyRequest,
-    reply: FastifyReply,
-  ) => {
-    const invalid = validateWithZod(request, reply, {
-      params: roomIdParamsSchema,
-    });
+  private leaveRoom = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { params: roomIdParamsSchema });
     if (invalid) return invalid;
 
-    const user = request.user;
-    if (!user) {
-      const { statusCode, payload } = errorResponse({
-        message: "Unauthorized",
-        statusCode: 401,
-      });
+    const me = request.user;
+    if (!me) {
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
       return reply.status(statusCode).send(payload);
     }
 
     const { id: roomId } = request.params as z.infer<typeof roomIdParamsSchema>;
 
     try {
-      const result = await leaveRoom(drizzle, { userId: user.id, roomId });
-      const { statusCode, payload } = successResponse({
-        message: "Left room",
-        data: result,
-      });
+      const result = await leaveRoom(drizzle, { userId: me.id, roomId });
+      const { statusCode, payload } = successResponse({ message: "Left session", data: result });
       return reply.status(statusCode).send(payload);
     } catch (err) {
       return this.handleSessionPoolError(err, reply);
     }
   };
 
-  private bookPrivate = async (
-    request: FastifyRequest,
-    reply: FastifyReply,
-  ) => {
-    const invalid = validateWithZod(request, reply, {
-      body: privateBookingBodySchema,
-    });
+  private bookPrivate = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: privateBookingBodySchema });
     if (invalid) return invalid;
 
-    const user = request.user;
-    if (!user) {
-      const { statusCode, payload } = errorResponse({
-        message: "Unauthorized",
-        statusCode: 401,
-      });
+    const me = request.user;
+    if (!me) {
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
       return reply.status(statusCode).send(payload);
     }
 
@@ -214,17 +210,16 @@ export class RoomsController {
 
     try {
       const result = await bookPrivateSession(drizzle, {
-        userId: user.id,
+        userId: me.id,
         instructorId: body.instructorId,
         startUtc: new Date(body.startUtc),
         endUtc: new Date(body.endUtc),
       });
 
-      // Fire-and-forget: notify both student and instructor
       sendBookingConfirmationEmails({
-        userId: user.id,
-        userName: user.name,
-        userEmail: user.email,
+        userId: me.id,
+        userName: me.name,
+        userEmail: me.email,
         roomId: result.roomId,
       }).catch((err: unknown) =>
         request.log.error({ err }, "private booking email failed"),

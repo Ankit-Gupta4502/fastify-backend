@@ -5,7 +5,6 @@ import {
   plans,
   roomUsers,
   rooms,
-  sessionQuotaLog,
   user,
 } from "../schema/schema";
 import {
@@ -13,9 +12,10 @@ import {
   ROOM_STATUS,
   ROOM_TYPE,
 } from "../constants/sessions";
-
-const MIN_ADVANCE_MS = 2 * 60 * 60 * 1000; // 2 hours
 import { formatForAudience } from "./timezone.service";
+
+const MIN_ADVANCE_MS = 2 * 60 * 60 * 1000;   // private booking: 2 h before
+const LIVE_JOIN_WINDOW_MS = 15 * 60 * 1000;   // can enter live room 15 min before start
 
 export class SessionPoolError extends Error {
   statusCode: number;
@@ -27,6 +27,8 @@ export class SessionPoolError extends Error {
   }
 }
 
+// ─── List upcoming group rooms ────────────────────────────────────────────────
+
 export type UpcomingRoom = {
   id: string;
   status: string;
@@ -35,6 +37,8 @@ export type UpcomingRoom = {
   spotsLeft: number;
   scheduledStart: string;
   scheduledStartUtc: Date;
+  scheduledEndUtc: Date;
+  isEnrolled: boolean;
   instructor: {
     id: string;
     name: string;
@@ -44,7 +48,7 @@ export type UpcomingRoom = {
 
 export async function listUpcomingGroupRooms(
   db: AppDatabase,
-  audience: { role: string; timezone: string },
+  audience: { role: string; timezone: string; userId?: string },
 ): Promise<UpcomingRoom[]> {
   const rows = await db
     .select({
@@ -53,18 +57,32 @@ export async function listUpcomingGroupRooms(
       capacity: rooms.capacity,
       currentOccupancy: rooms.currentOccupancy,
       scheduledStartUtc: rooms.scheduledStart,
+      scheduledEndUtc: rooms.scheduledEnd,
       instructorId: user.id,
       instructorName: user.name,
       specialty: instructorDetails.specialty,
+      enrolledUserId: roomUsers.userId,
     })
     .from(rooms)
     .innerJoin(user, eq(rooms.instructorId, user.id))
     .leftJoin(instructorDetails, eq(instructorDetails.userId, user.id))
+    .leftJoin(
+      roomUsers,
+      and(
+        eq(roomUsers.roomId, rooms.id),
+        audience.userId
+          ? eq(roomUsers.userId, audience.userId)
+          : sql`false`,
+        sql`${roomUsers.leftAt} IS NULL`,
+      ),
+    )
     .where(
       and(
         eq(rooms.type, ROOM_TYPE.GROUP),
-        inArray(rooms.status, [ROOM_STATUS.IDLE, ROOM_STATUS.ACTIVE]),
-        gt(rooms.scheduledStart, new Date()),
+        // include idle, active, and full — full rooms still shown to enrolled users
+        inArray(rooms.status, [ROOM_STATUS.IDLE, ROOM_STATUS.ACTIVE, ROOM_STATUS.FULL]),
+        // show until the session ends, not just until it starts
+        gt(rooms.scheduledEnd, new Date()),
       ),
     )
     .orderBy(rooms.scheduledStart)
@@ -77,7 +95,9 @@ export async function listUpcomingGroupRooms(
     currentOccupancy: r.currentOccupancy,
     spotsLeft: r.capacity - r.currentOccupancy,
     scheduledStartUtc: r.scheduledStartUtc,
+    scheduledEndUtc: r.scheduledEndUtc,
     scheduledStart: formatForAudience(r.scheduledStartUtc, audience),
+    isEnrolled: r.enrolledUserId !== null,
     instructor: {
       id: r.instructorId,
       name: r.instructorName,
@@ -86,15 +106,16 @@ export async function listUpcomingGroupRooms(
   }));
 }
 
-export type JoinRoomResult = {
+// ─── Enrol (reserve spot) ─────────────────────────────────────────────────────
+
+export type EnrolRoomResult = {
   roomId: string;
-  hmsRoomId: string | null;
 };
 
-export async function joinRoom(
+export async function enrollRoom(
   db: AppDatabase,
   params: { userId: string; roomId: string },
-): Promise<JoinRoomResult> {
+): Promise<EnrolRoomResult> {
   return db.transaction(async (trx) => {
     // 1. Quota check
     const [quota] = await trx
@@ -110,77 +131,179 @@ export async function joinRoom(
       throw new SessionPoolError("USER_NOT_FOUND", "User not found", 404);
     }
     if (quota.limit !== null && (quota.used ?? 0) >= quota.limit) {
-      throw new SessionPoolError(
-        "QUOTA_EXCEEDED",
-        "Weekly session quota exceeded",
-        429,
-      );
+      throw new SessionPoolError("QUOTA_EXCEEDED", "Weekly session quota exceeded", 429);
     }
 
-    // 2. Lock the room row (raw SQL — FOR UPDATE SKIP LOCKED isn't in Drizzle's QB)
+    // 2. Guard against double enrolment
+    const [existing] = await trx
+      .select({ id: roomUsers.id })
+      .from(roomUsers)
+      .where(
+        and(
+          eq(roomUsers.roomId, params.roomId),
+          eq(roomUsers.userId, params.userId),
+          sql`${roomUsers.leftAt} IS NULL`,
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      throw new SessionPoolError("ALREADY_ENROLLED", "Already enrolled in this session", 409);
+    }
+
+    // 3. Lock the room — reject if full, ended, or past scheduled end
     const locked = await trx.execute(sql`
-      SELECT "id", "status", "hms_room_id", "capacity", "current_occupancy"
+      SELECT "id", "capacity", "current_occupancy"
       FROM "rooms"
       WHERE "id" = ${params.roomId}
         AND "type" = ${ROOM_TYPE.GROUP}
         AND "status" IN (${ROOM_STATUS.IDLE}, ${ROOM_STATUS.ACTIVE})
         AND "current_occupancy" < "capacity"
+        AND "scheduled_end" > now()
       FOR UPDATE SKIP LOCKED
     `);
     const lockedRows =
       (locked as unknown as { rows?: unknown[] }).rows ??
       (locked as unknown as unknown[]);
-    const room = (lockedRows as Array<{
-      id: string;
-      status: string;
-      hms_room_id: string | null;
-      capacity: number;
-      current_occupancy: number;
-    }>)[0];
 
-    if (!room) {
+    if ((lockedRows as unknown[]).length === 0) {
       throw new SessionPoolError(
         "ROOM_UNAVAILABLE",
-        "Room is full or no longer joinable",
+        "Room is full, ended, or no longer accepting enrolments",
         409,
       );
     }
 
-    // 3. Bump occupancy; flip idle -> active
-    const nextStatus =
-      room.status === ROOM_STATUS.IDLE ? ROOM_STATUS.ACTIVE : room.status;
+    // 4. Reserve the spot (increment occupancy, no status change yet)
     await trx
       .update(rooms)
-      .set({
-        currentOccupancy: sql`${rooms.currentOccupancy} + 1`,
-        status: nextStatus,
-      })
+      .set({ currentOccupancy: sql`${rooms.currentOccupancy} + 1` })
       .where(eq(rooms.id, params.roomId));
 
-    // 4. Record the booking
+    // 5. Record the booking
     await trx.insert(roomUsers).values({
       roomId: params.roomId,
       userId: params.userId,
     });
 
-    // 5. Denormalised counter
+    // 6. Deduct from weekly quota
     await trx
       .update(user)
-      .set({
-        sessionsUsedThisWeek: sql`${user.sessionsUsedThisWeek} + 1`,
-      })
+      .set({ sessionsUsedThisWeek: sql`${user.sessionsUsedThisWeek} + 1` })
       .where(eq(user.id, params.userId));
 
-    // 6. Idempotent quota log
+    // 7. Idempotent quota log
     await trx.execute(sql`
       INSERT INTO "session_quota_log" ("user_id", "room_id", "week_start")
       VALUES (${params.userId}, ${params.roomId}, date_trunc('week', now())::date)
       ON CONFLICT ("user_id", "week_start", "room_id") DO NOTHING
     `);
 
-    return { roomId: params.roomId, hmsRoomId: room.hms_room_id };
+    return { roomId: params.roomId };
   });
 }
+
+// ─── Enter live room (requires prior enrolment + time window) ─────────────────
+
+export type EnterLiveResult = {
+  roomId: string;
+  hmsRoomCode: string | null;
+};
+
+export async function enterLiveRoom(
+  db: AppDatabase,
+  params: { userId: string; roomId: string },
+): Promise<EnterLiveResult> {
+  return db.transaction(async (trx) => {
+    // 1. Fetch room details and enforce time window
+    const [room] = await trx
+      .select({
+        status: rooms.status,
+        scheduledStart: rooms.scheduledStart,
+        scheduledEnd: rooms.scheduledEnd,
+        hmsRoomCode: rooms.hmsRoomCode,
+        instructorId: rooms.instructorId,
+      })
+      .from(rooms)
+      .where(eq(rooms.id, params.roomId));
+
+    if (!room) {
+      throw new SessionPoolError("ROOM_NOT_FOUND", "Room not found", 404);
+    }
+
+    const now = Date.now();
+    const canJoinFrom = room.scheduledStart.getTime() - LIVE_JOIN_WINDOW_MS;
+
+    if (now < canJoinFrom) {
+      const minsLeft = Math.ceil((canJoinFrom - now) / 60_000);
+      throw new SessionPoolError(
+        "TOO_EARLY",
+        `Session hasn't started yet. You can join ${minsLeft} minute${minsLeft !== 1 ? "s" : ""} before it begins.`,
+        422,
+      );
+    }
+
+    if (now > room.scheduledEnd.getTime()) {
+      throw new SessionPoolError("SESSION_ENDED", "This session has ended", 410);
+    }
+
+    // 2. Access check — instructors own their room; users must be enrolled
+    const isRoomInstructor = room.instructorId === params.userId;
+
+    if (!isRoomInstructor) {
+      // Accept active enrolment OR a dropped record (reconnect after disconnect/late join)
+      const [booking] = await trx
+        .select({ id: roomUsers.id, leftAt: roomUsers.leftAt })
+        .from(roomUsers)
+        .where(
+          and(
+            eq(roomUsers.roomId, params.roomId),
+            eq(roomUsers.userId, params.userId),
+          ),
+        )
+        .orderBy(sql`${roomUsers.leftAt} IS NULL DESC`)  // prefer the active record
+        .limit(1);
+
+      if (!booking) {
+        throw new SessionPoolError(
+          "NOT_ENROLLED",
+          "You must enrol in this session before joining",
+          403,
+        );
+      }
+
+      // Reconnect path: session has started and user's record was marked dropped on disconnect
+      if (booking.leftAt !== null) {
+        if (now < room.scheduledStart.getTime()) {
+          // Session hasn't started yet — don't accept a stale dropped record
+          throw new SessionPoolError(
+            "NOT_ENROLLED",
+            "You must enrol in this session before joining",
+            403,
+          );
+        }
+        // Restore the booking so isEnrolled continues to show correctly
+        await trx
+          .update(roomUsers)
+          .set({ leftAt: null, status: BOOKING_STATUS.ACTIVE })
+          .where(eq(roomUsers.id, booking.id));
+        // Occupancy is NOT incremented — the spot was never freed on a mid-session disconnect
+      }
+    }
+
+    // 3. Flip status to active on first live entry
+    if (room.status === ROOM_STATUS.IDLE) {
+      await trx
+        .update(rooms)
+        .set({ status: ROOM_STATUS.ACTIVE })
+        .where(eq(rooms.id, params.roomId));
+    }
+
+    return { roomId: params.roomId, hmsRoomCode: room.hmsRoomCode };
+  });
+}
+
+// ─── Leave / unenrol ─────────────────────────────────────────────────────────
 
 export type LeaveRoomResult = {
   roomId: string;
@@ -206,11 +329,17 @@ export async function leaveRoom(
 
     if (!active) {
       throw new SessionPoolError(
-        "NOT_IN_ROOM",
-        "You are not currently in this room",
+        "NOT_ENROLLED",
+        "You are not enrolled in this session",
         404,
       );
     }
+
+    // Fetch scheduledStart to decide whether to free the spot
+    const [roomRow] = await trx
+      .select({ scheduledStart: rooms.scheduledStart })
+      .from(rooms)
+      .where(eq(rooms.id, params.roomId));
 
     const leftAt = new Date();
     await trx
@@ -218,16 +347,21 @@ export async function leaveRoom(
       .set({ leftAt, status: BOOKING_STATUS.DROPPED })
       .where(eq(roomUsers.id, active.id));
 
-    await trx
-      .update(rooms)
-      .set({
-        currentOccupancy: sql`GREATEST(${rooms.currentOccupancy} - 1, 0)`,
-      })
-      .where(eq(rooms.id, params.roomId));
+    // Free the spot only if the session hasn't started yet (pre-session cancellation).
+    // Mid-session disconnects keep the slot reserved so the user can reconnect.
+    const sessionStarted = roomRow && roomRow.scheduledStart.getTime() <= Date.now();
+    if (!sessionStarted) {
+      await trx
+        .update(rooms)
+        .set({ currentOccupancy: sql`GREATEST(${rooms.currentOccupancy} - 1, 0)` })
+        .where(eq(rooms.id, params.roomId));
+    }
 
     return { roomId: params.roomId, leftAt };
   });
 }
+
+// ─── Book private session (premium plans only) ────────────────────────────────
 
 export type BookPrivateParams = {
   userId: string;
@@ -268,7 +402,7 @@ export async function bookPrivateSession(
       );
     }
 
-    // 3. Verify instructor is approved (status is not tracked in real-time)
+    // 3. Verify instructor is approved
     const [instructor] = await trx
       .select({ isApproved: instructorDetails.isApproved })
       .from(instructorDetails)
@@ -282,7 +416,7 @@ export async function bookPrivateSession(
       );
     }
 
-    // 4. Reject overlapping bookings for this instructor at the requested time
+    // 4. Reject overlapping bookings for this instructor
     const conflict = await trx.execute(sql`
       SELECT 1 FROM "rooms"
       WHERE "instructor_id" = ${params.instructorId}
@@ -302,8 +436,8 @@ export async function bookPrivateSession(
       );
     }
 
-    // 4. Create the private room
-    const inserted = await trx
+    // 5. Create the private room
+    const [created] = await trx
       .insert(rooms)
       .values({
         type: ROOM_TYPE.PRIVATE,
@@ -314,9 +448,8 @@ export async function bookPrivateSession(
         scheduledEnd: params.endUtc,
       })
       .returning();
-    const created = inserted[0];
 
-    // 5. Record the user booking
+    // 6. Record the user booking
     await trx.insert(roomUsers).values({
       roomId: created.id,
       userId: params.userId,

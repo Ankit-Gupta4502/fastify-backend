@@ -7,7 +7,7 @@ import { NextFlowCard } from "./_components/dashboard/NextFlowCard";
 import { PlanCard } from "./_components/dashboard/PlanCard";
 import { UpcomingSessionList } from "./_components/dashboard/UpcomingSessionList";
 import { BookPrivateSessionDialog } from "./_components/dashboard/BookPrivateSessionDialog";
-import { useUpcomingRooms, useJoinRoom } from "@/hooks/use-rooms";
+import { useUpcomingRooms, useEnrolRoom, useJoinRoom } from "@/hooks/use-rooms";
 import { useMyPlan } from "@/hooks/use-plans";
 import { userTimezone } from "@/lib/timezone";
 
@@ -21,9 +21,11 @@ function UserDashboard() {
   const router = useRouter();
   const upcoming = useUpcomingRooms();
   const myPlan = useMyPlan();
+  const enrol = useEnrolRoom();
   const join = useJoinRoom();
-  const [joinError, setJoinError] = useState<string | null>(null);
-  const [joiningId, setJoiningId] = useState<string | null>(null);
+
+  const [actingId, setActingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [bookPrivateOpen, setBookPrivateOpen] = useState(false);
 
   const rooms = upcoming.data?.data ?? [];
@@ -33,17 +35,26 @@ function UserDashboard() {
   const limit = plan?.sessionsPerWeek ?? null;
   const remaining = limit !== null ? Math.max(limit - used, 0) : null;
 
-  const handleJoin = (roomId: string) => {
-    setJoinError(null);
-    setJoiningId(roomId);
+  const handleEnrol = (roomId: string) => {
+    setActionError(null);
+    setActingId(roomId);
+    enrol.mutate(roomId, {
+      onError: (err) => setActionError(err instanceof Error ? err.message : "Could not reserve spot"),
+      onSettled: () => setActingId((c) => (c === roomId ? null : c)),
+    });
+  };
+
+  const handleJoinLive = (roomId: string) => {
+    setActionError(null);
+    setActingId(roomId);
     join.mutate(roomId, {
       onSuccess: (result) => {
         const code = result.data?.hmsRoomCode ?? undefined;
         router.navigate({ to: "/session/$roomId", params: { roomId }, search: { code } });
       },
       onError: (err) => {
-        setJoinError(err instanceof Error ? err.message : "Could not join");
-        setJoiningId(null);
+        setActionError(err instanceof Error ? err.message : "Could not join");
+        setActingId(null);
       },
     });
   };
@@ -96,9 +107,9 @@ function UserDashboard() {
         />
       </div>
 
-      {joinError && (
+      {actionError && (
         <div className="rounded-2xl border border-destructive/40 bg-destructive/5 text-destructive p-4 text-sm">
-          {joinError}
+          {actionError}
         </div>
       )}
 
@@ -108,9 +119,9 @@ function UserDashboard() {
           room={rooms[0]}
           isLoading={upcoming.isLoading}
           timezone={tz}
-          joiningId={joiningId}
-          joinPending={join.isPending}
-          onJoin={handleJoin}
+          actingId={actingId}
+          onEnrol={handleEnrol}
+          onJoinLive={handleJoinLive}
         />
         <PlanCard
           plan={plan}
@@ -125,9 +136,9 @@ function UserDashboard() {
         rooms={rooms.slice(1, 6)}
         isLoading={upcoming.isLoading}
         timezone={tz}
-        joiningId={joiningId}
-        joinPending={join.isPending}
-        onJoin={handleJoin}
+        actingId={actingId}
+        onEnrol={handleEnrol}
+        onJoinLive={handleJoinLive}
       />
 
       <BookPrivateSessionDialog

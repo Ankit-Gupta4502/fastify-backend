@@ -1,6 +1,7 @@
 import {
   API_ENDPOINTS,
   type BookPrivateResult,
+  type EnrolRoomResult,
   type InstructorScheduleRoom,
   type JoinRoomResult,
   type LeaveRoomResult,
@@ -11,6 +12,11 @@ import { apiRequest } from "../lib/http";
 export const roomsApi = {
   upcomingGroup: () =>
     apiRequest<UpcomingRoom[]>(API_ENDPOINTS.ROOMS.UPCOMING_GROUP),
+
+  enrol: (roomId: string) =>
+    apiRequest<EnrolRoomResult>(API_ENDPOINTS.ROOMS.ENROL(roomId), {
+      method: "POST",
+    }),
 
   join: (roomId: string) =>
     apiRequest<JoinRoomResult>(API_ENDPOINTS.ROOMS.JOIN(roomId), {

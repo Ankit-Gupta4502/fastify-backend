@@ -20,12 +20,22 @@ export type PrivateBookingBody = z.infer<typeof privateBookingBodySchema>;
 
 export const roomsSwaggerSchemas = {
   listUpcomingGroup: {
-    description: "List upcoming joinable group rooms (localised times)",
+    description: "List upcoming group rooms — shows rooms until their scheduled end time",
     tags: ["Rooms"] as string[],
     security: [{ cookieAuth: [] }],
   },
+  enrol: {
+    description: "Reserve a spot in a group session — deducts weekly quota, no live entry yet",
+    tags: ["Rooms"] as string[],
+    security: [{ cookieAuth: [] }],
+    params: {
+      type: "object" as const,
+      required: ["id"],
+      properties: { id: { type: "string" as const, format: "uuid" } },
+    },
+  },
   join: {
-    description: "Join a group room — atomic quota + occupancy check",
+    description: "Enter the live room — requires prior enrolment and session must be starting within 15 min",
     tags: ["Rooms"] as string[],
     security: [{ cookieAuth: [] }],
     params: {

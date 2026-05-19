@@ -10,6 +10,8 @@ export interface UpcomingRoom {
   spotsLeft: number;
   scheduledStart: string;
   scheduledStartUtc: string;
+  scheduledEndUtc: string;
+  isEnrolled: boolean;
   instructor: {
     id: string;
     name: string;
@@ -17,11 +19,13 @@ export interface UpcomingRoom {
   };
 }
 
+export interface EnrolRoomResult {
+  roomId: string;
+}
+
 export interface JoinRoomResult {
   roomId: string;
-  hmsRoomId: string | null;
   hmsRoomCode: string | null;
-  hmsClientToken: string | null;
 }
 
 export interface LeaveRoomResult {
