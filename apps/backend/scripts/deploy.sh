@@ -17,6 +17,12 @@ if [[ ! -f "$ENV_FILE" ]]; then
   exit 1
 fi
 
+# Docker --env-file rejects whitespace in variable names; sanitize into a temp file.
+CLEAN_ENV_FILE="$(mktemp)"
+trap 'rm -f "$CLEAN_ENV_FILE"' EXIT
+grep -v '^\s*#' "$ENV_FILE" | grep -v '^\s*$' | sed 's/^[[:space:]]*//; s/[[:space:]]*=/=/' > "$CLEAN_ENV_FILE"
+ENV_FILE="$CLEAN_ENV_FILE"
+
 echo "==> Running database migrations..."
 docker build --target build -t "$MIGRATE_IMAGE_NAME" -f "$ROOT_DIR/Dockerfile" "$REPO_ROOT"
 docker run --rm --env-file "$ENV_FILE" "$MIGRATE_IMAGE_NAME" pnpm --filter @yoga-app/backend db:migrate

@@ -23,7 +23,6 @@ COPY packages/shared/package.json ./packages/shared/
 RUN pnpm install --frozen-lockfile --prod
 
 COPY --from=build /app/apps/backend/dist ./apps/backend/dist
-COPY --from=build /app/packages/shared/dist ./packages/shared/dist
 
 EXPOSE 8080
 CMD ["node", "apps/backend/dist/index.js"]
