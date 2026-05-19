@@ -24,6 +24,7 @@ Create a `.env` file at the **repo root** (`fastify-backend/.env`). Both the bac
 | `HMS_APP_SECRET` | yes (for video) | 100ms dashboard → Developer → App secret |
 | `HMS_TEMPLATE_ID_GROUP` | yes (for video) | 100ms template ID for group sessions |
 | `HMS_TEMPLATE_ID_PRIVATE` | yes (for video) | 100ms template ID for private 1:1 sessions |
+| `HMS_WEBHOOK_SECRET` | yes (for video) | 100ms dashboard → Developer → Webhooks → secret |
 | `RAZORPAY_KEY_ID` | yes (for payments) | Razorpay dashboard → Settings → API keys |
 | `RAZORPAY_KEY_SECRET` | yes (for payments) | Razorpay dashboard → Settings → API keys |
 | `RAZORPAY_WEBHOOK_SECRET` | yes (for payments) | Razorpay dashboard → Webhooks → your webhook secret |
@@ -81,6 +82,19 @@ The backend creates a room + fetches a guest **room code** on every join. The fr
 https://<VITE_HMS_SUBDOMAIN>/meeting/<roomCode>
 ```
 
+### Webhook registration
+
+1. In the 100ms dashboard go to **Developer → Webhooks**.
+2. Set the **Webhook URL** to:
+   ```
+   https://<your-api-domain>/webhooks/100ms
+   ```
+3. Generate a **Webhook Secret** and copy it to `HMS_WEBHOOK_SECRET`.
+4. Enable the **`session.close.success`** event.
+5. Click **Save**.
+
+The backend verifies the `x-100ms-signature` HMAC-SHA256 header on every incoming event before processing it.
+
 ---
 
 ## 4. Razorpay — Payments Setup
@@ -121,6 +135,7 @@ Frontend                        Backend                         Razorpay
    │                               │                               │
    │── POST /payments/verify ──────▶│                               │
    │                               │ verify HMAC (key_secret)      │
+   │                               │ fetch order → check notes.planId│
    │                               │ UPDATE user.plan_id           │
    │◀─ { success: true } ───────────│                               │
    │                               │                               │
@@ -160,9 +175,10 @@ Emails sent automatically:
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | `GET` | `/rooms/group/upcoming` | cookie | Upcoming group sessions (localised times) |
-| `POST` | `/rooms/:id/join` | cookie + `user` role | Join a group room |
-| `POST` | `/rooms/:id/leave` | cookie | Leave a room |
-| `POST` | `/rooms/private/book` | cookie + `user` role | Book a private session |
+| `POST` | `/rooms/:id/enrol` | cookie + `user` role | Reserve a spot — deducts weekly quota |
+| `POST` | `/rooms/:id/join` | cookie + `user` role | Enter the live room (requires prior enrolment, within 15 min window) |
+| `POST` | `/rooms/:id/leave` | cookie | Leave a room; restores quota if session hasn't started yet |
+| `POST` | `/rooms/private/book` | cookie + `user` role | Book a private 1:1 (premium plans only, checks weekly quota) |
 
 ### Instructors
 | Method | Path | Auth | Description |
@@ -203,7 +219,7 @@ Emails sent automatically:
 ### Webhooks
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `POST` | `/webhooks/100ms` | none (TODO: HMAC) | 100ms session lifecycle events |
+| `POST` | `/webhooks/100ms` | HMAC signature | 100ms session lifecycle events |
 | `POST` | `/webhooks/razorpay` | HMAC signature | Razorpay payment events |
 
 ### Misc

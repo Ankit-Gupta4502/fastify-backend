@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import type { AppDatabase } from "../types/database.types";
 import { user, plans, rooms, instructorDetails } from "../schema/schema";
 import { createHmsRoom } from "./hms.service";
@@ -99,6 +99,26 @@ export async function createGroupRoom(
     .select({ name: user.name })
     .from(user)
     .where(eq(user.id, params.instructorId));
+
+  if (!instructor) {
+    throw new Error("INSTRUCTOR_NOT_FOUND");
+  }
+
+  const conflict = await db.execute(sql`
+    SELECT 1 FROM "rooms"
+    WHERE "instructor_id" = ${params.instructorId}
+      AND "status" <> ${ROOM_STATUS.ENDED}
+      AND tstzrange("scheduled_start", "scheduled_end") &&
+          tstzrange(${params.scheduledStartUtc.toISOString()}::timestamptz,
+                    ${params.scheduledEndUtc.toISOString()}::timestamptz)
+    LIMIT 1
+  `);
+  const conflictRows =
+    (conflict as unknown as { rows?: unknown[] }).rows ??
+    (conflict as unknown as unknown[]);
+  if ((conflictRows as unknown[]).length > 0) {
+    throw new Error("INSTRUCTOR_BUSY");
+  }
 
   const hms = await createHmsRoom(false);
 

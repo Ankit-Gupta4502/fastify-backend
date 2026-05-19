@@ -148,14 +148,41 @@ export class PaymentsController {
       return reply.status(statusCode).send(payload);
     }
 
+    // Fetch the order from Razorpay to get the authoritative planId from notes.
+    // The HMAC only proves orderId+paymentId are genuine — not which plan was paid for —
+    // so we must not trust the client-submitted planId.
+    let trustedPlanId: string;
+    try {
+      const order = await getRazorpay().orders.fetch(body.razorpayOrderId);
+      const notesMap = order.notes as Record<string, string> | undefined;
+      const planIdFromNotes = notesMap?.planId;
+
+      if (!planIdFromNotes || planIdFromNotes !== body.planId) {
+        const { statusCode, payload } = errorResponse({
+          message: "Plan does not match the original order",
+          statusCode: 400,
+          error: "PLAN_MISMATCH",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      trustedPlanId = planIdFromNotes;
+    } catch (err) {
+      request.log.error({ err }, "razorpay order fetch failed during verify");
+      const { statusCode, payload } = errorResponse({
+        message: "Could not verify order details",
+        statusCode: 502,
+      });
+      return reply.status(statusCode).send(payload);
+    }
+
     await drizzle
       .update(user)
-      .set({ planId: body.planId })
+      .set({ planId: trustedPlanId })
       .where(eq(user.id, me.id));
 
     const { statusCode, payload } = successResponse({
       message: "Payment verified",
-      data: { success: true as const, planId: body.planId },
+      data: { success: true as const, planId: trustedPlanId },
     });
     return reply.status(statusCode).send(payload);
   };

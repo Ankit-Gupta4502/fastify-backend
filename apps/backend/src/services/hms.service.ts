@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import jwt from "jsonwebtoken";
 
 const HMS_API_BASE = "https://api.100ms.live/v2";
@@ -76,6 +76,13 @@ export async function createHmsRoom(isPrivate: boolean): Promise<CreateHmsRoomRe
   }
 
   return { hmsRoomId: room.id, hmsRoomCode };
+}
+
+export function verifyHmsWebhookSignature(rawBody: Buffer, signature: string): boolean {
+  const expected = createHmac("sha256", requireEnv("HMS_WEBHOOK_SECRET"))
+    .update(rawBody)
+    .digest("hex");
+  return expected === signature;
 }
 
 export function generateClientToken(params: {

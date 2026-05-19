@@ -7,6 +7,7 @@ import {
   INSTRUCTOR_STATUS,
   ROOM_STATUS,
 } from "../../constants/sessions";
+import { verifyHmsWebhookSignature } from "../../services/hms.service";
 import { successResponse } from "../../utils";
 
 type HmsSessionCloseEvent = {
@@ -22,6 +23,21 @@ export class HmsWebhookController {
   private register(app: FastifyInstance) {
     app.register(
       async (router) => {
+        // Capture raw bytes before JSON parsing so we can verify the HMAC signature
+        router.addContentTypeParser(
+          "application/json",
+          { parseAs: "buffer" },
+          (_req, body, done) => {
+            try {
+              const parsed: unknown = JSON.parse((body as Buffer).toString("utf8"));
+              (_req as FastifyRequest).rawBody = body as Buffer;
+              done(null, parsed);
+            } catch (err) {
+              done(err as Error, undefined);
+            }
+          },
+        );
+
         router.post(
           "/100ms",
           {
@@ -38,7 +54,31 @@ export class HmsWebhookController {
   }
 
   private handle = async (request: FastifyRequest, reply: FastifyReply) => {
-    // TODO: verify HMAC signature from 100ms before processing
+    const signature = request.headers["x-100ms-signature"];
+
+    const ok = () => {
+      const { statusCode, payload } = successResponse({
+        message: "ok",
+        data: { received: true },
+      });
+      return reply.status(statusCode).send(payload);
+    };
+
+    if (typeof signature !== "string") {
+      request.log.warn("100ms webhook: missing signature header");
+      return ok();
+    }
+
+    if (!request.rawBody) {
+      request.log.error("100ms webhook: rawBody not captured");
+      return ok();
+    }
+
+    if (!verifyHmsWebhookSignature(request.rawBody, signature)) {
+      request.log.warn("100ms webhook: invalid signature — ignoring event");
+      return ok();
+    }
+
     const event = request.body as HmsSessionCloseEvent | undefined;
 
     if (event?.type === "session.close.success" && event.data?.room_id) {
@@ -72,10 +112,6 @@ export class HmsWebhookController {
       });
     }
 
-    const { statusCode, payload } = successResponse({
-      message: "ok",
-      data: { received: true },
-    });
-    return reply.status(statusCode).send(payload);
+    return ok();
   };
 }

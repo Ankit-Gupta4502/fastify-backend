@@ -182,11 +182,17 @@ export async function enrollRoom(
       );
     }
 
-    // 4. Reserve the spot (increment occupancy, no status change yet)
-    await trx
-      .update(rooms)
-      .set({ currentOccupancy: sql`${rooms.currentOccupancy} + 1` })
-      .where(eq(rooms.id, params.roomId));
+    // 4. Reserve the spot — increment occupancy and flip to FULL if last slot taken
+    await trx.execute(sql`
+      UPDATE "rooms"
+      SET
+        "current_occupancy" = "current_occupancy" + 1,
+        "status" = CASE
+          WHEN "current_occupancy" + 1 >= "capacity" THEN ${ROOM_STATUS.FULL}
+          ELSE "status"
+        END
+      WHERE "id" = ${params.roomId}
+    `);
 
     // 5. Record the booking
     await trx.insert(roomUsers).values({
@@ -359,10 +365,31 @@ export async function leaveRoom(
     // Mid-session disconnects keep the slot reserved so the user can reconnect.
     const sessionStarted = roomRow && roomRow.scheduledStart.getTime() <= Date.now();
     if (!sessionStarted) {
+      // Decrement occupancy and transition FULL → ACTIVE if a spot just opened
+      await trx.execute(sql`
+        UPDATE "rooms"
+        SET
+          "current_occupancy" = GREATEST("current_occupancy" - 1, 0),
+          "status" = CASE
+            WHEN "status" = ${ROOM_STATUS.FULL} THEN ${ROOM_STATUS.ACTIVE}
+            ELSE "status"
+          END
+        WHERE "id" = ${params.roomId}
+      `);
+
+      // Restore the weekly quota slot consumed at enrolment
       await trx
-        .update(rooms)
-        .set({ currentOccupancy: sql`GREATEST(${rooms.currentOccupancy} - 1, 0)` })
-        .where(eq(rooms.id, params.roomId));
+        .update(user)
+        .set({ sessionsUsedThisWeek: sql`GREATEST(${user.sessionsUsedThisWeek} - 1, 0)` })
+        .where(eq(user.id, params.userId));
+
+      await trx.execute(sql`
+        UPDATE "session_quota_log"
+        SET "counted" = false
+        WHERE "user_id" = ${params.userId}
+          AND "room_id" = ${params.roomId}
+          AND "week_start" = date_trunc('week', now())::date
+      `);
     }
 
     return { roomId: params.roomId, leftAt };
@@ -392,9 +419,13 @@ export async function bookPrivateSession(
       );
     }
 
-    // 2. Verify user has a plan that allows private sessions
+    // 2. Verify user has a plan that allows private sessions and has quota remaining
     const [userPlan] = await trx
-      .select({ allowsPrivate: plans.allowsPrivate })
+      .select({
+        allowsPrivate: plans.allowsPrivate,
+        used: user.sessionsUsedThisWeek,
+        limit: plans.sessionsPerWeek,
+      })
       .from(user)
       .leftJoin(plans, eq(user.planId, plans.id))
       .where(eq(user.id, params.userId));
@@ -408,6 +439,9 @@ export async function bookPrivateSession(
         "Your plan does not include private 1:1 sessions. Please upgrade to a premium plan.",
         403,
       );
+    }
+    if (userPlan.limit !== null && (userPlan.used ?? 0) >= userPlan.limit) {
+      throw new SessionPoolError("QUOTA_EXCEEDED", "Weekly session quota exceeded", 429);
     }
 
     // 3. Verify instructor is approved
@@ -462,6 +496,19 @@ export async function bookPrivateSession(
       roomId: created.id,
       userId: params.userId,
     });
+
+    // 7. Deduct from weekly quota
+    await trx
+      .update(user)
+      .set({ sessionsUsedThisWeek: sql`${user.sessionsUsedThisWeek} + 1` })
+      .where(eq(user.id, params.userId));
+
+    // 8. Idempotent quota log
+    await trx.execute(sql`
+      INSERT INTO "session_quota_log" ("user_id", "room_id", "week_start")
+      VALUES (${params.userId}, ${created.id}, date_trunc('week', now())::date)
+      ON CONFLICT ("user_id", "week_start", "room_id") DO NOTHING
+    `);
 
     return { roomId: created.id };
   });

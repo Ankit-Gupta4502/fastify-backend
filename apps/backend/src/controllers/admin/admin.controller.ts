@@ -17,12 +17,25 @@ const approveInstructorBodySchema = z.object({
   approve: z.boolean(),
 });
 
-const createGroupRoomBodySchema = z.object({
-  instructorId: z.string().uuid(),
-  scheduledStartUtc: z.string().datetime(),
-  scheduledEndUtc: z.string().datetime(),
-  capacity: z.number().int().min(2).max(50).default(20),
+const instructorIdParamsSchema = z.object({
+  id: z.string().uuid("Invalid instructor id"),
 });
+
+const createGroupRoomBodySchema = z
+  .object({
+    instructorId: z.string().uuid(),
+    scheduledStartUtc: z.string().datetime(),
+    scheduledEndUtc: z.string().datetime(),
+    capacity: z.number().int().min(2).max(50).default(20),
+  })
+  .refine((v) => new Date(v.scheduledEndUtc) > new Date(v.scheduledStartUtc), {
+    message: "scheduledEndUtc must be after scheduledStartUtc",
+    path: ["scheduledEndUtc"],
+  })
+  .refine((v) => new Date(v.scheduledStartUtc) > new Date(), {
+    message: "scheduledStartUtc must be in the future",
+    path: ["scheduledStartUtc"],
+  });
 
 export class AdminController {
   constructor(
@@ -63,10 +76,13 @@ export class AdminController {
   };
 
   private approveInstructor = async (request: FastifyRequest, reply: FastifyReply) => {
-    const invalid = validateWithZod(request, reply, { body: approveInstructorBodySchema });
-    if (invalid) return invalid;
+    const invalidParams = validateWithZod(request, reply, { params: instructorIdParamsSchema });
+    if (invalidParams) return invalidParams;
 
-    const { id } = request.params as { id: string };
+    const invalidBody = validateWithZod(request, reply, { body: approveInstructorBodySchema });
+    if (invalidBody) return invalidBody;
+
+    const { id } = request.params as z.infer<typeof instructorIdParamsSchema>;
     const { approve } = request.body as z.infer<typeof approveInstructorBodySchema>;
 
     const updated = await approveInstructor(drizzle, id, approve);
@@ -96,18 +112,38 @@ export class AdminController {
 
     const body = request.body as z.infer<typeof createGroupRoomBodySchema>;
 
-    const data = await createGroupRoom(drizzle, {
-      instructorId: body.instructorId,
-      scheduledStartUtc: new Date(body.scheduledStartUtc),
-      scheduledEndUtc: new Date(body.scheduledEndUtc),
-      capacity: body.capacity,
-    });
+    try {
+      const data = await createGroupRoom(drizzle, {
+        instructorId: body.instructorId,
+        scheduledStartUtc: new Date(body.scheduledStartUtc),
+        scheduledEndUtc: new Date(body.scheduledEndUtc),
+        capacity: body.capacity,
+      });
 
-    const { statusCode, payload } = successResponse({
-      message: "Group room created",
-      data,
-      statusCode: 201,
-    });
-    return reply.status(statusCode).send(payload);
+      const { statusCode, payload } = successResponse({
+        message: "Group room created",
+        data,
+        statusCode: 201,
+      });
+      return reply.status(statusCode).send(payload);
+    } catch (err) {
+      if (err instanceof Error && err.message === "INSTRUCTOR_NOT_FOUND") {
+        const { statusCode, payload } = errorResponse({
+          message: "Instructor not found",
+          statusCode: 404,
+          error: "INSTRUCTOR_NOT_FOUND",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      if (err instanceof Error && err.message === "INSTRUCTOR_BUSY") {
+        const { statusCode, payload } = errorResponse({
+          message: "Instructor already has a session in this time window",
+          statusCode: 409,
+          error: "INSTRUCTOR_BUSY",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      throw err;
+    }
   };
 }

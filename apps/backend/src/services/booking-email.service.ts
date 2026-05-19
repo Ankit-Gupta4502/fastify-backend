@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "../db";
 import { rooms, user } from "../schema/schema";
+import { DEFAULT_USER_TIMEZONE } from "../constants/sessions";
 import { EmailService } from "./EmailService";
 import { formatForUser, formatForInstructor } from "./timezone.service";
 
@@ -32,7 +33,12 @@ export async function sendBookingConfirmationEmails(
 
   if (!row) return;
 
-  const userTime = formatForUser(row.scheduledStart, "UTC");
+  const [userRecord] = await drizzle
+    .select({ timezone: user.timezone })
+    .from(user)
+    .where(eq(user.id, params.userId));
+
+  const userTime = formatForUser(row.scheduledStart, userRecord?.timezone ?? DEFAULT_USER_TIMEZONE);
   const instructorTime = formatForInstructor(row.scheduledStart);
   const sessionType = row.type === "private" ? "Private 1:1" : "Group";
 
@@ -113,7 +119,6 @@ function studentConfirmationHtml(p: {
               style="background:#fdf8f4;border:1px solid #f0e4d8;border-radius:12px;margin-bottom:28px;">
               <tr>
                 <td style="padding:20px 24px;">
-                  <DetailRow label="Instructor" value="${p.instructorName}" />
                   <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
                       <td style="padding:6px 0;font-size:13px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.06em;width:110px;">

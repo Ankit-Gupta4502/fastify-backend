@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "../../db";
 import { plans, user } from "../../schema/schema";
 import { verifyWebhookSignature } from "../../services/razorpay.service";
@@ -161,7 +161,7 @@ export class RazorpayWebhookController {
     await drizzle
       .update(user)
       .set({ planId })
-      .where(eq(user.id, userId));
+      .where(and(eq(user.id, userId), sql`${user.planId} IS DISTINCT FROM ${planId}`));
 
     request.log.info({ userId, planId }, "razorpay webhook: plan activated");
   }
