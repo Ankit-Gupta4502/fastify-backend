@@ -15,6 +15,7 @@
     "db:introspect": "drizzle-kit introspect --config drizzle.config.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1049.0",
     "@better-auth/core": "^1.6.11",
     "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.0.1",

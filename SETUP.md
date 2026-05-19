@@ -30,6 +30,11 @@ Create a `.env` file at the **repo root** (`fastify-backend/.env`). Both the bac
 | `RAZORPAY_WEBHOOK_SECRET` | yes (for payments) | Razorpay dashboard → Webhooks → your webhook secret |
 | `RESEND_API_KEY` | yes (for email) | resend.com API key |
 | `EMAIL_FROM` | yes (for email) | Verified sender address, e.g. `noreply@example.com` |
+| `R2_ACCOUNT_ID` | yes (for uploads) | Cloudflare account ID (right sidebar of the dashboard) |
+| `R2_ACCESS_KEY_ID` | yes (for uploads) | R2 API token access key |
+| `R2_SECRET_ACCESS_KEY` | yes (for uploads) | R2 API token secret key |
+| `R2_BUCKET_NAME` | yes (for uploads) | Name of the R2 bucket |
+| `R2_PUBLIC_URL` | yes (for uploads) | Public bucket URL — either `https://pub-xxxx.r2.dev` or your custom domain |
 
 ### Frontend (`apps/yoga-app`)
 
@@ -148,7 +153,45 @@ The webhook acts as a **safety net** — if the client-side verify call is lost 
 
 ---
 
-## 5. Resend — Email Setup
+## 5. Cloudflare R2 — File Storage Setup
+
+Files (profile images, attachments) are uploaded directly to Cloudflare R2 via its S3-compatible API. The backend never writes to local disk; uploaded objects are served from R2's CDN.
+
+### Create a bucket
+
+1. Log in to the [Cloudflare dashboard](https://dash.cloudflare.com) and open **R2 Object Storage**.
+2. Click **Create bucket**, give it a name, choose a region.
+3. Copy the bucket name → `R2_BUCKET_NAME`.
+
+### Create R2 API credentials
+
+1. In R2, click **Manage R2 API Tokens → Create API Token**.
+2. Grant **Object Read & Write** permissions scoped to the bucket you just created.
+3. Copy **Access Key ID** → `R2_ACCESS_KEY_ID` and **Secret Access Key** → `R2_SECRET_ACCESS_KEY`.
+
+### Enable public access
+
+Files must be publicly readable so browsers can load them directly from R2.
+
+**Option A — r2.dev subdomain (quickest):**
+1. Open the bucket → **Settings → Public Access**.
+2. Enable **Allow Access** under the `r2.dev` domain.
+3. Copy the generated URL (e.g. `https://pub-xxxx.r2.dev`) → `R2_PUBLIC_URL`.
+
+**Option B — Custom domain (recommended for production):**
+1. Open the bucket → **Settings → Custom Domains → Connect Domain**.
+2. Enter your domain (e.g. `assets.example.com`) — Cloudflare auto-provisions the DNS record.
+3. Set `R2_PUBLIC_URL=https://assets.example.com`.
+
+### Find your Account ID
+
+Your Cloudflare account ID is shown in the **right sidebar** of any Cloudflare dashboard page. Copy it → `R2_ACCOUNT_ID`.
+
+> Uploaded objects land under the `uploads/` prefix inside the bucket (e.g. `uploads/<uuid>.jpg`). The returned URL is `R2_PUBLIC_URL/uploads/<uuid>.jpg`.
+
+---
+
+## 6. Resend — Email Setup
 
 1. Sign up at [resend.com](https://resend.com) and verify your sending domain.
 2. Create an API key → `RESEND_API_KEY`.
@@ -160,7 +203,7 @@ Emails sent automatically:
 
 ---
 
-## 6. API Endpoints Reference
+## 7. API Endpoints Reference
 
 ### Auth
 | Method | Path | Auth | Description |
@@ -222,6 +265,11 @@ Emails sent automatically:
 | `POST` | `/webhooks/100ms` | HMAC signature | 100ms session lifecycle events |
 | `POST` | `/webhooks/razorpay` | HMAC signature | Razorpay payment events |
 
+### Uploads
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/uploads/attachment` | cookie | Upload an image (jpeg/png/webp/gif, max 5 MB). Returns `{ url, key }` where `url` points to R2's CDN. |
+
 ### Misc
 | Method | Path | Auth | Description |
 |---|---|---|---|
@@ -230,7 +278,7 @@ Emails sent automatically:
 
 ---
 
-## 7. Frontend Routes
+## 8. Frontend Routes
 
 | Path | Role | Description |
 |---|---|---|
@@ -256,7 +304,7 @@ Emails sent automatically:
 
 ---
 
-## 8. Local Dev
+## 9. Local Dev
 
 ```bash
 # Install dependencies
@@ -279,7 +327,7 @@ Swagger docs are available at `http://localhost:8080/docs` once the backend is r
 
 ---
 
-## 9. Files Added / Changed
+## 10. Files Added / Changed
 
 ### Backend
 ```
@@ -295,6 +343,7 @@ src/
     instructor-fallback.service.ts  ← findSubstitute / swapInstructor
     razorpay.service.ts             ← Razorpay singleton + signature verifiers
     booking-email.service.ts        ← confirmation email to student + instructor
+    upload.service.ts               ← Cloudflare R2 upload/delete via S3-compatible API
   controllers/
     admin/admin.controller.ts       ← GET/POST /admin/* endpoints (admin role only)
     rooms/rooms.controller.ts

@@ -20,8 +20,6 @@ import { AdminController } from "./controllers/admin/admin.controller";
 import { UploadsController } from "./controllers/uploads/uploads.controller";
 import { WorkshopsController } from "./controllers/workshops/workshops.controller";
 import fastifyMultipart from "@fastify/multipart";
-import fastifyStatic from "@fastify/static";
-import { join } from "node:path";
 import { errorResponse } from "./utils";
 import { FastifyError } from "fastify";
 import { logError } from "./lib/logger";
@@ -70,6 +68,11 @@ const schema = {
     RAZORPAY_KEY_ID: { type: "string" },
     RAZORPAY_KEY_SECRET: { type: "string" },
     RAZORPAY_WEBHOOK_SECRET: { type: "string" },
+    R2_ACCOUNT_ID: { type: "string" },
+    R2_ACCESS_KEY_ID: { type: "string" },
+    R2_SECRET_ACCESS_KEY: { type: "string" },
+    R2_BUCKET_NAME: { type: "string" },
+    R2_PUBLIC_URL: { type: "string" },
   },
 };
 
@@ -97,10 +100,6 @@ const start = async () => {
     await fastify.register(cookie);
     await fastify.register(authPlugin);
     await fastify.register(fastifyMultipart, { limits: { fileSize: 5 * 1024 * 1024 } });
-    await fastify.register(fastifyStatic, {
-      root: join(process.cwd(), "uploads"),
-      prefix: "/uploads/",
-    });
 
     const isProd = process.env.NODE_ENV === "production";
     const prodUrl = process.env.PROD_BASE_URL || "https://api.example.com";
