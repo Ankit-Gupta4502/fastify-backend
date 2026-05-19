@@ -18,14 +18,14 @@ if [[ ! -f "$ENV_FILE" ]]; then
 fi
 
 echo "==> Running database migrations..."
-docker build --target build -t "$MIGRATE_IMAGE_NAME" -f Dockerfile .
-docker run --rm --env-file "$ENV_FILE" "$MIGRATE_IMAGE_NAME" npm run db:migrate
+docker build --target build -t "$MIGRATE_IMAGE_NAME" -f "$ROOT_DIR/Dockerfile" "$REPO_ROOT"
+docker run --rm --env-file "$ENV_FILE" "$MIGRATE_IMAGE_NAME" pnpm --filter @yoga-app/backend db:migrate
 
 echo "==> Stopping existing container (if any)..."
 docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
 
 echo "==> Building image: $IMAGE_NAME"
-docker build -t "$IMAGE_NAME" -f Dockerfile .
+docker build -t "$IMAGE_NAME" -f "$ROOT_DIR/Dockerfile" "$REPO_ROOT"
 
 echo "==> Starting container: $CONTAINER_NAME"
 docker run -d \
