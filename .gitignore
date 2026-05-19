@@ -8,3 +8,4 @@ coverage
 apps/yoga-app/.vinxi
 apps/yoga-app/.output
 apps/yoga-app/.nitro
+apps/backend/logs

@@ -24,6 +24,7 @@ import fastifyStatic from "@fastify/static";
 import { join } from "node:path";
 import { errorResponse } from "./utils";
 import { FastifyError } from "fastify";
+import { logError } from "./lib/logger";
 import { getDatabaseDriver } from "./config/database";
 import { backendEnvPath } from "./config/env";
 import { DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_URL } from "@yoga-app/shared";
@@ -36,6 +37,8 @@ export const fastify = Fastify({
 
 fastify.setErrorHandler((err: FastifyError, req, reply) => {
   req.log.error(err, "request error");
+  logError(req, err);
+
   const status =
     err.statusCode && err.statusCode >= 400 && err.statusCode < 600
       ? err.statusCode
@@ -45,7 +48,7 @@ fastify.setErrorHandler((err: FastifyError, req, reply) => {
     message: status === 500 ? "Internal server error" : err.message,
     statusCode: status,
   });
-  reply.code(status).send({...payload,err});
+  reply.code(status).send({ ...payload, err });
 });
 
 const schema = {
