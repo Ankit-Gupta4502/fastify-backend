@@ -31,6 +31,7 @@ export const API_ENDPOINTS = {
   },
   PAYMENTS: {
     CREATE_ORDER: "/payments/orders",
+    CREATE_CUSTOM_ORDER: "/payments/custom-order",
     VERIFY: "/payments/verify",
   },
   ADMIN: {

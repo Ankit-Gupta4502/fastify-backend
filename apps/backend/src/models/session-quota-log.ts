@@ -5,6 +5,7 @@ import {
   index,
   integer,
   pgTable,
+  text,
   timestamp,
   unique,
   uuid,
@@ -22,7 +23,12 @@ export const sessionQuotaLog = pgTable(
     roomId: uuid("room_id")
       .notNull()
       .references(() => rooms.id),
+    // Stores the period start at enrolment: date_trunc('week') for weekly plans,
+    // date_trunc('month') for monthly plans.
     weekStart: date("week_start").notNull(),
+    // Billing interval active at enrolment time — used by leaveRoom to restore
+    // the correct counter even if the user changes plans before cancelling.
+    billingInterval: text("billing_interval").notNull().default("week"),
     sessionCount: integer("session_count").notNull().default(1),
     counted: boolean("counted").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true })

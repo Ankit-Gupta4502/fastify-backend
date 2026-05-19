@@ -31,6 +31,12 @@ export const user = pgTable("user", {
   weekResetAt: timestamp("week_reset_at", { withTimezone: true })
     .notNull()
     .default(sql`date_trunc('week', now())`),
+  sessionsUsedThisMonth: integer("sessions_used_this_month")
+    .notNull()
+    .default(0),
+  monthResetAt: timestamp("month_reset_at", { withTimezone: true })
+    .notNull()
+    .default(sql`date_trunc('month', now())`),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()

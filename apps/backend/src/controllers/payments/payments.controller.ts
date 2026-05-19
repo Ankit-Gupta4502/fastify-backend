@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import {
   createOrderBodySchema,
+  createCustomOrderBodySchema,
   verifyPaymentBodySchema,
 } from "@yoga-app/shared";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
@@ -40,6 +41,19 @@ export class PaymentsController {
         );
 
         router.post(
+          "/custom-order",
+          {
+            preHandler: this.authMiddleware.handle,
+            schema: {
+              description: "Find or create a custom private plan and return a Razorpay order",
+              tags: ["Payments"] as string[],
+              security: [{ cookieAuth: [] }],
+            },
+          },
+          this.createCustomOrder,
+        );
+
+        router.post(
           "/verify",
           {
             preHandler: this.authMiddleware.handle,
@@ -55,6 +69,77 @@ export class PaymentsController {
       { prefix: "/payments" },
     );
   }
+
+  private static readonly BASE_SESSIONS = 4;
+  private static readonly PRICE_PER_SESSION_CENTS = 2000; // $20
+  private static readonly PRICE_DISCOUNT_CENTS = 100;    // -$1
+
+  private static calcCustomPriceCents(sessionCount: number): number {
+    return sessionCount * PaymentsController.PRICE_PER_SESSION_CENTS - PaymentsController.PRICE_DISCOUNT_CENTS;
+  }
+
+  private createCustomOrder = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, {
+      body: createCustomOrderBodySchema,
+    });
+    if (invalid) return invalid;
+
+    const me = request.user;
+    if (!me) {
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const { sessionCount } = request.body as z.infer<typeof createCustomOrderBodySchema>;
+    const planName = `custom_private_${sessionCount}`;
+    const priceCents = PaymentsController.calcCustomPriceCents(sessionCount);
+
+    // Find-or-create the plan atomically via INSERT … ON CONFLICT DO UPDATE (no-op touch)
+    const [plan] = await drizzle
+      .insert(plans)
+      .values({
+        name: planName,
+        priceCents,
+        billingInterval: "month",
+        sessionsPerMonth: sessionCount,
+        allowsPrivate: true,
+        allowsTimeFlexibility: true,
+      })
+      .onConflictDoUpdate({
+        target: plans.name,
+        set: { name: planName }, // no-op; just returns the existing row
+      })
+      .returning();
+
+    try {
+      const order = await getRazorpay().orders.create({
+        amount: plan.priceCents,
+        currency: "USD",
+        receipt: `cplan-${plan.id}-${me.id.slice(0, 8)}-${Date.now()}`,
+        notes: { userId: me.id, planId: plan.id, planName: plan.name },
+      });
+
+      const { statusCode, payload } = successResponse({
+        message: "Order created",
+        data: {
+          orderId: order.id,
+          keyId: getRazorpayKeyId(),
+          amount: Number(order.amount),
+          currency: order.currency,
+          planId: plan.id,
+          planName: plan.name,
+        },
+      });
+      return reply.status(statusCode).send(payload);
+    } catch (err) {
+      request.log.error({ err }, "razorpay custom order create failed");
+      const { statusCode, payload } = errorResponse({
+        message: "Could not create payment order",
+        statusCode: 502,
+      });
+      return reply.status(statusCode).send(payload);
+    }
+  };
 
   private createOrder = async (request: FastifyRequest, reply: FastifyReply) => {
     const invalid = validateWithZod(request, reply, {

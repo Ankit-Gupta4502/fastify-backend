@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { eq } from "drizzle-orm";
+import { and, eq, ne, notLike } from "drizzle-orm";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { requireRole } from "../../middleware/role.middleware";
 import { USER_ROLES } from "../../constants/roles";
@@ -64,18 +64,26 @@ export class PlansController {
     );
   }
 
+  // Only group_live is publicly listed — private/custom_private_* are handled by the custom checkout flow
+  private readonly publicPlanFilter = and(
+    ne(plans.name, "private"),
+    notLike(plans.name, "custom_private_%"),
+  );
+
   private list = async (_req: FastifyRequest, reply: FastifyReply) => {
-    // priceCents intentionally excluded — pricing lives in /plans/pricing (user only)
     const rows = await drizzle
       .select({
         id: plans.id,
         name: plans.name,
+        billingInterval: plans.billingInterval,
         sessionsPerWeek: plans.sessionsPerWeek,
+        sessionsPerMonth: plans.sessionsPerMonth,
         allowsPrivate: plans.allowsPrivate,
         allowsTimeFlexibility: plans.allowsTimeFlexibility,
         maxRoomCapacity: plans.maxRoomCapacity,
       })
-      .from(plans);
+      .from(plans)
+      .where(this.publicPlanFilter);
 
     const { statusCode, payload } = successResponse({
       message: "Available plans",
@@ -90,12 +98,15 @@ export class PlansController {
         id: plans.id,
         name: plans.name,
         priceCents: plans.priceCents,
+        billingInterval: plans.billingInterval,
         sessionsPerWeek: plans.sessionsPerWeek,
+        sessionsPerMonth: plans.sessionsPerMonth,
         allowsPrivate: plans.allowsPrivate,
         allowsTimeFlexibility: plans.allowsTimeFlexibility,
         maxRoomCapacity: plans.maxRoomCapacity,
       })
-      .from(plans);
+      .from(plans)
+      .where(this.publicPlanFilter);
 
     const { statusCode, payload } = successResponse({
       message: "Plans with pricing",
@@ -121,12 +132,15 @@ export class PlansController {
           name: plans.name,
           priceCents: plans.priceCents,
           sessionsPerWeek: plans.sessionsPerWeek,
+          sessionsPerMonth: plans.sessionsPerMonth,
           allowsPrivate: plans.allowsPrivate,
           allowsTimeFlexibility: plans.allowsTimeFlexibility,
           maxRoomCapacity: plans.maxRoomCapacity,
         },
         sessionsUsedThisWeek: user.sessionsUsedThisWeek,
         weekResetAt: user.weekResetAt,
+        sessionsUsedThisMonth: user.sessionsUsedThisMonth,
+        monthResetAt: user.monthResetAt,
       })
       .from(user)
       .leftJoin(plans, eq(user.planId, plans.id))

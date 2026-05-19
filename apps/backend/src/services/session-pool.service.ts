@@ -5,6 +5,7 @@ import {
   plans,
   roomUsers,
   rooms,
+  sessionQuotaLog,
   user,
 } from "../schema/schema";
 import {
@@ -128,8 +129,11 @@ export async function enrollRoom(
     // 1. Quota check
     const [quota] = await trx
       .select({
-        used: user.sessionsUsedThisWeek,
-        limit: plans.sessionsPerWeek,
+        billingInterval: plans.billingInterval,
+        usedWeek: user.sessionsUsedThisWeek,
+        limitWeek: plans.sessionsPerWeek,
+        usedMonth: user.sessionsUsedThisMonth,
+        limitMonth: plans.sessionsPerMonth,
       })
       .from(user)
       .leftJoin(plans, eq(user.planId, plans.id))
@@ -138,7 +142,21 @@ export async function enrollRoom(
     if (!quota) {
       throw new SessionPoolError("USER_NOT_FOUND", "User not found", 404);
     }
-    if (quota.limit !== null && (quota.used ?? 0) >= quota.limit) {
+    // Bug 3: users with no active plan have null billingInterval (LEFT JOIN miss)
+    if (!quota.billingInterval) {
+      throw new SessionPoolError("NO_ACTIVE_PLAN", "An active plan is required to book sessions", 403);
+    }
+
+    const isMonthly = quota.billingInterval === "month";
+
+    // Bug 6: enrollRoom is group-rooms-only — monthly plans are for private sessions
+    if (isMonthly) {
+      throw new SessionPoolError("PLAN_NOT_ALLOWED", "Your plan does not include group live sessions", 403);
+    }
+
+    const used = quota.usedWeek ?? 0;
+    const limit = quota.limitWeek;
+    if (limit !== null && used >= limit) {
       throw new SessionPoolError("QUOTA_EXCEEDED", "Weekly session quota exceeded", 429);
     }
 
@@ -200,16 +218,17 @@ export async function enrollRoom(
       userId: params.userId,
     });
 
-    // 6. Deduct from weekly quota
+    // 6. Deduct from weekly quota (Bug 6 ensures only weekly plans reach here)
     await trx
       .update(user)
       .set({ sessionsUsedThisWeek: sql`${user.sessionsUsedThisWeek} + 1` })
       .where(eq(user.id, params.userId));
 
-    // 7. Idempotent quota log
+    // 7. Idempotent quota log — Bug 2: store billingInterval so leaveRoom
+    // can restore the correct counter even after a plan change.
     await trx.execute(sql`
-      INSERT INTO "session_quota_log" ("user_id", "room_id", "week_start")
-      VALUES (${params.userId}, ${params.roomId}, date_trunc('week', now())::date)
+      INSERT INTO "session_quota_log" ("user_id", "room_id", "week_start", "billing_interval")
+      VALUES (${params.userId}, ${params.roomId}, date_trunc('week', now())::date, ${quota.billingInterval})
       ON CONFLICT ("user_id", "week_start", "room_id") DO NOTHING
     `);
 
@@ -377,19 +396,31 @@ export async function leaveRoom(
         WHERE "id" = ${params.roomId}
       `);
 
-      // Restore the weekly quota slot consumed at enrolment
-      await trx
-        .update(user)
-        .set({ sessionsUsedThisWeek: sql`GREATEST(${user.sessionsUsedThisWeek} - 1, 0)` })
-        .where(eq(user.id, params.userId));
+      // Bug 2: read billingInterval from the log row written at enrolment time,
+      // not from the user's current plan. Atomically marks the row uncounted and
+      // returns the interval — single round-trip, no stale-plan risk.
+      const [logRow] = await trx
+        .update(sessionQuotaLog)
+        .set({ counted: false })
+        .where(
+          and(
+            eq(sessionQuotaLog.userId, params.userId),
+            eq(sessionQuotaLog.roomId, params.roomId),
+            eq(sessionQuotaLog.counted, true),
+          ),
+        )
+        .returning();
 
-      await trx.execute(sql`
-        UPDATE "session_quota_log"
-        SET "counted" = false
-        WHERE "user_id" = ${params.userId}
-          AND "room_id" = ${params.roomId}
-          AND "week_start" = date_trunc('week', now())::date
-      `);
+      if (logRow) {
+        await trx
+          .update(user)
+          .set(
+            logRow.billingInterval === "month"
+              ? { sessionsUsedThisMonth: sql`GREATEST(${user.sessionsUsedThisMonth} - 1, 0)` }
+              : { sessionsUsedThisWeek: sql`GREATEST(${user.sessionsUsedThisWeek} - 1, 0)` },
+          )
+          .where(eq(user.id, params.userId));
+      }
     }
 
     return { roomId: params.roomId, leftAt };
@@ -423,8 +454,11 @@ export async function bookPrivateSession(
     const [userPlan] = await trx
       .select({
         allowsPrivate: plans.allowsPrivate,
-        used: user.sessionsUsedThisWeek,
-        limit: plans.sessionsPerWeek,
+        billingInterval: plans.billingInterval,
+        usedWeek: user.sessionsUsedThisWeek,
+        limitWeek: plans.sessionsPerWeek,
+        usedMonth: user.sessionsUsedThisMonth,
+        limitMonth: plans.sessionsPerMonth,
       })
       .from(user)
       .leftJoin(plans, eq(user.planId, plans.id))
@@ -433,6 +467,10 @@ export async function bookPrivateSession(
     if (!userPlan) {
       throw new SessionPoolError("USER_NOT_FOUND", "User not found", 404);
     }
+    // Bug 3: users with no active plan have null billingInterval (LEFT JOIN miss)
+    if (!userPlan.billingInterval) {
+      throw new SessionPoolError("NO_ACTIVE_PLAN", "An active plan is required to book sessions", 403);
+    }
     if (!userPlan.allowsPrivate) {
       throw new SessionPoolError(
         "PLAN_NOT_ALLOWED",
@@ -440,8 +478,16 @@ export async function bookPrivateSession(
         403,
       );
     }
-    if (userPlan.limit !== null && (userPlan.used ?? 0) >= userPlan.limit) {
-      throw new SessionPoolError("QUOTA_EXCEEDED", "Weekly session quota exceeded", 429);
+
+    const pvtMonthly = userPlan.billingInterval === "month";
+    const pvtUsed = pvtMonthly ? (userPlan.usedMonth ?? 0) : (userPlan.usedWeek ?? 0);
+    const pvtLimit = pvtMonthly ? userPlan.limitMonth : userPlan.limitWeek;
+    if (pvtLimit !== null && pvtUsed >= pvtLimit) {
+      throw new SessionPoolError(
+        "QUOTA_EXCEEDED",
+        pvtMonthly ? "Monthly session quota exceeded" : "Weekly session quota exceeded",
+        429,
+      );
     }
 
     // 3. Verify instructor is approved
@@ -497,16 +543,26 @@ export async function bookPrivateSession(
       userId: params.userId,
     });
 
-    // 7. Deduct from weekly quota
+    // 7. Deduct from the right quota counter
     await trx
       .update(user)
-      .set({ sessionsUsedThisWeek: sql`${user.sessionsUsedThisWeek} + 1` })
+      .set(
+        pvtMonthly
+          ? { sessionsUsedThisMonth: sql`${user.sessionsUsedThisMonth} + 1` }
+          : { sessionsUsedThisWeek: sql`${user.sessionsUsedThisWeek} + 1` },
+      )
       .where(eq(user.id, params.userId));
 
-    // 8. Idempotent quota log
+    // 8. Idempotent quota log — Bug 2+4: store billing_interval and correct period start
+    const pvtPeriodTrunc = pvtMonthly ? "month" : "week";
     await trx.execute(sql`
-      INSERT INTO "session_quota_log" ("user_id", "room_id", "week_start")
-      VALUES (${params.userId}, ${created.id}, date_trunc('week', now())::date)
+      INSERT INTO "session_quota_log" ("user_id", "room_id", "week_start", "billing_interval")
+      VALUES (
+        ${params.userId},
+        ${created.id},
+        date_trunc(${pvtPeriodTrunc}, now())::date,
+        ${userPlan.billingInterval}
+      )
       ON CONFLICT ("user_id", "week_start", "room_id") DO NOTHING
     `);
 

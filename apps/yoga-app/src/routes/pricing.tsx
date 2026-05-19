@@ -3,15 +3,23 @@ import { useState } from "react";
 import {
   Check, ShieldCheck, ArrowRight, Loader2, Users, Lock,
   Sparkles, Zap, CreditCard, RefreshCcw, BadgeCheck, HeartHandshake,
+  Minus, Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, centsToDisplay } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { usePlansWithPricing } from "@/hooks/use-plans";
-import { useCheckout } from "@/hooks/use-checkout";
+import { useCheckout, useCustomCheckout } from "@/hooks/use-checkout";
 import { PLAN_COPY } from "./_user/_components/billing/plan-card";
 import type { PlanRecord } from "@yoga-app/shared";
+
+const PRICE_PER_SESSION_CENTS = 2000;
+const PRICE_DISCOUNT_CENTS = 100;
+const MIN_SESSIONS = 4;
+function calcPrivatePrice(sessions: number) {
+  return sessions * PRICE_PER_SESSION_CENTS - PRICE_DISCOUNT_CENTS;
+}
 
 export const Route = createFileRoute("/pricing")({
   component: PricingPage,
@@ -32,7 +40,6 @@ const planMeta: Record<string, {
   },
   private: {
     icon: Lock,
-    badge: "Most Popular",
     gradient: "from-primary/12 via-primary/5 to-transparent",
     iconBg: "bg-primary/12 text-primary",
     shimmer: "from-transparent via-primary/50 to-transparent",
@@ -73,17 +80,30 @@ function PricingPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const plans = usePlansWithPricing();
   const checkout = useCheckout();
+  const customCheckout = useCustomCheckout();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [sessionCount, setSessionCount] = useState(MIN_SESSIONS);
 
-  const planList: PlanRecord[] = plans.data?.data ?? [];
+  // API now only returns group_live; custom private is handled by the stepper card below
+  const groupPlan = plans.data?.data?.[0] ?? null;
   const isLoading = authLoading || plans.isLoading;
+  const isPending = checkout.isPending || customCheckout.isPending;
 
   const handleSubscribe = (plan: PlanRecord) => {
     setError(null);
     setSuccess(null);
     checkout.mutate(plan.id, {
       onSuccess: () => setSuccess(`You're now on ${PLAN_COPY[plan.name]?.title ?? plan.name}!`),
+      onError: (err) => setError(err instanceof Error ? err.message : "Payment failed"),
+    });
+  };
+
+  const handlePrivateSubscribe = () => {
+    setError(null);
+    setSuccess(null);
+    customCheckout.mutate(sessionCount, {
+      onSuccess: () => setSuccess(`Private plan activated — ${sessionCount} sessions/mo`),
       onError: (err) => setError(err instanceof Error ? err.message : "Payment failed"),
     });
   };
@@ -132,28 +152,34 @@ function PricingPage() {
         {/* ── Plan Cards ── */}
         <div className="max-w-3xl mx-auto px-4 space-y-8">
           {isLoading ? (
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-8">
               <Skeleton className="h-[540px] rounded-4xl" />
               <Skeleton className="h-[540px] rounded-4xl" />
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 gap-6 items-start">
-              {planList.map((plan) => (
+            <div className="grid md:grid-cols-2 gap-8 items-start">
+              {groupPlan && (
                 <PricingCard
-                  key={plan.id}
-                  plan={plan}
+                  plan={groupPlan}
                   isAuthenticated={isAuthenticated}
-                  isPending={checkout.isPending}
+                  isPending={isPending}
                   onSubscribe={handleSubscribe}
                 />
-              ))}
+              )}
+              <PrivatePricingCard
+                sessionCount={sessionCount}
+                onSessionCountChange={setSessionCount}
+                isAuthenticated={isAuthenticated}
+                isPending={isPending}
+                onSubscribe={handlePrivateSubscribe}
+              />
             </div>
           )}
 
           {!isLoading && (
             <p className="text-center text-xs text-muted-foreground">
               <span className="font-semibold text-foreground/60">Group Live</span> — perfect for getting started with live classes.{" "}
-              <span className="font-semibold text-foreground/60">Private</span> — for dedicated 1:1 attention from your instructor.
+              <span className="font-semibold text-foreground/60">Private 1:1</span> — personalised sessions starting at {centsToDisplay(calcPrivatePrice(MIN_SESSIONS))}/mo.
             </p>
           )}
         </div>
@@ -251,6 +277,127 @@ function PricingPage() {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+interface PrivatePricingCardProps {
+  sessionCount: number;
+  onSessionCountChange: (n: number) => void;
+  isAuthenticated: boolean;
+  isPending: boolean;
+  onSubscribe: () => void;
+}
+
+const privatePerks = [
+  "Private 1:1 sessions with your instructor",
+  "Time-of-day flexibility",
+  "Direct instructor messaging",
+  "Priority support",
+];
+
+function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthenticated, isPending, onSubscribe }: PrivatePricingCardProps) {
+  const priceCents = calcPrivatePrice(sessionCount);
+
+  return (
+    <div className="relative">
+      {/* Badge sits on the wrapper, never clipped by overflow-hidden */}
+      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-primary text-primary-foreground text-[9px] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg shadow-primary/20 whitespace-nowrap">
+        <Sparkles className="size-2.5" />
+        Most Popular
+      </div>
+
+      <div className="group relative flex flex-col overflow-hidden rounded-4xl border transition-all duration-500 hover:-translate-y-1.5 bg-card border-primary/25 shadow-2xl shadow-primary/8">
+        <div className="absolute inset-x-0 top-0 h-48 bg-linear-to-b from-primary/12 via-primary/5 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent pointer-events-none" />
+
+        <div className="relative pt-7 pb-3 px-7 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="size-11 rounded-2xl flex items-center justify-center shrink-0 bg-primary/12 text-primary">
+            <Lock className="size-5" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold tracking-tight">Private 1:1</h3>
+            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">Personalised sessions with your chosen instructor.</p>
+          </div>
+        </div>
+
+        {/* Session stepper */}
+        <div className="flex items-center justify-center gap-3 pt-1">
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-8 rounded-full"
+            disabled={sessionCount <= MIN_SESSIONS || isPending}
+            onClick={() => onSessionCountChange(sessionCount - 1)}
+          >
+            <Minus className="size-3" />
+          </Button>
+          <span className="text-sm font-semibold w-28 text-center">{sessionCount} sessions/mo</span>
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-8 rounded-full"
+            disabled={isPending}
+            onClick={() => onSessionCountChange(sessionCount + 1)}
+          >
+            <Plus className="size-3" />
+          </Button>
+        </div>
+
+        <div className="space-y-0.5">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[3.25rem] font-serif font-bold tracking-tight leading-none">
+              {centsToDisplay(priceCents)}
+            </span>
+            <span className="text-muted-foreground text-sm font-medium pb-1">/ mo</span>
+          </div>
+          {sessionCount > MIN_SESSIONS
+            ? <p className="text-[11px] text-muted-foreground">{centsToDisplay(calcPrivatePrice(MIN_SESSIONS))} base · +{centsToDisplay(PRICE_PER_SESSION_CENTS)} per extra session</p>
+            : <p className="text-[11px] text-muted-foreground">Billed monthly · Cancel any time</p>
+          }
+        </div>
+      </div>
+
+      <div className="mx-7 h-px bg-border/40" />
+
+      <div className="flex-1 px-7 py-4 space-y-2.5">
+        {privatePerks.map((perk) => (
+          <div key={perk} className="flex items-start gap-3">
+            <div className="size-[18px] rounded-full flex items-center justify-center shrink-0 mt-px bg-primary/12">
+              <Check className="size-2.5 text-primary" />
+            </div>
+            <span className="text-sm text-foreground/75 leading-snug">{perk}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="px-7 pb-6 pt-1">
+        {isAuthenticated ? (
+          <Button
+            className="w-full h-12 rounded-2xl font-bold gap-2 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.01] transition-all duration-300"
+            disabled={isPending}
+            onClick={onSubscribe}
+          >
+            {isPending ? (
+              <><Loader2 className="size-4 animate-spin" />Opening checkout…</>
+            ) : (
+              <>Get Private 1:1<ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" /></>
+            )}
+          </Button>
+        ) : (
+          <Button
+            asChild
+            className="w-full h-12 rounded-2xl font-bold gap-2 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.01] transition-all duration-300"
+          >
+            <Link to="/login">
+              Get Started
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+        )}
+      </div>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 {
-  "id": "6557e4cc-ab67-4e6a-82e6-17aa2a837d56",
+  "id": "e5916ce4-3c09-40b9-b06d-faac872fd53c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -275,8 +275,21 @@
           "primaryKey": false,
           "notNull": true
         },
+        "billing_interval": {
+          "name": "billing_interval",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'month'"
+        },
         "sessions_per_week": {
           "name": "sessions_per_week",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sessions_per_month": {
+          "name": "sessions_per_month",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -858,6 +871,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "billing_interval": {
+          "name": "billing_interval",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'week'"
+        },
         "session_count": {
           "name": "session_count",
           "type": "integer",
@@ -1022,6 +1042,20 @@
           "primaryKey": false,
           "notNull": true,
           "default": "date_trunc('week', now())"
+        },
+        "sessions_used_this_month": {
+          "name": "sessions_used_this_month",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "month_reset_at": {
+          "name": "month_reset_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "date_trunc('month', now())"
         },
         "created_at": {
           "name": "created_at",
