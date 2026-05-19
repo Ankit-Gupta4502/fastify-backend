@@ -46,7 +46,7 @@ export class RoomsController {
           {
             preHandler: [
               this.authMiddleware.handle,
-              requireRole(USER_ROLES.USER),
+              requireRole(USER_ROLES.USER, USER_ROLES.INSTRUCTOR, USER_ROLES.ADMIN),
             ],
             schema: roomsSwaggerSchemas.join,
           },
@@ -67,7 +67,7 @@ export class RoomsController {
           {
             preHandler: [
               this.authMiddleware.handle,
-              requireRole(USER_ROLES.USER),
+              requireRole(USER_ROLES.USER, USER_ROLES.INSTRUCTOR, USER_ROLES.ADMIN),
             ],
             schema: roomsSwaggerSchemas.privateBook,
           },
