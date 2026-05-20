@@ -8,6 +8,7 @@ import {
   ROOM_STATUS,
 } from "../../constants/sessions";
 import { verifyHmsWebhookSignature } from "../../services/hms.service";
+import { creditSessionEarning } from "../../services/wallet.service";
 import { successResponse } from "../../utils";
 
 type HmsSessionCloseEvent = {
@@ -86,7 +87,7 @@ export class HmsWebhookController {
 
       await drizzle.transaction(async (trx) => {
         const [room] = await trx
-          .select({ id: rooms.id })
+          .select({ id: rooms.id, instructorId: rooms.instructorId })
           .from(rooms)
           .where(eq(rooms.hmsRoomId, hmsRoomId));
 
@@ -109,6 +110,8 @@ export class HmsWebhookController {
             currentRoomId: null,
           })
           .where(eq(instructorDetails.currentRoomId, room.id));
+
+        await creditSessionEarning(trx, room.instructorId, room.id);
       });
     }
 

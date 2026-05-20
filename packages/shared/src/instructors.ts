@@ -33,3 +33,18 @@ export interface UpdateProfileBody {
   tags?: string[];
   yearsOfExperience?: number | null;
 }
+
+export interface WalletTransaction {
+  id: string;
+  amountPaise: number;
+  type: "session_credit";
+  description: string | null;
+  roomId: string | null;
+  createdAt: string;
+}
+
+export interface WalletBalance {
+  balancePaise: number;
+  balanceInr: number;
+  transactions: WalletTransaction[];
+}

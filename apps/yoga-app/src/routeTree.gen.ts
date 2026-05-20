@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExpertsIndexRouteImport } from './routes/experts/index'
 import { Route as SessionRoomIdRouteImport } from './routes/session.$roomId'
 import { Route as InstructorProfileRouteImport } from './routes/instructor/profile'
+import { Route as InstructorEarningsRouteImport } from './routes/instructor/earnings'
 import { Route as InstructorDashboardRouteImport } from './routes/instructor/dashboard'
 import { Route as ExpertsExpertIdRouteImport } from './routes/experts/$expertId'
 import { Route as AdminWorkshopsRouteImport } from './routes/admin/workshops'
@@ -70,6 +71,11 @@ const SessionRoomIdRoute = SessionRoomIdRouteImport.update({
 const InstructorProfileRoute = InstructorProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => InstructorRouteRoute,
+} as any)
+const InstructorEarningsRoute = InstructorEarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
   getParentRoute: () => InstructorRouteRoute,
 } as any)
 const InstructorDashboardRoute = InstructorDashboardRouteImport.update({
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/admin/workshops': typeof AdminWorkshopsRoute
   '/experts/$expertId': typeof ExpertsExpertIdRoute
   '/instructor/dashboard': typeof InstructorDashboardRoute
+  '/instructor/earnings': typeof InstructorEarningsRoute
   '/instructor/profile': typeof InstructorProfileRoute
   '/session/$roomId': typeof SessionRoomIdRoute
   '/experts/': typeof ExpertsIndexRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/admin/workshops': typeof AdminWorkshopsRoute
   '/experts/$expertId': typeof ExpertsExpertIdRoute
   '/instructor/dashboard': typeof InstructorDashboardRoute
+  '/instructor/earnings': typeof InstructorEarningsRoute
   '/instructor/profile': typeof InstructorProfileRoute
   '/session/$roomId': typeof SessionRoomIdRoute
   '/experts': typeof ExpertsIndexRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/admin/workshops': typeof AdminWorkshopsRoute
   '/experts/$expertId': typeof ExpertsExpertIdRoute
   '/instructor/dashboard': typeof InstructorDashboardRoute
+  '/instructor/earnings': typeof InstructorEarningsRoute
   '/instructor/profile': typeof InstructorProfileRoute
   '/session/$roomId': typeof SessionRoomIdRoute
   '/experts/': typeof ExpertsIndexRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/admin/workshops'
     | '/experts/$expertId'
     | '/instructor/dashboard'
+    | '/instructor/earnings'
     | '/instructor/profile'
     | '/session/$roomId'
     | '/experts/'
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/admin/workshops'
     | '/experts/$expertId'
     | '/instructor/dashboard'
+    | '/instructor/earnings'
     | '/instructor/profile'
     | '/session/$roomId'
     | '/experts'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/admin/workshops'
     | '/experts/$expertId'
     | '/instructor/dashboard'
+    | '/instructor/earnings'
     | '/instructor/profile'
     | '/session/$roomId'
     | '/experts/'
@@ -313,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/instructor/profile'
       preLoaderRoute: typeof InstructorProfileRouteImport
+      parentRoute: typeof InstructorRouteRoute
+    }
+    '/instructor/earnings': {
+      id: '/instructor/earnings'
+      path: '/earnings'
+      fullPath: '/instructor/earnings'
+      preLoaderRoute: typeof InstructorEarningsRouteImport
       parentRoute: typeof InstructorRouteRoute
     }
     '/instructor/dashboard': {
@@ -417,11 +436,13 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 
 interface InstructorRouteRouteChildren {
   InstructorDashboardRoute: typeof InstructorDashboardRoute
+  InstructorEarningsRoute: typeof InstructorEarningsRoute
   InstructorProfileRoute: typeof InstructorProfileRoute
 }
 
 const InstructorRouteRouteChildren: InstructorRouteRouteChildren = {
   InstructorDashboardRoute: InstructorDashboardRoute,
+  InstructorEarningsRoute: InstructorEarningsRoute,
   InstructorProfileRoute: InstructorProfileRoute,
 }
 

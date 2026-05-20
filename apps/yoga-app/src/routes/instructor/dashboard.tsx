@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Activity, CalendarDays, Clock, Users, UserCircle } from "lucide-react";
+import { Activity, CalendarDays, Clock, IndianRupee, Users, UserCircle } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/shared/StatCard";
 import { NextClassCard } from "./_components/NextClassCard";
 import { ScheduleList } from "./_components/ScheduleList";
 import { useInstructorSchedule, useJoinRoom } from "@/hooks/use-rooms";
+import { useInstructorWallet } from "@/hooks/use-instructors";
 import { INSTRUCTOR_IANA, INSTRUCTOR_TIMEZONE_LABEL } from "@/constants/sessions";
 
 export const Route = createFileRoute("/instructor/dashboard")({
@@ -18,6 +19,7 @@ function InstructorDashboard() {
   const router = useRouter();
   const schedule = useInstructorSchedule();
   const join = useJoinRoom();
+  const wallet = useInstructorWallet();
   const rooms = schedule.data?.data ?? [];
 
   const [joiningId, setJoiningId] = useState<string | null>(null);
@@ -27,6 +29,7 @@ function InstructorDashboard() {
   const live = rooms.filter((r) => r.status === "active").length;
   const seats = rooms.reduce((sum, r) => sum + r.currentOccupancy, 0);
   const nextRoom = rooms.find((r) => r.status !== "active") ?? rooms[0];
+  const balanceInr = wallet.data?.data?.balanceInr ?? 0;
 
   const handleJoin = (roomId: string) => {
     setJoinError(null);
@@ -108,6 +111,32 @@ function InstructorDashboard() {
           accent="text-orange-500"
         />
       </div>
+
+      {/* Earnings banner */}
+      <Link to="/instructor/earnings" className="block group">
+        <div className="rounded-3xl border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 transition-colors px-6 py-5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="size-12 rounded-2xl bg-emerald-500/15 flex items-center justify-center shrink-0">
+              <IndianRupee className="size-6 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Total Earnings
+              </p>
+              {wallet.isLoading ? (
+                <div className="h-7 w-20 bg-muted/60 rounded animate-pulse mt-1" />
+              ) : (
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                  ₹{balanceInr.toLocaleString("en-IN")}
+                </p>
+              )}
+            </div>
+          </div>
+          <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors pr-1">
+            View history →
+          </span>
+        </div>
+      </Link>
 
       {joinError && (
         <div className="rounded-xl border border-destructive/40 bg-destructive/5 text-destructive px-4 py-3 text-sm">

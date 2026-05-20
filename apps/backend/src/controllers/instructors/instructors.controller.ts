@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { and, arrayContains, eq, gt, inArray } from "drizzle-orm";
+import { and, arrayContains, desc, eq, gt, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { requireRole } from "../../middleware/role.middleware";
@@ -8,7 +8,13 @@ import { ROOM_STATUS } from "../../constants/sessions";
 
 const LIVE_JOIN_WINDOW_MS = 15 * 60 * 1000;
 import { drizzle } from "../../db";
-import { instructorDetails, rooms, user } from "../../schema/schema";
+import {
+  instructorDetails,
+  instructorWallet,
+  rooms,
+  user,
+  walletTransaction,
+} from "../../schema/schema";
 import { formatForInstructor } from "../../services/timezone.service";
 import {
   instructorsSwaggerSchemas,
@@ -78,6 +84,17 @@ export class InstructorsController {
             ],
           },
           this.updateProfile,
+        );
+
+        router.get(
+          "/instructor/wallet",
+          {
+            preHandler: [
+              this.authMiddleware.handle,
+              requireRole(USER_ROLES.INSTRUCTOR),
+            ],
+          },
+          this.getWallet,
         );
       },
       { prefix: "/" },
@@ -235,6 +252,43 @@ export class InstructorsController {
       .where(eq(instructorDetails.userId, me.id));
 
     const { statusCode, payload } = successResponse({ message: "Profile updated", data: null });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private getWallet = async (request: FastifyRequest, reply: FastifyReply) => {
+    const me = request.user!;
+
+    const [wallet] = await drizzle
+      .select({ id: instructorWallet.id, balancePaise: instructorWallet.balancePaise })
+      .from(instructorWallet)
+      .where(eq(instructorWallet.instructorId, me.id));
+
+    const transactions = wallet
+      ? await drizzle
+          .select({
+            id: walletTransaction.id,
+            amountPaise: walletTransaction.amountPaise,
+            type: walletTransaction.type,
+            description: walletTransaction.description,
+            roomId: walletTransaction.roomId,
+            createdAt: walletTransaction.createdAt,
+          })
+          .from(walletTransaction)
+          .where(eq(walletTransaction.walletId, wallet.id))
+          .orderBy(desc(walletTransaction.createdAt))
+          .limit(50)
+      : [];
+
+    const balancePaise = wallet?.balancePaise ?? 0;
+
+    const { statusCode, payload } = successResponse({
+      message: "Wallet",
+      data: {
+        balancePaise,
+        balanceInr: balancePaise / 100,
+        transactions,
+      },
+    });
     return reply.status(statusCode).send(payload);
   };
 }

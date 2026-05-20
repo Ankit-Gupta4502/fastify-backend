@@ -41,3 +41,11 @@ export function useUploadAttachment() {
     mutationFn: (file: File) => uploadsApi.uploadAttachment(file),
   });
 }
+
+export function useInstructorWallet() {
+  return useQuery({
+    queryKey: queryKeys.instructors.myWallet(),
+    queryFn: instructorsApi.getWallet,
+    staleTime: 30_000,
+  });
+}

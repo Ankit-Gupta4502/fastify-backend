@@ -54,3 +54,6 @@ export type PlanName = (typeof PLAN_NAME)[keyof typeof PLAN_NAME];
 
 export const DEFAULT_USER_TIMEZONE = "UTC";
 export const INSTRUCTOR_TIMEZONE = "Asia/Kolkata";
+
+// Earnings credited to the instructor's wallet after each completed session (in paise)
+export const SESSION_EARNING_PAISE = 40_000; // 400 INR

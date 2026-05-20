@@ -3,6 +3,7 @@ import {
   type InstructorListItem,
   type InstructorProfile,
   type UpdateProfileBody,
+  type WalletBalance,
 } from "@yoga-app/shared";
 import { apiRequest } from "../lib/http";
 
@@ -26,4 +27,7 @@ export const instructorsApi = {
       method: "PUT",
       data: body,
     }),
+
+  getWallet: () =>
+    apiRequest<WalletBalance>(API_ENDPOINTS.INSTRUCTORS.MY_WALLET),
 };

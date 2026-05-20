@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
     LIST: "/instructors",
     MY_SCHEDULE: "/instructor/schedule",
     MY_PROFILE: "/instructor/profile",
+    MY_WALLET: "/instructor/wallet",
   },
   UPLOADS: {
     ATTACHMENT: "/uploads/attachment",

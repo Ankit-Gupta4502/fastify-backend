@@ -40,3 +40,11 @@ export {
   sessionQuotaLog,
   sessionQuotaLogRelations,
 } from "../models/session-quota-log";
+
+export {
+  instructorWallet,
+  walletTransaction,
+  instructorWalletRelations,
+  walletTransactionRelations,
+  walletTransactionTypeEnum,
+} from "../models/instructor-wallet";

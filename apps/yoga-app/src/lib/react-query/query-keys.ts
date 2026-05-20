@@ -17,6 +17,7 @@ export const queryKeys = {
       [...queryKeys.instructors.all, "list", filters ?? {}] as const,
     mySchedule: () => [...queryKeys.instructors.all, "my-schedule"] as const,
     myProfile: () => [...queryKeys.instructors.all, "my-profile"] as const,
+    myWallet: () => [...queryKeys.instructors.all, "my-wallet"] as const,
   },
   plans: {
     all: ["plans"] as const,
