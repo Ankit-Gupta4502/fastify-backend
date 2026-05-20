@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as InstructorRouteRouteImport } from './routes/instructor/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as UserRouteRouteImport } from './routes/_user/route'
@@ -37,6 +38,11 @@ const PricingRoute = PricingRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin-login',
+  path: '/admin-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InstructorRouteRoute = InstructorRouteRouteImport.update({
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/admin-login': typeof AdminLoginRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/billing': typeof UserBillingRoute
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/admin-login': typeof AdminLoginRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/billing': typeof UserBillingRoute
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/_user': typeof UserRouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/admin-login': typeof AdminLoginRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/_user/billing': typeof UserBillingRoute
@@ -192,6 +201,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/instructor'
+    | '/admin-login'
     | '/login'
     | '/pricing'
     | '/billing'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/instructor'
+    | '/admin-login'
     | '/login'
     | '/pricing'
     | '/billing'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/_user'
     | '/admin'
     | '/instructor'
+    | '/admin-login'
     | '/login'
     | '/pricing'
     | '/_user/billing'
@@ -255,6 +267,7 @@ export interface RootRouteChildren {
   UserRouteRoute: typeof UserRouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   InstructorRouteRoute: typeof InstructorRouteRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
   ExpertsExpertIdRoute: typeof ExpertsExpertIdRoute
@@ -276,6 +289,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-login': {
+      id: '/admin-login'
+      path: '/admin-login'
+      fullPath: '/admin-login'
+      preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/instructor': {
@@ -455,6 +475,7 @@ const rootRouteChildren: RootRouteChildren = {
   UserRouteRoute: UserRouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   InstructorRouteRoute: InstructorRouteRouteWithChildren,
+  AdminLoginRoute: AdminLoginRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   ExpertsExpertIdRoute: ExpertsExpertIdRoute,

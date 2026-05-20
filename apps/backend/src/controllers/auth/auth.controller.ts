@@ -18,6 +18,7 @@ import {
   registerBodySchema,
   socialCallbackQuerySchema,
 } from "../../validation/auth.validation.schema";
+import { USER_ROLES } from "../../constants/roles";
 import {
   errorResponse,
   successResponse,
