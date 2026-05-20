@@ -18,6 +18,10 @@ function AdminLayout() {
     if (!isAuthenticated || user?.role !== USER_ROLES.ADMIN) {
       navigate({ to: "/login", search: { redirect: location.href } });
     }
+    if(isAuthenticated){
+      navigate({ to: "/admin/users"});
+
+    }
   }, [isLoading, isAuthenticated, user, navigate, location.href]);
 
   if (isLoading || !isAuthenticated || user?.role !== USER_ROLES.ADMIN) return null;
