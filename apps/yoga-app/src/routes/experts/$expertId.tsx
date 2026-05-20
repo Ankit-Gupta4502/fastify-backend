@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Calendar, MessageSquare, Radio, Clock, WifiOff, Sparkles, Award, Users } from "lucide-react";
+import { ArrowLeft, Calendar, MessageSquare, Radio, Clock, WifiOff, Sparkles, Award, Users, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useInstructors } from "@/hooks/use-instructors";
+import { useExpertProfile } from "@/hooks/use-instructors";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { InstructorListItem } from "@yoga-app/shared";
+import type { PublicInstructorProfile } from "@yoga-app/shared";
+import { Chip } from "@/components/shared/chip";
+import { NotFound } from "@/components/shared/not-found";
 
 export const Route = createFileRoute("/experts/$expertId")({
   component: ExpertDetailPage,
@@ -27,20 +29,26 @@ const accentColors = [
 
 function ExpertDetailPage() {
   const { expertId } = Route.useParams();
-  const { data, isLoading } = useInstructors();
-  const instructors = data?.data ?? [];
-  const instructor = instructors.find((i) => i.id === expertId);
+  const { data, isLoading, isError } = useExpertProfile(expertId);
+  const instructor = data?.data;
 
   if (isLoading) return <DetailSkeleton />;
-  if (!instructor) return <NotFound />;
+  if (isError || !instructor) return (
+    <NotFound
+      title="Instructor not found"
+      description="This instructor may no longer be active."
+      backTo="/experts"
+      backLabel="Browse all experts"
+    />
+  );
 
   return <InstructorDetail instructor={instructor} />;
 }
 
-function InstructorDetail({ instructor }: { instructor: InstructorListItem }) {
-  const status = statusConfig[instructor.status];
+function InstructorDetail({ instructor }: { instructor: PublicInstructorProfile }) {
+  const status = statusConfig[instructor.status as keyof typeof statusConfig];
   const StatusIcon = status.icon;
-  const initials = instructor.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  const initials = instructor.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
   const avatarGradient = accentColors[Math.abs(instructor.id.charCodeAt(0) + instructor.id.charCodeAt(1)) % accentColors.length];
 
   return (
@@ -60,17 +68,29 @@ function InstructorDetail({ instructor }: { instructor: InstructorListItem }) {
             <div className="absolute inset-0 opacity-5">
               <div className={cn("w-full h-full bg-linear-to-br", avatarGradient)} />
             </div>
-            <div className={cn(
-              "relative size-28 rounded-3xl bg-linear-to-br flex items-center justify-center text-white text-4xl font-bold shadow-2xl",
-              avatarGradient
-            )}>
-              {initials}
-            </div>
+            {instructor.profileImageUrl ? (
+              <img
+                src={instructor.profileImageUrl}
+                alt={instructor.name}
+                className="relative size-28 rounded-3xl object-cover shadow-2xl"
+              />
+            ) : (
+              <div className={cn(
+                "relative size-28 rounded-3xl bg-linear-to-br flex items-center justify-center text-white text-4xl font-bold shadow-2xl",
+                avatarGradient
+              )}>
+                {initials}
+              </div>
+            )}
             <div className="relative text-center space-y-1">
               <h2 className="text-2xl font-bold tracking-tight">{instructor.name}</h2>
-              <p className="text-sm font-bold text-primary/70 uppercase tracking-widest">
-                {instructor.specialty[0] ?? "Yoga Instructor"}
-              </p>
+              {instructor.tagline ? (
+                <p className="text-sm text-muted-foreground leading-snug">{instructor.tagline}</p>
+              ) : (
+                <p className="text-sm font-bold text-primary/70 uppercase tracking-widest">
+                  {instructor.specialty[0] ?? "Yoga Instructor"}
+                </p>
+              )}
             </div>
             <div className={cn(
               "relative flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold",
@@ -81,6 +101,19 @@ function InstructorDetail({ instructor }: { instructor: InstructorListItem }) {
             </div>
           </div>
 
+          {/* Years of experience */}
+          {instructor.yearsOfExperience != null && (
+            <div className="rounded-3xl border border-border/50 bg-card/60 p-6 flex items-center gap-4">
+              <div className={cn("size-10 rounded-2xl bg-linear-to-br flex items-center justify-center text-white shrink-0", avatarGradient)}>
+                <Star className="size-4" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{instructor.yearsOfExperience}+</p>
+                <p className="text-xs text-muted-foreground font-medium">Years of experience</p>
+              </div>
+            </div>
+          )}
+
           {/* Specialties */}
           {instructor.specialty.length > 0 && (
             <div className="rounded-3xl border border-border/50 bg-card/60 p-6 space-y-4">
@@ -89,10 +122,20 @@ function InstructorDetail({ instructor }: { instructor: InstructorListItem }) {
                 <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Specialties</h3>
               </div>
               <div className="flex flex-wrap gap-2">
-                {instructor.specialty.map((s) => (
-                  <span key={s} className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider border border-primary/15">
-                    {s}
-                  </span>
+                {instructor.specialty.map((s: string) => (
+                  <Chip key={s} size="md">{s}</Chip>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tags */}
+          {instructor.tags.length > 0 && (
+            <div className="rounded-3xl border border-border/50 bg-card/60 p-6 space-y-4">
+              <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Focus Areas</h3>
+              <div className="flex flex-wrap gap-2">
+                {instructor.tags.map((t: string) => (
+                  <Chip key={t} variant="muted" size="md">{t}</Chip>
                 ))}
               </div>
             </div>
@@ -154,30 +197,20 @@ function InstructorDetail({ instructor }: { instructor: InstructorListItem }) {
             </p>
           </div>
 
-          {/* Teaching style placeholders */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-serif font-bold">Teaching Approach</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {[
-                { label: "Mindful & Rhythmic", desc: "Every session flows with intention and breath." },
-                { label: "All Levels Welcome", desc: "From first-timers to advanced practitioners." },
-                { label: "Alignment Focused", desc: "Strong emphasis on posture and body awareness." },
-                { label: "Holistic Practice", desc: "Mind, body, and spirit in harmony." },
-              ].map((item) => (
-                <div key={item.label} className="p-5 rounded-2xl bg-card border border-border/40 shadow-sm space-y-1.5 hover:border-primary/20 transition-colors">
-                  <h4 className="font-bold text-sm">{item.label}</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
+          {/* Bio */}
+          {instructor.bio && (
+            <div className="space-y-3">
+              <h3 className="text-xl font-serif font-bold">About</h3>
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{instructor.bio}</p>
             </div>
-          </div>
+          )}
 
           {/* Specialties detail */}
           {instructor.specialty.length > 0 && (
             <div className="space-y-4">
               <h3 className="text-xl font-serif font-bold">Areas of Expertise</h3>
               <div className="space-y-3">
-                {instructor.specialty.map((s, i) => (
+                {instructor.specialty.map((s: string, i: number) => (
                   <div key={s} className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 bg-card/50 hover:border-primary/20 transition-colors">
                     <div className={cn(
                       "size-9 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0 bg-linear-to-br",
@@ -190,6 +223,29 @@ function InstructorDetail({ instructor }: { instructor: InstructorListItem }) {
                       <p className="text-xs text-muted-foreground">Certified specialty</p>
                     </div>
                   </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Video links */}
+          {instructor.videoLinks.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-serif font-bold">Featured Videos</h3>
+              <div className="space-y-2">
+                {instructor.videoLinks.map((url: string, i: number) => (
+                  <a
+                    key={url}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-4 rounded-2xl border border-border/40 bg-card/50 hover:border-primary/20 transition-colors text-sm font-medium text-primary"
+                  >
+                    <span className="size-7 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-bold shrink-0">
+                      {i + 1}
+                    </span>
+                    <span className="truncate">{url}</span>
+                  </a>
                 ))}
               </div>
             </div>
@@ -236,15 +292,3 @@ function DetailSkeleton() {
   );
 }
 
-function NotFound() {
-  return (
-    <div className="py-20 text-center space-y-4">
-      <p className="text-4xl font-serif font-bold text-muted-foreground/30">404</p>
-      <h2 className="text-2xl font-bold">Instructor not found</h2>
-      <p className="text-muted-foreground">This instructor may no longer be active.</p>
-      <Button asChild variant="outline" className="rounded-full mt-4">
-        <Link to="/experts">Browse all experts</Link>
-      </Button>
-    </div>
-  );
-}

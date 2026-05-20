@@ -10,6 +10,12 @@ export const instructorQueryOptions = {
       queryFn: () => instructorsApi.list(filters),
       staleTime: 60_000,
     }),
+  expertProfile: (id: string) =>
+    queryOptions({
+      queryKey: queryKeys.instructors.expertProfile(id),
+      queryFn: () => instructorsApi.getExpertProfile(id),
+      staleTime: 60_000,
+    }),
   myProfile: () =>
     queryOptions({
       queryKey: queryKeys.instructors.myProfile(),
@@ -20,6 +26,10 @@ export const instructorQueryOptions = {
 
 export function useInstructors(filters?: { status?: string; specialty?: string }) {
   return useQuery(instructorQueryOptions.list(filters));
+}
+
+export function useExpertProfile(id: string) {
+  return useQuery(instructorQueryOptions.expertProfile(id));
 }
 
 export function useInstructorProfile() {

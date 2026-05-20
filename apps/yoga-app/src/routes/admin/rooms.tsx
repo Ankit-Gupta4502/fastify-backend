@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAdminGroupRooms, useAdminInstructors } from "@/hooks/use-admin";
 import { RoomsTable } from "./_components/rooms-table";
 import { CreateRoomDialog } from "./_components/create-room-dialog";
+import { SectionHeader } from "@/components/shared/section-header";
 
 export const Route = createFileRoute("/admin/rooms")({
   component: AdminRoomsPage,
@@ -20,17 +21,12 @@ function AdminRoomsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-4 flex-wrap">
-        <div className="space-y-1">
-          <span className="text-[10px] font-bold tracking-[0.4em] text-primary uppercase border border-primary/20 px-3 py-1.5 rounded-md inline-block">
-            Admin
-          </span>
-          <h1 className="text-3xl font-serif font-bold tracking-tight">Group Classes</h1>
-          <p className="text-muted-foreground text-sm">Schedule upcoming group sessions and assign instructors.</p>
-        </div>
-        <Button
-          className="rounded-2xl gap-2 shadow-sm"
-          onClick={() => setOpen(true)}
-        >
+        <SectionHeader
+          eyebrow="Admin"
+          title="Group Classes"
+          description="Schedule upcoming group sessions and assign instructors."
+        />
+        <Button className="rounded-2xl gap-2 shadow-sm" onClick={() => setOpen(true)}>
           <Plus className="size-4" />
           New class
         </Button>

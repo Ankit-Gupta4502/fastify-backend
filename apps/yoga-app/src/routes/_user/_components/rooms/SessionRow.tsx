@@ -1,9 +1,9 @@
 import { Users, Clock } from "lucide-react";
 import type { UpcomingRoom } from "@yoga-app/shared";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatCompact, relativeFromNow } from "@/lib/timezone";
+import { Chip } from "@/components/shared/chip";
 
 interface SessionRowProps {
   room: UpcomingRoom;
@@ -35,9 +35,7 @@ export function SessionRow({ room, tz, acting, onEnrol, onJoinLive }: SessionRow
       <td className="px-4 py-3.5">
         <div className="flex flex-wrap gap-1">
           {room.instructor.specialty.slice(0, 3).map((s) => (
-            <Badge key={s} className="bg-primary/10 text-primary border-none px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
-              {s}
-            </Badge>
+            <Chip key={s}>{s}</Chip>
           ))}
         </div>
       </td>

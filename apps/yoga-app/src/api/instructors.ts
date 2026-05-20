@@ -2,6 +2,7 @@ import {
   API_ENDPOINTS,
   type InstructorListItem,
   type InstructorProfile,
+  type PublicInstructorProfile,
   type UpdateProfileBody,
   type WalletBalance,
 } from "@yoga-app/shared";
@@ -18,6 +19,9 @@ export const instructorsApi = {
       : API_ENDPOINTS.INSTRUCTORS.LIST;
     return apiRequest<InstructorListItem[]>(path);
   },
+
+  getExpertProfile: (id: string) =>
+    apiRequest<PublicInstructorProfile>(API_ENDPOINTS.INSTRUCTORS.EXPERT_PROFILE(id)),
 
   getProfile: () =>
     apiRequest<InstructorProfile>(API_ENDPOINTS.INSTRUCTORS.MY_PROFILE),

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatCompact } from "@/lib/timezone";
+import { Chip } from "@/components/shared/chip";
 
 
 interface UpcomingSessionListProps {
@@ -58,11 +59,7 @@ export function UpcomingSessionList({
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-bold text-sm truncate">{room.instructor.name}</p>
-                      {room.isEnrolled && (
-                        <span className="text-[10px] font-bold uppercase tracking-wide bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full">
-                          Enrolled
-                        </span>
-                      )}
+                      {room.isEnrolled && <Chip variant="info">Enrolled</Chip>}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {formatCompact(room.scheduledStartUtc, timezone)} · {room.currentOccupancy}/{room.capacity}

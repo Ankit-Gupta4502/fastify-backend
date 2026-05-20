@@ -16,6 +16,7 @@ export const queryKeys = {
     list: (filters?: { status?: string; specialty?: string }) =>
       [...queryKeys.instructors.all, "list", filters ?? {}] as const,
     mySchedule: () => [...queryKeys.instructors.all, "my-schedule"] as const,
+    expertProfile: (id: string) => [...queryKeys.instructors.all, "expert-profile", id] as const,
     myProfile: () => [...queryKeys.instructors.all, "my-profile"] as const,
     myWallet: () => [...queryKeys.instructors.all, "my-wallet"] as const,
   },

@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Sparkles } from "lucide-react";
 import { useInstructors } from "@/hooks/use-instructors";
 import { ExpertCard } from "./_components/ExpertCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 
 export const Route = createFileRoute("/experts/")({
   component: ExpertsPage,
@@ -34,9 +36,14 @@ function ExpertsPage() {
               <ExpertCard key={instructor.id} instructor={instructor} index={i} />
             ))}
         {!isLoading && instructors.length === 0 && (
-          <p className="text-muted-foreground col-span-3 text-center py-12">
-            No instructors yet. Check back soon.
-          </p>
+          <div className="col-span-3">
+            <EmptyState
+              icon={Sparkles}
+              title="No instructors yet."
+              description="Check back soon."
+              variant="plain"
+            />
+          </div>
         )}
       </div>
     </div>

@@ -1,6 +1,8 @@
 import type { AdminUser } from "@yoga-app/shared";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
+import { Chip } from "@/components/shared/chip";
+import { TableSkeletonRows } from "@/components/shared/table-skeleton-rows";
+import { ErrorCard } from "@/components/shared/error-card";
+import type { ChipVariant } from "@/components/shared/chip";
 
 interface UsersTableProps {
   users: AdminUser[];
@@ -8,20 +10,14 @@ interface UsersTableProps {
   error: Error | null;
 }
 
-const ROLE_STYLES: Record<string, string> = {
-  admin: "bg-primary/10 text-primary border-none",
-  instructor: "bg-accent/10 text-accent border-none",
-  user: "bg-secondary text-muted-foreground border-none",
+const ROLE_CHIP_VARIANT: Record<string, ChipVariant> = {
+  admin: "primary",
+  instructor: "info",
+  user: "muted",
 };
 
 export function UsersTable({ users, isLoading, error }: UsersTableProps) {
-  if (error) {
-    return (
-      <div className="rounded-2xl bg-destructive/5 border border-destructive/30 text-destructive p-6 text-sm">
-        Failed to load users.
-      </div>
-    );
-  }
+  if (error) return <ErrorCard message="Failed to load users." />;
 
   return (
     <div className="rounded-2xl border border-border/60 overflow-hidden">
@@ -36,33 +32,25 @@ export function UsersTable({ users, isLoading, error }: UsersTableProps) {
           </tr>
         </thead>
         <tbody className="divide-y divide-border/40">
-          {isLoading
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <tr key={i}>
-                  {Array.from({ length: 5 }).map((__, j) => (
-                    <td key={j} className="px-4 py-3">
-                      <Skeleton className="h-4 w-full rounded-md" />
-                    </td>
-                  ))}
-                </tr>
-              ))
-            : users.map((u) => (
-                <tr key={u.id} className="hover:bg-secondary/20 transition-colors">
-                  <td className="px-4 py-3 font-medium">{u.name}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <Badge className={ROLE_STYLES[u.role] ?? ROLE_STYLES.user}>
-                      {u.role}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground capitalize">
-                    {u.planName?.replace("_", " ") ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {new Date(u.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
+          {isLoading ? (
+            <TableSkeletonRows rows={6} cols={5} />
+          ) : (
+            users.map((u) => (
+              <tr key={u.id} className="hover:bg-secondary/20 transition-colors">
+                <td className="px-4 py-3 font-medium">{u.name}</td>
+                <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
+                <td className="px-4 py-3">
+                  <Chip variant={ROLE_CHIP_VARIANT[u.role] ?? "muted"}>{u.role}</Chip>
+                </td>
+                <td className="px-4 py-3 text-muted-foreground capitalize">
+                  {u.planName?.replace("_", " ") ?? "—"}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {new Date(u.createdAt).toLocaleDateString()}
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
       {!isLoading && users.length === 0 && (

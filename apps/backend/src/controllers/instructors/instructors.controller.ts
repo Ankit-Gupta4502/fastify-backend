@@ -46,7 +46,6 @@ export class InstructorsController {
         router.get(
           "/instructors",
           {
-            preHandler: this.authMiddleware.handle,
             schema: instructorsSwaggerSchemas.list,
           },
           this.listInstructors,
@@ -62,6 +61,12 @@ export class InstructorsController {
             schema: instructorsSwaggerSchemas.mySchedule,
           },
           this.mySchedule,
+        );
+
+        router.get(
+          "/instructor/:id/profile",
+          {},
+          this.getInstructorProfile,
         );
 
         router.get(
@@ -196,6 +201,44 @@ export class InstructorsController {
       message: "Your upcoming schedule (IST)",
       data,
     });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private getInstructorProfile = async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+
+    const [row] = await drizzle
+      .select({
+        id: user.id,
+        name: user.name,
+        image: user.image,
+        status: instructorDetails.status,
+        specialty: instructorDetails.specialty,
+        currentRoomId: instructorDetails.currentRoomId,
+        bio: instructorDetails.bio,
+        tagline: instructorDetails.tagline,
+        profileImageUrl: instructorDetails.profileImageUrl,
+        avatarKey: instructorDetails.avatarKey,
+        videoLinks: instructorDetails.videoLinks,
+        tags: instructorDetails.tags,
+        yearsOfExperience: instructorDetails.yearsOfExperience,
+      })
+      .from(instructorDetails)
+      .innerJoin(user, eq(instructorDetails.userId, user.id))
+      .where(
+        and(
+          eq(instructorDetails.userId, id),
+          eq(user.role, USER_ROLES.INSTRUCTOR),
+          eq(instructorDetails.isApproved, true),
+        ),
+      );
+
+    if (!row) {
+      const { statusCode, payload } = errorResponse({ message: "Instructor not found", statusCode: 404 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const { statusCode, payload } = successResponse({ message: "Instructor profile", data: row });
     return reply.status(statusCode).send(payload);
   };
 

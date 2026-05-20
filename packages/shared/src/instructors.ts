@@ -24,6 +24,22 @@ export interface InstructorProfile {
   yearsOfExperience: number | null;
 }
 
+export interface PublicInstructorProfile {
+  id: string;
+  name: string;
+  image: string | null;
+  status: InstructorStatus;
+  specialty: string[];
+  currentRoomId: string | null;
+  bio: string | null;
+  tagline: string | null;
+  profileImageUrl: string | null;
+  avatarKey: string | null;
+  videoLinks: string[];
+  tags: string[];
+  yearsOfExperience: number | null;
+}
+
 export interface UpdateProfileBody {
   bio?: string;
   tagline?: string;

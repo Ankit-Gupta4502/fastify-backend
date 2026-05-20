@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { Sparkles, TrendingUp } from "lucide-react";
 import type { UpcomingRoom } from "@yoga-app/shared";
 import {
@@ -8,11 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatCompact, relativeFromNow } from "@/lib/timezone";
+import { Chip } from "@/components/shared/chip";
+import { EmptyState } from "@/components/shared/empty-state";
 
 
 
@@ -42,10 +42,9 @@ export function NextFlowCard({
             <CardDescription>Auto-converted to {timezone}</CardDescription>
           </div>
           {room && (
-            <Badge className="bg-accent/15 text-accent border-none px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-              <TrendingUp className="size-3 mr-1.5" />
+            <Chip variant="info" icon={TrendingUp} size="md">
               {relativeFromNow(room.scheduledStartUtc)}
-            </Badge>
+            </Chip>
           )}
         </div>
       </CardHeader>
@@ -54,14 +53,12 @@ export function NextFlowCard({
         {isLoading ? (
           <Skeleton className="h-32 w-full rounded-2xl" />
         ) : !room ? (
-          <div className="rounded-2xl border border-dashed border-border/60 p-8 text-center space-y-3">
-            <Sparkles className="size-7 text-primary/50 mx-auto" />
-            <p className="font-bold">No upcoming sessions</p>
-            <p className="text-sm text-muted-foreground">Browse all sessions to find your next flow.</p>
-            <Button asChild className="rounded-full">
-              <Link to="/rooms">Browse rooms</Link>
-            </Button>
-          </div>
+          <EmptyState
+            icon={Sparkles}
+            title="No upcoming sessions"
+            description="Browse all sessions to find your next flow."
+            action={{ label: "Browse rooms", to: "/rooms" }}
+          />
         ) : (
           <div className="flex flex-col sm:flex-row sm:items-center gap-6">
             <div className="size-20 rounded-2xl bg-linear-to-br from-primary/30 to-accent/30 flex items-center justify-center text-primary shrink-0">
@@ -71,21 +68,12 @@ export function NextFlowCard({
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-2xl font-serif font-bold">{room.instructor.name}</h3>
-                {room.isEnrolled && (
-                  <span className="text-[10px] font-bold uppercase tracking-wide bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full">
-                    Enrolled
-                  </span>
-                )}
+                {room.isEnrolled && <Chip variant="info">Enrolled</Chip>}
               </div>
               <p className="text-sm text-muted-foreground">{formatCompact(room.scheduledStartUtc, timezone)}</p>
               <div className="flex flex-wrap gap-1.5">
                 {room.instructor.specialty.slice(0, 3).map((s) => (
-                  <Badge
-                    key={s}
-                    className="bg-primary/10 text-primary border-none px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
-                  >
-                    {s}
-                  </Badge>
+                  <Chip key={s}>{s}</Chip>
                 ))}
               </div>
             </div>

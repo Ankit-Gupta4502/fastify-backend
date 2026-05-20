@@ -7,12 +7,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatCompact, relativeFromNow } from "@/lib/timezone";
 import { INSTRUCTOR_IANA, INSTRUCTOR_TIMEZONE_LABEL } from "@/constants/sessions";
+import { Chip } from "@/components/shared/chip";
+import { EmptyState } from "@/components/shared/empty-state";
 
 interface NextClassCardProps {
   room: InstructorScheduleRoom | undefined;
@@ -31,10 +32,9 @@ export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassC
             <CardDescription>Times are in {INSTRUCTOR_TIMEZONE_LABEL}</CardDescription>
           </div>
           {room && (
-            <Badge className="bg-primary/10 text-primary border-none px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-              <TrendingUp className="size-3 mr-1.5" />
+            <Chip icon={TrendingUp} size="md">
               {relativeFromNow(room.scheduledStartUtc)}
-            </Badge>
+            </Chip>
           )}
         </div>
       </CardHeader>
@@ -43,13 +43,11 @@ export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassC
         {isLoading ? (
           <Skeleton className="h-32 w-full rounded-2xl" />
         ) : !room ? (
-          <div className="rounded-2xl border border-dashed border-border/60 p-8 text-center space-y-3">
-            <Sparkles className="size-7 text-primary/50 mx-auto" />
-            <p className="font-bold">No classes scheduled</p>
-            <p className="text-sm text-muted-foreground">
-              Admin will assign upcoming flows here.
-            </p>
-          </div>
+          <EmptyState
+            icon={Sparkles}
+            title="No classes scheduled"
+            description="Admin will assign upcoming flows here."
+          />
         ) : (
           <div className="flex flex-col sm:flex-row sm:items-center gap-6">
             <div className="size-20 rounded-2xl bg-linear-to-br from-primary/30 to-accent/30 flex items-center justify-center text-primary shrink-0">

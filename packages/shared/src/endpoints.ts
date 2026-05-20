@@ -18,6 +18,7 @@ export const API_ENDPOINTS = {
   },
   INSTRUCTORS: {
     LIST: "/instructors",
+    EXPERT_PROFILE: (id: string) => `/instructor/${id}/profile`,
     MY_SCHEDULE: "/instructor/schedule",
     MY_PROFILE: "/instructor/profile",
     MY_WALLET: "/instructor/wallet",

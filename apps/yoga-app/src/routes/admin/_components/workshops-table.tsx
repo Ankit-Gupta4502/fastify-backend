@@ -1,7 +1,7 @@
 import { Pencil, Trash2, ToggleLeft, ToggleRight, Video, CalendarDays, Users, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { TableSkeletonRows } from "@/components/shared/table-skeleton-rows";
 import { useUpdateWorkshop, useDeleteWorkshop } from "@/hooks/use-workshops";
 import type { AdminWorkshop } from "@yoga-app/shared";
 import { formatCompact, userTimezone } from "@/lib/timezone";
@@ -35,15 +35,7 @@ export function WorkshopsTable({ workshops, isLoading, onEdit }: Props) {
           </thead>
           <tbody>
             {isLoading ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <tr key={i} className="border-b border-border/40">
-                  {Array.from({ length: 6 }).map((__, j) => (
-                    <td key={j} className="px-4 py-4">
-                      <Skeleton className="h-4 rounded" />
-                    </td>
-                  ))}
-                </tr>
-              ))
+              <TableSkeletonRows rows={3} cols={6} />
             ) : workshops.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-14 text-center text-muted-foreground text-sm">
