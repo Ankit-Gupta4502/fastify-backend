@@ -34,7 +34,7 @@ export const authSwaggerSchemas = {
         rememberMe: { type: "boolean" as const },
         role: {
           type: "string" as const,
-          enum: ["user", "instructor"],
+          enum: ["user", "instructor","admin"],
         },
       },
     },

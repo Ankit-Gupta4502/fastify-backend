@@ -6,12 +6,6 @@ import { Skeleton } from "../ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
-const publicAnchors = [{ label: "Features", href: "#features" }] as const;
-
-const publicLinks = [
-  { label: "Experts", to: "/experts" },
-  { label: "Pricing", to: "/pricing" },
-] as const;
 
 export function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -32,31 +26,9 @@ export function Header() {
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
-            {!isAuthenticated && (
-              <>
-                {publicAnchors.map((item) => (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {item.label}
-                  </a>
-                ))}
-                {publicLinks.map((item) => (
-                  <Link
-                    key={item.label}
-                    to={item.to}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </>
-            )}
+           
 
-            {isAuthenticated && !isInstructor && !isAdmin && (
-              <>
+      
                 <Link
                   to="/experts"
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -70,8 +42,8 @@ export function Header() {
                   <Tag className="size-3.5" />
                   Pricing
                 </Link>
-              </>
-            )}
+       
+
           </nav>
         </div>
 
