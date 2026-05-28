@@ -26,9 +26,11 @@ ENV_FILE="$CLEAN_ENV_FILE"
 echo "==> Running database migrations..."
 docker build --target build -t "$MIGRATE_IMAGE_NAME" -f "$ROOT_DIR/Dockerfile" "$REPO_ROOT"
 docker run --rm --env-file "$ENV_FILE" "$MIGRATE_IMAGE_NAME" pnpm --filter @yoga-app/backend db:migrate
+docker rmi -f "$MIGRATE_IMAGE_NAME" 2>/dev/null || true
 
 echo "==> Stopping existing container (if any)..."
 docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
+docker rmi -f "$IMAGE_NAME" 2>/dev/null || true
 
 echo "==> Building image: $IMAGE_NAME"
 docker build -t "$IMAGE_NAME" -f "$ROOT_DIR/Dockerfile" "$REPO_ROOT"
@@ -43,6 +45,9 @@ docker run -d \
 
 echo "==> Container status"
 docker ps --filter "name=^${CONTAINER_NAME}$"
+
+echo "==> Pruning dangling images..."
+docker image prune -f
 
 echo ""
 echo "Deployed successfully."
