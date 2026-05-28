@@ -24,6 +24,7 @@ export interface CreateWorkshopBody {
   name: string;
   description: string;
   price?: number | null;
+  image?: string | null;
   meetLink?: string | null;
   scheduledAt?: string | null;
   maxAttendees?: number;
@@ -34,6 +35,7 @@ export interface UpdateWorkshopBody {
   name?: string;
   description?: string;
   price?: number | null;
+  image?: string | null;
   meetLink?: string | null;
   scheduledAt?: string | null;
   maxAttendees?: number;

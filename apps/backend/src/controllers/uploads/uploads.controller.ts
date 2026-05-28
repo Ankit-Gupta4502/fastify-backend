@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
-import { uploadFile } from "../../services/upload.service";
+import { uploadFile, deleteFile } from "../../services/upload.service";
 import { errorResponse, successResponse } from "../../utils";
 
 export class UploadsController {
@@ -18,6 +18,11 @@ export class UploadsController {
           "/attachment",
           { preHandler: this.authMiddleware.handle },
           this.upload,
+        );
+        router.delete(
+          "/attachment",
+          { preHandler: this.authMiddleware.handle },
+          this.delete,
         );
       },
       { prefix: "/uploads" },
@@ -48,6 +53,27 @@ export class UploadsController {
     } catch (err) {
       const { statusCode, payload } = errorResponse({
         message: err instanceof Error ? err.message : "Upload failed",
+        statusCode: 400,
+      });
+      return reply.status(statusCode).send(payload);
+    }
+  };
+
+  private delete = async (request: FastifyRequest, reply: FastifyReply) => {
+    const { key } = request.query as { key?: string };
+
+    if (!key || typeof key !== "string" || !key.startsWith("uploads/")) {
+      const { statusCode, payload } = errorResponse({ message: "Invalid key", statusCode: 400 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    try {
+      await deleteFile(key);
+      const { statusCode, payload } = successResponse({ message: "Deleted", data: null });
+      return reply.status(statusCode).send(payload);
+    } catch (err) {
+      const { statusCode, payload } = errorResponse({
+        message: err instanceof Error ? err.message : "Delete failed",
         statusCode: 400,
       });
       return reply.status(statusCode).send(payload);

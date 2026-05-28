@@ -7,6 +7,7 @@ import { USER_ROLES } from "../../constants/roles";
 import { drizzle } from "../../db";
 import { registeredWorkshops, workshops } from "../../schema/schema";
 import { errorResponse, successResponse, validateWithZod } from "../../utils";
+import { deleteFile } from "../../services/upload.service";
 
 const joinBodySchema = z.object({
   name: z.string().min(1).max(100),
@@ -17,6 +18,7 @@ const createBodySchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().min(1).max(2000),
   price: z.number().int().min(0).optional().nullable(),
+  image: z.string().url().optional().nullable(),
   meetLink: z.string().url().optional().nullable(),
   scheduledAt: z.string().datetime().optional().nullable(),
   maxAttendees: z.number().int().min(1).max(10000).optional(),
@@ -228,6 +230,7 @@ export class WorkshopsController {
         name: body.name,
         description: body.description,
         price: body.price ?? null,
+        image: body.image ?? null,
         meetLink: body.meetLink ?? null,
         scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
         maxAttendees: body.maxAttendees ?? 50,
@@ -252,12 +255,23 @@ export class WorkshopsController {
     const { id } = request.params as { id: string };
     const body = request.body as z.infer<typeof updateBodySchema>;
 
+    // Fetch current image key before overwriting so we can delete from R2
+    let oldImageKey: string | null = null;
+    if (body.image !== undefined) {
+      const [current] = await drizzle
+        .select({ image: workshops.image })
+        .from(workshops)
+        .where(eq(workshops.id, id));
+      oldImageKey = current?.image ?? null;
+    }
+
     const [updated] = await drizzle
       .update(workshops)
       .set({
         ...(body.name !== undefined && { name: body.name }),
         ...(body.description !== undefined && { description: body.description }),
         ...(body.price !== undefined && { price: body.price }),
+        ...(body.image !== undefined && { image: body.image }),
         ...(body.meetLink !== undefined && { meetLink: body.meetLink }),
         ...(body.scheduledAt !== undefined && { scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null }),
         ...(body.maxAttendees !== undefined && { maxAttendees: body.maxAttendees }),
@@ -270,6 +284,12 @@ export class WorkshopsController {
     if (!updated) {
       const { statusCode, payload } = errorResponse({ message: "Workshop not found", statusCode: 404 });
       return reply.status(statusCode).send(payload);
+    }
+
+    // Delete old image from R2 if it was replaced
+    if (oldImageKey && body.image !== oldImageKey) {
+      const key = oldImageKey.replace(/^https?:\/\/[^/]+\//, "");
+      deleteFile(key).catch(() => {});
     }
 
     const { statusCode, payload } = successResponse({ message: "Workshop updated", data: null });
@@ -287,6 +307,11 @@ export class WorkshopsController {
     if (!deleted) {
       const { statusCode, payload } = errorResponse({ message: "Workshop not found", statusCode: 404 });
       return reply.status(statusCode).send(payload);
+    }
+
+    if (deleted.image) {
+      const key = deleted.image.replace(/^https?:\/\/[^/]+\//, "");
+      deleteFile(key).catch(() => {});
     }
 
     const { statusCode, payload } = successResponse({ message: "Workshop deleted", data: null });
