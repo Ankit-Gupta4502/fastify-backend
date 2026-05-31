@@ -1,4 +1,20 @@
 export type RoomStatus = "idle" | "active" | "full" | "ended";
+
+/** Safe public shape — no enrolment state, no HMS tokens */
+export interface PublicRoomPreview {
+  id: string;
+  status: RoomStatus;
+  capacity: number;
+  currentOccupancy: number;
+  spotsLeft: number;
+  scheduledStartUtc: string;
+  scheduledEndUtc: string;
+  canJoinLive: boolean;
+  instructor: {
+    name: string;
+    specialty: string[];
+  };
+}
 export type RoomType = "group" | "private";
 export type BookingStatus = "active" | "completed" | "dropped";
 

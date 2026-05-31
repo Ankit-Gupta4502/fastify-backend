@@ -5,11 +5,15 @@ import {
   type InstructorScheduleRoom,
   type JoinRoomResult,
   type LeaveRoomResult,
+  type PublicRoomPreview,
   type UpcomingRoom,
 } from "@yoga-app/shared";
 import { apiRequest } from "../lib/http";
 
 export const roomsApi = {
+  publicPreview: () =>
+    apiRequest<PublicRoomPreview[]>(API_ENDPOINTS.ROOMS.PUBLIC_PREVIEW),
+
   upcomingGroup: () =>
     apiRequest<UpcomingRoom[]>(API_ENDPOINTS.ROOMS.UPCOMING_GROUP),
 

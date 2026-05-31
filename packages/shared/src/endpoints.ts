@@ -10,11 +10,15 @@ export const API_ENDPOINTS = {
     DETAIL: "/user/detail",
   },
   ROOMS: {
+    PUBLIC_PREVIEW: "/rooms/public/preview",
     UPCOMING_GROUP: "/rooms/group/upcoming",
     ENROL: (id: string) => `/rooms/${id}/enrol`,
     JOIN: (id: string) => `/rooms/${id}/join`,
     LEAVE: (id: string) => `/rooms/${id}/leave`,
     BOOK_PRIVATE: "/rooms/private/book",
+  },
+  REVIEWS: {
+    PUBLIC: "/reviews",
   },
   INSTRUCTORS: {
     LIST: "/instructors",

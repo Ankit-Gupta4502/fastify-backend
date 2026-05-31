@@ -8,6 +8,13 @@ import { roomsApi } from "../api";
 import { queryKeys } from "../lib/react-query/query-keys";
 
 export const roomQueryOptions = {
+  publicPreview: () =>
+    queryOptions({
+      queryKey: queryKeys.rooms.publicPreview(),
+      queryFn: roomsApi.publicPreview,
+      staleTime: 60_000,   // public data, cache for 1 min
+      gcTime: 5 * 60_000,
+    }),
   upcomingGroup: () =>
     queryOptions({
       queryKey: queryKeys.rooms.upcoming(),
@@ -21,6 +28,10 @@ export const roomQueryOptions = {
       staleTime: 30_000,
     }),
 };
+
+export function usePublicRooms() {
+  return useQuery(roomQueryOptions.publicPreview());
+}
 
 export function useUpcomingRooms() {
   return useQuery(roomQueryOptions.upcomingGroup());

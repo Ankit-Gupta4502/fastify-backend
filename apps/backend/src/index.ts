@@ -19,6 +19,7 @@ import { PaymentsController } from "./controllers/payments/payments.controller";
 import { AdminController } from "./controllers/admin/admin.controller";
 import { UploadsController } from "./controllers/uploads/uploads.controller";
 import { WorkshopsController } from "./controllers/workshops/workshops.controller";
+import { ReviewsController } from "./controllers/reviews/reviews.controller";
 import fastifyMultipart from "@fastify/multipart";
 import { errorResponse } from "./utils";
 import { FastifyError } from "fastify";
@@ -155,6 +156,7 @@ const start = async () => {
     new AdminController(authMiddleware, fastify);
     new UploadsController(authMiddleware, fastify);
     new WorkshopsController(authMiddleware, fastify);
+    new ReviewsController(fastify);
 
     fastify.get("/health", async () => {
       return { status: "ok", timestamp: new Date().toISOString() };

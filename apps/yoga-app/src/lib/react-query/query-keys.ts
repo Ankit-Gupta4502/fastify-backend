@@ -10,6 +10,11 @@ export const queryKeys = {
   rooms: {
     all: ["rooms"] as const,
     upcoming: () => [...queryKeys.rooms.all, "upcoming"] as const,
+    publicPreview: () => [...queryKeys.rooms.all, "public-preview"] as const,
+  },
+  reviews: {
+    all: ["reviews"] as const,
+    public: () => [...queryKeys.reviews.all, "public"] as const,
   },
   instructors: {
     all: ["instructors"] as const,

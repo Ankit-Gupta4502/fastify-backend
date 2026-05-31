@@ -5,6 +5,8 @@ import {
   Sparkles, Zap, CreditCard, RefreshCcw, BadgeCheck, HeartHandshake,
   Minus, Plus, Baby, HeartPulse,
 } from "lucide-react";
+
+import { StarDoodle, CircleDoodle, PlusDoodle } from "@/components/shared/doodles";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, centsToDisplay } from "@/lib/utils";
@@ -169,13 +171,24 @@ function PricingPage() {
     <div className="relative">
       {/* Ambient glow */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 size-[600px] bg-primary/4 blur-[120px] rounded-full" />
-        <div className="absolute bottom-1/3 right-0 size-[400px] bg-sky-500/4 blur-[100px] rounded-full" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 size-[700px] bg-primary/5 blur-[130px] rounded-full" />
+        <div className="absolute bottom-1/3 right-0 size-[450px] bg-sky-500/4 blur-[110px] rounded-full" />
+        <div className="absolute top-1/2 left-0 size-[300px] bg-accent/4 blur-[90px] rounded-full" />
+      </div>
+
+      {/* Floating doodle decorations */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+        <StarDoodle className="absolute top-20 right-[8%] size-7 text-primary/20 animate-doodle-float" />
+        <CircleDoodle className="absolute top-10 left-[4%] size-32 text-primary/7 animate-doodle-spin-slow" />
+        <PlusDoodle className="absolute top-[40%] right-[3%] size-5 text-primary/15 animate-doodle-float-alt" style={{ animationDelay: '1.5s' }} />
+        <StarDoodle className="absolute top-[55%] left-[6%] size-4 text-accent/30 animate-doodle-float" style={{ animationDelay: '2s' }} />
+        <CircleDoodle className="absolute bottom-[20%] right-[5%] size-44 text-accent/6 animate-doodle-spin-rev" />
+        <StarDoodle className="absolute top-[25%] left-[12%] size-2.5 text-primary/25 animate-doodle-float-alt" style={{ animationDelay: '0.8s' }} />
       </div>
 
       <div className="py-10 md:py-16 space-y-16">
         {/* ── Hero ── */}
-        <div className="text-center max-w-2xl mx-auto space-y-6 px-4">
+        <div className="text-center max-w-2xl mx-auto space-y-6 px-4 animate-doodle-fade-up">
           <div className="inline-flex items-center gap-2 bg-primary/8 border border-primary/12 px-4 py-1.5 rounded-full">
             <Zap className="size-3 fill-primary text-primary" />
             <span className="text-[11px] font-bold tracking-[0.3em] text-primary uppercase">Simple Pricing</span>
@@ -183,7 +196,7 @@ function PricingPage() {
           <h1 className="text-5xl md:text-7xl font-serif font-bold tracking-tight leading-[1.05]">
             Invest in your
             <br />
-            <span className="italic text-primary">inner peace</span>
+            <span className="font-doodle italic doodle-underline text-primary">inner peace</span>
           </h1>
           <p className="text-muted-foreground text-lg leading-relaxed max-w-md mx-auto">
             Two honest plans. No hidden fees. No first-month discounts. Just the same fair price, always.
@@ -200,7 +213,7 @@ function PricingPage() {
                 className={cn(
                   "px-6 py-2 rounded-full text-sm font-semibold capitalize transition-all duration-200",
                   activeTab === tab
-                    ? "bg-background text-foreground shadow-sm"
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -444,7 +457,7 @@ function SpecializedPricingCard({
 
         <div className="space-y-0.5">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[3.25rem] font-serif font-bold tracking-tight leading-none">
+            <span className="text-[3.25rem] font-doodle text-primary tracking-tight leading-none transition-all duration-300">
               {centsToDisplay(priceCents)}
             </span>
             <span className="text-muted-foreground text-sm font-medium pb-1">/ mo</span>
@@ -522,12 +535,12 @@ function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthenticate
 
   return (
     <div className="relative">
-      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-primary text-primary-foreground text-[9px] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg shadow-primary/20 whitespace-nowrap">
+      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-primary text-primary-foreground text-[9px] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg shadow-primary/25 whitespace-nowrap animate-doodle-badge">
         <Sparkles className="size-2.5" />
         Most Popular
       </div>
 
-      <div className="group relative flex flex-col overflow-hidden rounded-4xl border transition-all duration-500 hover:-translate-y-1.5 bg-card border-primary/25 shadow-2xl shadow-primary/8">
+      <div className="group relative flex flex-col overflow-hidden rounded-4xl border transition-all duration-500 hover:-translate-y-1.5 bg-card border-primary/30 shadow-2xl shadow-primary/10 sketch-border-lg">
         <div className="absolute inset-x-0 top-0 h-48 bg-linear-to-b from-primary/12 via-primary/5 to-transparent pointer-events-none" />
         <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent pointer-events-none" />
 
@@ -566,7 +579,7 @@ function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthenticate
 
           <div className="space-y-0.5">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[3.25rem] font-serif font-bold tracking-tight leading-none">
+              <span className="text-[3.25rem] font-doodle text-primary tracking-tight leading-none transition-all duration-300">
                 {centsToDisplay(priceCents)}
               </span>
               <span className="text-muted-foreground text-sm font-medium pb-1">/ mo</span>
@@ -592,29 +605,32 @@ function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthenticate
         </div>
 
         <div className="px-7 pb-6 pt-1">
-          {isAuthenticated ? (
-            <Button
-              className="w-full h-12 rounded-2xl font-bold gap-2 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.01] transition-all duration-300"
-              disabled={isPending}
-              onClick={onSubscribe}
-            >
-              {isPending ? (
-                <><Loader2 className="size-4 animate-spin" />Opening checkout…</>
-              ) : (
-                <>Get Private 1:1<ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" /></>
-              )}
-            </Button>
-          ) : (
-            <Button
-              asChild
-              className="w-full h-12 rounded-2xl font-bold gap-2 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.01] transition-all duration-300"
-            >
-              <Link to="/login">
-                Get Started
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          )}
+          <div className="relative group/cta">
+            <div className="doodle-glow-ring" />
+            {isAuthenticated ? (
+              <Button
+                className="relative w-full h-12 rounded-2xl font-bold gap-2 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.02] transition-all duration-300"
+                disabled={isPending}
+                onClick={onSubscribe}
+              >
+                {isPending ? (
+                  <><Loader2 className="size-4 animate-spin" />Opening checkout…</>
+                ) : (
+                  <>Get Private 1:1<ArrowRight className="size-4 transition-transform group-hover/cta:translate-x-0.5" /></>
+                )}
+              </Button>
+            ) : (
+              <Button
+                asChild
+                className="relative w-full h-12 rounded-2xl font-bold gap-2 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.02] transition-all duration-300"
+              >
+                <Link to="/login">
+                  Get Started
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -670,7 +686,7 @@ function PricingCard({ plan, isAuthenticated, isPending, onSubscribe }: PricingC
 
         <div className="space-y-0.5">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[3.25rem] font-serif font-bold tracking-tight leading-none">
+            <span className="text-[3.25rem] font-doodle text-primary tracking-tight leading-none">
               {centsToDisplay(plan.priceCents)}
             </span>
             <span className="text-muted-foreground text-sm font-medium pb-1">/ mo</span>

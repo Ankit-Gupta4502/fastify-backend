@@ -1,10 +1,12 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+import { and, eq, gt, inArray } from "drizzle-orm";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { requireRole } from "../../middleware/role.middleware";
 import { USER_ROLES } from "../../constants/roles";
-import { DEFAULT_USER_TIMEZONE } from "../../constants/sessions";
+import { DEFAULT_USER_TIMEZONE, ROOM_STATUS, ROOM_TYPE } from "../../constants/sessions";
 import { drizzle } from "../../db";
+import { rooms, user, instructorDetails } from "../../schema/schema";
 import {
   bookPrivateSession,
   enrollRoom,
@@ -21,6 +23,8 @@ import {
 import { errorResponse, successResponse, validateWithZod } from "../../utils";
 import { sendBookingConfirmationEmails } from "../../services/booking-email.service";
 
+const LIVE_JOIN_WINDOW_MS = 15 * 60 * 1000;
+
 export class RoomsController {
   constructor(
     private readonly authMiddleware: AuthMiddleware,
@@ -32,6 +36,9 @@ export class RoomsController {
   private register(app: FastifyInstance) {
     app.register(
       async (router) => {
+        // Public — no auth required, safe for homepage
+        router.get("/public/preview", {}, this.listPublicPreview);
+
         router.get(
           "/group/upcoming",
           {
@@ -89,6 +96,59 @@ export class RoomsController {
       { prefix: "/rooms" },
     );
   }
+
+  private listPublicPreview = async (
+    _request: FastifyRequest,
+    reply: FastifyReply,
+  ) => {
+    const now = new Date();
+
+    const rows = await drizzle
+      .select({
+        id: rooms.id,
+        status: rooms.status,
+        capacity: rooms.capacity,
+        currentOccupancy: rooms.currentOccupancy,
+        scheduledStartUtc: rooms.scheduledStart,
+        scheduledEndUtc: rooms.scheduledEnd,
+        instructorName: user.name,
+        instructorSpecialty: instructorDetails.specialty,
+      })
+      .from(rooms)
+      .innerJoin(user, eq(rooms.instructorId, user.id))
+      .innerJoin(instructorDetails, eq(rooms.instructorId, instructorDetails.userId))
+      .where(
+        and(
+          eq(rooms.type, ROOM_TYPE.GROUP),
+          inArray(rooms.status, [ROOM_STATUS.IDLE, ROOM_STATUS.ACTIVE]),
+          gt(rooms.scheduledStart, now),
+        ),
+      )
+      .orderBy(rooms.scheduledStart)
+      .limit(5);
+
+    const data = rows.map((r) => {
+      const start = new Date(r.scheduledStartUtc);
+      const canJoinLive = now.getTime() >= start.getTime() - LIVE_JOIN_WINDOW_MS;
+      return {
+        id: r.id,
+        status: r.status,
+        capacity: r.capacity,
+        currentOccupancy: r.currentOccupancy,
+        spotsLeft: Math.max(0, r.capacity - r.currentOccupancy),
+        scheduledStartUtc: r.scheduledStartUtc,
+        scheduledEndUtc: r.scheduledEndUtc,
+        canJoinLive,
+        instructor: {
+          name: r.instructorName,
+          specialty: r.instructorSpecialty ?? [],
+        },
+      };
+    });
+
+    const { statusCode, payload } = successResponse({ message: "Public room preview", data });
+    return reply.status(statusCode).send(payload);
+  };
 
   private listUpcomingGroup = async (
     request: FastifyRequest,

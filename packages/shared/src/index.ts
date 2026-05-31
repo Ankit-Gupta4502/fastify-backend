@@ -6,5 +6,6 @@ export * from "./endpoints";
 export * from "./instructors";
 export * from "./payments";
 export * from "./plans";
+export * from "./reviews";
 export * from "./rooms";
 export * from "./workshops";
