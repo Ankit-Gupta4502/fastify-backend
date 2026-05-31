@@ -12,8 +12,8 @@ export function useCustomCheckout() {
   const user = useAuthStore((s) => s.user);
 
   return useMutation({
-    mutationFn: async (sessionCount: number) => {
-      const order = await paymentsApi.createCustomOrder({ sessionCount });
+    mutationFn: async ({ sessionCount, planName }: { sessionCount: number; planName: string }) => {
+      const order = await paymentsApi.createCustomOrder({ sessionCount, planName });
       if (!order.data) throw new Error("Order creation failed");
 
       const { orderId, keyId, amount, currency, planId } = order.data;
@@ -23,7 +23,7 @@ export function useCustomCheckout() {
         amount,
         currency,
         name: "Solara Yoga",
-        description: `Private 1:1 — ${sessionCount} sessions/mo`,
+        description: `${planName} — ${sessionCount} sessions/mo`,
         order_id: orderId,
         prefill: {
           name: user?.name ?? undefined,

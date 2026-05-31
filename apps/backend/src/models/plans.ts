@@ -13,6 +13,7 @@ export const plans = pgTable("plans", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull().unique(),
   priceCents: integer("price_cents").notNull(),
+  pricePerSessionCents: integer("price_per_session_cents"),
   billingInterval: text("billing_interval").notNull().default("month"),
   sessionsPerWeek: integer("sessions_per_week"),
   sessionsPerMonth: integer("sessions_per_month"),
@@ -21,6 +22,7 @@ export const plans = pgTable("plans", {
     .notNull()
     .default(false),
   maxRoomCapacity: integer("max_room_capacity"),
+  category: text("category").notNull().default("standard"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

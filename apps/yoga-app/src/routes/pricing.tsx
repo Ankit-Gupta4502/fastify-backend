@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   Check, ShieldCheck, ArrowRight, Loader2, Users, Lock,
   Sparkles, Zap, CreditCard, RefreshCcw, BadgeCheck, HeartHandshake,
-  Minus, Plus,
+  Minus, Plus, Baby, HeartPulse,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,8 +17,12 @@ import type { PlanRecord } from "@yoga-app/shared";
 const PRICE_PER_SESSION_CENTS = 2000;
 const PRICE_DISCOUNT_CENTS = 100;
 const MIN_SESSIONS = 4;
+
 function calcPrivatePrice(sessions: number) {
   return sessions * PRICE_PER_SESSION_CENTS - PRICE_DISCOUNT_CENTS;
+}
+function calcSpecializedPrice(sessions: number) {
+  return sessions * PRICE_PER_SESSION_CENTS;
 }
 
 export const Route = createFileRoute("/pricing")({
@@ -43,6 +47,45 @@ const planMeta: Record<string, {
     gradient: "from-primary/12 via-primary/5 to-transparent",
     iconBg: "bg-primary/12 text-primary",
     shimmer: "from-transparent via-primary/50 to-transparent",
+  },
+};
+
+const specializedPlanConfig: Record<string, {
+  title: string;
+  tagline: string;
+  icon: React.ElementType;
+  gradient: string;
+  iconBg: string;
+  shimmer: string;
+  perks: string[];
+}> = {
+  prenatal_postnatal: {
+    title: "Prenatal & Postnatal",
+    tagline: "Safe, guided yoga for every stage of motherhood.",
+    icon: Baby,
+    gradient: "from-rose-500/8 via-pink-400/4 to-transparent",
+    iconBg: "bg-rose-500/10 text-rose-500",
+    shimmer: "from-transparent via-rose-400/40 to-transparent",
+    perks: [
+      "1:1 with certified prenatal instructor",
+      "Trimester-specific sequences",
+      "Postpartum recovery flows",
+      "Priority scheduling",
+    ],
+  },
+  therapeutic_yoga: {
+    title: "Therapeutic Yoga",
+    tagline: "Targeted sessions to heal, restore, and strengthen.",
+    icon: HeartPulse,
+    gradient: "from-emerald-500/8 via-teal-400/4 to-transparent",
+    iconBg: "bg-emerald-500/10 text-emerald-500",
+    shimmer: "from-transparent via-emerald-400/40 to-transparent",
+    perks: [
+      "1:1 with a therapeutic specialist",
+      "Personalised injury-recovery plans",
+      "Breathwork & stress relief",
+      "Progress tracking",
+    ],
   },
 };
 
@@ -76,6 +119,8 @@ const trustSignals = [
   { icon: HeartHandshake, label: "30-day money back" },
 ];
 
+type Tab = "standard" | "specialized";
+
 function PricingPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const plans = usePlansWithPricing();
@@ -83,10 +128,12 @@ function PricingPage() {
   const customCheckout = useCustomCheckout();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>("standard");
   const [sessionCount, setSessionCount] = useState(MIN_SESSIONS);
+  const [prenatalSessions, setPrenatalSessions] = useState(MIN_SESSIONS);
+  const [therapeuticSessions, setTherapeuticSessions] = useState(MIN_SESSIONS);
 
-  // API now only returns group_live; custom private is handled by the stepper card below
-  const groupPlan = plans.data?.data?.[0] ?? null;
+  const groupPlan = plans.data?.data?.find((p) => p.name === "group_live") ?? null;
   const isLoading = authLoading || plans.isLoading;
   const isPending = checkout.isPending || customCheckout.isPending;
 
@@ -102,15 +149,25 @@ function PricingPage() {
   const handlePrivateSubscribe = () => {
     setError(null);
     setSuccess(null);
-    customCheckout.mutate(sessionCount, {
+    customCheckout.mutate({ sessionCount, planName: "private" }, {
       onSuccess: () => setSuccess(`Private plan activated — ${sessionCount} sessions/mo`),
+      onError: (err) => setError(err instanceof Error ? err.message : "Payment failed"),
+    });
+  };
+
+  const handleSpecializedSubscribe = (planName: string, sessions: number) => {
+    setError(null);
+    setSuccess(null);
+    const title = specializedPlanConfig[planName]?.title ?? planName;
+    customCheckout.mutate({ sessionCount: sessions, planName }, {
+      onSuccess: () => setSuccess(`${title} activated — ${sessions} sessions/mo`),
       onError: (err) => setError(err instanceof Error ? err.message : "Payment failed"),
     });
   };
 
   return (
     <div className="relative">
-      {/* Page-level ambient glow */}
+      {/* Ambient glow */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 size-[600px] bg-primary/4 blur-[120px] rounded-full" />
         <div className="absolute bottom-1/3 right-0 size-[400px] bg-sky-500/4 blur-[100px] rounded-full" />
@@ -131,6 +188,26 @@ function PricingPage() {
           <p className="text-muted-foreground text-lg leading-relaxed max-w-md mx-auto">
             Two honest plans. No hidden fees. No first-month discounts. Just the same fair price, always.
           </p>
+        </div>
+
+        {/* ── Tab navigation ── */}
+        <div className="flex justify-center px-4">
+          <div className="flex bg-muted/50 border border-border/50 p-1 rounded-full gap-1">
+            {(["standard", "specialized"] as Tab[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={cn(
+                  "px-6 py-2 rounded-full text-sm font-semibold capitalize transition-all duration-200",
+                  activeTab === tab
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* ── Feedback ── */}
@@ -156,31 +233,57 @@ function PricingPage() {
               <Skeleton className="h-[540px] rounded-4xl" />
               <Skeleton className="h-[540px] rounded-4xl" />
             </div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-8 items-start">
-              {groupPlan && (
-                <PricingCard
-                  plan={groupPlan}
+          ) : activeTab === "standard" ? (
+            <>
+              <div className="grid md:grid-cols-2 gap-8 items-start">
+                {groupPlan && (
+                  <PricingCard
+                    plan={groupPlan}
+                    isAuthenticated={isAuthenticated}
+                    isPending={isPending}
+                    onSubscribe={handleSubscribe}
+                  />
+                )}
+                <PrivatePricingCard
+                  sessionCount={sessionCount}
+                  onSessionCountChange={setSessionCount}
                   isAuthenticated={isAuthenticated}
                   isPending={isPending}
-                  onSubscribe={handleSubscribe}
+                  onSubscribe={handlePrivateSubscribe}
                 />
-              )}
-              <PrivatePricingCard
-                sessionCount={sessionCount}
-                onSessionCountChange={setSessionCount}
-                isAuthenticated={isAuthenticated}
-                isPending={isPending}
-                onSubscribe={handlePrivateSubscribe}
-              />
-            </div>
-          )}
-
-          {!isLoading && (
-            <p className="text-center text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground/60">Group Live</span> — perfect for getting started with live classes.{" "}
-              <span className="font-semibold text-foreground/60">Private 1:1</span> — personalised sessions starting at {centsToDisplay(calcPrivatePrice(MIN_SESSIONS))}/mo.
-            </p>
+              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground/60">Group Live</span> — perfect for getting started with live classes.{" "}
+                <span className="font-semibold text-foreground/60">Private 1:1</span> — personalised sessions starting at {centsToDisplay(calcPrivatePrice(MIN_SESSIONS))}/mo.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="grid md:grid-cols-2 gap-8 items-start">
+                <SpecializedPricingCard
+                  planName="prenatal_postnatal"
+                  config={specializedPlanConfig.prenatal_postnatal}
+                  sessionCount={prenatalSessions}
+                  onSessionCountChange={setPrenatalSessions}
+                  isAuthenticated={isAuthenticated}
+                  isPending={isPending}
+                  onSubscribe={() => handleSpecializedSubscribe("prenatal_postnatal", prenatalSessions)}
+                />
+                <SpecializedPricingCard
+                  planName="therapeutic_yoga"
+                  config={specializedPlanConfig.therapeutic_yoga}
+                  sessionCount={therapeuticSessions}
+                  onSessionCountChange={setTherapeuticSessions}
+                  isAuthenticated={isAuthenticated}
+                  isPending={isPending}
+                  onSubscribe={() => handleSpecializedSubscribe("therapeutic_yoga", therapeuticSessions)}
+                />
+              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground/60">Prenatal & Postnatal</span> — safe, supported yoga from bump to baby.{" "}
+                <span className="font-semibold text-foreground/60">Therapeutic Yoga</span> — heal and restore with a specialist. Both start at {centsToDisplay(calcSpecializedPrice(MIN_SESSIONS))}/mo.
+              </p>
+            </>
           )}
         </div>
 
@@ -236,13 +339,11 @@ function PricingPage() {
         {/* ── Trust / Security ── */}
         <div className="max-w-3xl mx-auto px-4">
           <div className="relative overflow-hidden rounded-4xl border border-border/40 bg-card/40 backdrop-blur-sm p-7 md:p-10">
-            {/* Background decoration */}
             <div className="absolute inset-0 bg-linear-to-br from-primary/4 via-transparent to-sky-500/4 pointer-events-none" />
             <div className="absolute -top-20 -right-20 size-64 bg-primary/6 blur-3xl rounded-full pointer-events-none" />
             <div className="absolute -bottom-20 -left-20 size-64 bg-sky-500/6 blur-3xl rounded-full pointer-events-none" />
 
             <div className="relative space-y-6">
-              {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                 <div className="size-16 rounded-3xl bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0">
                   <ShieldCheck className="size-8 text-primary" />
@@ -255,7 +356,6 @@ function PricingPage() {
                 </div>
               </div>
 
-              {/* Trust signals grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {trustSignals.map(({ icon: Icon, label }) => (
                   <div key={label} className="flex flex-col items-center gap-2.5 p-4 rounded-2xl bg-background/60 border border-border/40 text-center hover:border-primary/20 transition-colors">
@@ -267,7 +367,6 @@ function PricingPage() {
                 ))}
               </div>
 
-              {/* Powered by */}
               <div className="flex items-center gap-3 pt-2 border-t border-border/30">
                 <CreditCard className="size-4 text-muted-foreground/50 shrink-0" />
                 <p className="text-xs text-muted-foreground/60">
@@ -282,7 +381,11 @@ function PricingPage() {
   );
 }
 
-interface PrivatePricingCardProps {
+// ── Specialized Plan Card ────────────────────────────────────────────────────
+
+interface SpecializedPricingCardProps {
+  planName: string;
+  config: typeof specializedPlanConfig[string];
   sessionCount: number;
   onSessionCountChange: (n: number) => void;
   isAuthenticated: boolean;
@@ -290,40 +393,33 @@ interface PrivatePricingCardProps {
   onSubscribe: () => void;
 }
 
-const privatePerks = [
-  "Private 1:1 sessions with your instructor",
-  "Time-of-day flexibility",
-  "Direct instructor messaging",
-  "Priority support",
-];
-
-function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthenticated, isPending, onSubscribe }: PrivatePricingCardProps) {
-  const priceCents = calcPrivatePrice(sessionCount);
+function SpecializedPricingCard({
+  config,
+  sessionCount,
+  onSessionCountChange,
+  isAuthenticated,
+  isPending,
+  onSubscribe,
+}: SpecializedPricingCardProps) {
+  const priceCents = calcSpecializedPrice(sessionCount);
+  const PlanIcon = config.icon;
 
   return (
-    <div className="relative">
-      {/* Badge sits on the wrapper, never clipped by overflow-hidden */}
-      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-primary text-primary-foreground text-[9px] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg shadow-primary/20 whitespace-nowrap">
-        <Sparkles className="size-2.5" />
-        Most Popular
-      </div>
+    <div className="group relative flex flex-col overflow-hidden rounded-4xl border transition-all duration-500 hover:-translate-y-1.5 bg-card/70 border-border/50 backdrop-blur-sm shadow-xl hover:shadow-2xl hover:border-primary/20">
+      <div className={cn("absolute inset-x-0 top-0 h-48 bg-linear-to-b pointer-events-none", config.gradient)} />
+      <div className={cn("absolute inset-x-0 top-0 h-px bg-linear-to-r pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity", config.shimmer)} />
 
-      <div className="group relative flex flex-col overflow-hidden rounded-4xl border transition-all duration-500 hover:-translate-y-1.5 bg-card border-primary/25 shadow-2xl shadow-primary/8">
-        <div className="absolute inset-x-0 top-0 h-48 bg-linear-to-b from-primary/12 via-primary/5 to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent pointer-events-none" />
-
-        <div className="relative pt-7 pb-3 px-7 space-y-4">
+      <div className="relative pt-7 pb-3 px-7 space-y-4">
         <div className="flex items-center gap-3">
-          <div className="size-11 rounded-2xl flex items-center justify-center shrink-0 bg-primary/12 text-primary">
-            <Lock className="size-5" />
+          <div className={cn("size-11 rounded-2xl flex items-center justify-center shrink-0", config.iconBg)}>
+            <PlanIcon className="size-5" />
           </div>
           <div>
-            <h3 className="text-xl font-bold tracking-tight">Private 1:1</h3>
-            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">Personalised sessions with your chosen instructor.</p>
+            <h3 className="text-xl font-bold tracking-tight">{config.title}</h3>
+            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{config.tagline}</p>
           </div>
         </div>
 
-        {/* Session stepper */}
         <div className="flex items-center justify-center gap-3 pt-1">
           <Button
             variant="outline"
@@ -354,7 +450,7 @@ function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthenticate
             <span className="text-muted-foreground text-sm font-medium pb-1">/ mo</span>
           </div>
           {sessionCount > MIN_SESSIONS
-            ? <p className="text-[11px] text-muted-foreground">{centsToDisplay(calcPrivatePrice(MIN_SESSIONS))} base · +{centsToDisplay(PRICE_PER_SESSION_CENTS)} per extra session</p>
+            ? <p className="text-[11px] text-muted-foreground">{centsToDisplay(calcSpecializedPrice(MIN_SESSIONS))} base · +{centsToDisplay(PRICE_PER_SESSION_CENTS)} per extra session</p>
             : <p className="text-[11px] text-muted-foreground">Billed monthly · Cancel any time</p>
           }
         </div>
@@ -363,9 +459,9 @@ function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthenticate
       <div className="mx-7 h-px bg-border/40" />
 
       <div className="flex-1 px-7 py-4 space-y-2.5">
-        {privatePerks.map((perk) => (
+        {config.perks.map((perk) => (
           <div key={perk} className="flex items-start gap-3">
-            <div className="size-[18px] rounded-full flex items-center justify-center shrink-0 mt-px bg-primary/12">
+            <div className="size-[18px] rounded-full flex items-center justify-center shrink-0 mt-px bg-primary/8">
               <Check className="size-2.5 text-primary" />
             </div>
             <span className="text-sm text-foreground/75 leading-snug">{perk}</span>
@@ -376,20 +472,22 @@ function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthenticate
       <div className="px-7 pb-6 pt-1">
         {isAuthenticated ? (
           <Button
-            className="w-full h-12 rounded-2xl font-bold gap-2 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.01] transition-all duration-300"
+            className="w-full h-12 rounded-2xl font-bold gap-2 text-sm border-[1.5px] border-border/70 bg-transparent text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary hover:shadow-lg hover:shadow-primary/15 transition-all duration-300"
+            variant="outline"
             disabled={isPending}
             onClick={onSubscribe}
           >
             {isPending ? (
               <><Loader2 className="size-4 animate-spin" />Opening checkout…</>
             ) : (
-              <>Get Private 1:1<ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" /></>
+              <>Get {config.title}<ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" /></>
             )}
           </Button>
         ) : (
           <Button
             asChild
-            className="w-full h-12 rounded-2xl font-bold gap-2 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.01] transition-all duration-300"
+            className="w-full h-12 rounded-2xl font-bold gap-2 text-sm border-[1.5px] border-border/70 bg-transparent text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary hover:shadow-lg hover:shadow-primary/15 transition-all duration-300"
+            variant="outline"
           >
             <Link to="/login">
               Get Started
@@ -398,10 +496,132 @@ function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthenticate
           </Button>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── Private 1:1 Card ─────────────────────────────────────────────────────────
+
+interface PrivatePricingCardProps {
+  sessionCount: number;
+  onSessionCountChange: (n: number) => void;
+  isAuthenticated: boolean;
+  isPending: boolean;
+  onSubscribe: () => void;
+}
+
+const privatePerks = [
+  "Private 1:1 sessions with your instructor",
+  "Time-of-day flexibility",
+  "Direct instructor messaging",
+  "Priority support",
+];
+
+function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthenticated, isPending, onSubscribe }: PrivatePricingCardProps) {
+  const priceCents = calcPrivatePrice(sessionCount);
+
+  return (
+    <div className="relative">
+      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-primary text-primary-foreground text-[9px] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg shadow-primary/20 whitespace-nowrap">
+        <Sparkles className="size-2.5" />
+        Most Popular
+      </div>
+
+      <div className="group relative flex flex-col overflow-hidden rounded-4xl border transition-all duration-500 hover:-translate-y-1.5 bg-card border-primary/25 shadow-2xl shadow-primary/8">
+        <div className="absolute inset-x-0 top-0 h-48 bg-linear-to-b from-primary/12 via-primary/5 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent pointer-events-none" />
+
+        <div className="relative pt-7 pb-3 px-7 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="size-11 rounded-2xl flex items-center justify-center shrink-0 bg-primary/12 text-primary">
+              <Lock className="size-5" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold tracking-tight">Private 1:1</h3>
+              <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">Personalised sessions with your chosen instructor.</p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center gap-3 pt-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-8 rounded-full"
+              disabled={sessionCount <= MIN_SESSIONS || isPending}
+              onClick={() => onSessionCountChange(sessionCount - 1)}
+            >
+              <Minus className="size-3" />
+            </Button>
+            <span className="text-sm font-semibold w-28 text-center">{sessionCount} sessions/mo</span>
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-8 rounded-full"
+              disabled={isPending}
+              onClick={() => onSessionCountChange(sessionCount + 1)}
+            >
+              <Plus className="size-3" />
+            </Button>
+          </div>
+
+          <div className="space-y-0.5">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[3.25rem] font-serif font-bold tracking-tight leading-none">
+                {centsToDisplay(priceCents)}
+              </span>
+              <span className="text-muted-foreground text-sm font-medium pb-1">/ mo</span>
+            </div>
+            {sessionCount > MIN_SESSIONS
+              ? <p className="text-[11px] text-muted-foreground">{centsToDisplay(calcPrivatePrice(MIN_SESSIONS))} base · +{centsToDisplay(PRICE_PER_SESSION_CENTS)} per extra session</p>
+              : <p className="text-[11px] text-muted-foreground">Billed monthly · Cancel any time</p>
+            }
+          </div>
+        </div>
+
+        <div className="mx-7 h-px bg-border/40" />
+
+        <div className="flex-1 px-7 py-4 space-y-2.5">
+          {privatePerks.map((perk) => (
+            <div key={perk} className="flex items-start gap-3">
+              <div className="size-[18px] rounded-full flex items-center justify-center shrink-0 mt-px bg-primary/12">
+                <Check className="size-2.5 text-primary" />
+              </div>
+              <span className="text-sm text-foreground/75 leading-snug">{perk}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="px-7 pb-6 pt-1">
+          {isAuthenticated ? (
+            <Button
+              className="w-full h-12 rounded-2xl font-bold gap-2 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.01] transition-all duration-300"
+              disabled={isPending}
+              onClick={onSubscribe}
+            >
+              {isPending ? (
+                <><Loader2 className="size-4 animate-spin" />Opening checkout…</>
+              ) : (
+                <>Get Private 1:1<ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" /></>
+              )}
+            </Button>
+          ) : (
+            <Button
+              asChild
+              className="w-full h-12 rounded-2xl font-bold gap-2 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.01] transition-all duration-300"
+            >
+              <Link to="/login">
+                Get Started
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
 }
+
+// ── Standard Plan Card (fixed price, from DB) ─────────────────────────────────
 
 interface PricingCardProps {
   plan: PlanRecord;
@@ -423,17 +643,13 @@ function PricingCard({ plan, isAuthenticated, isPending, onSubscribe }: PricingC
         ? "bg-card border-primary/25 shadow-2xl shadow-primary/8 md:scale-[1.03]"
         : "bg-card/70 border-border/50 backdrop-blur-sm shadow-xl hover:shadow-2xl hover:border-primary/20"
     )}>
-      {/* Top gradient wash */}
       <div className={cn("absolute inset-x-0 top-0 h-48 bg-linear-to-b pointer-events-none", meta.gradient)} />
-
-      {/* Shimmer line */}
       <div className={cn(
         "absolute inset-x-0 top-0 h-px bg-linear-to-r pointer-events-none transition-opacity",
         meta.shimmer,
         isPremium ? "opacity-100" : "opacity-0 group-hover:opacity-100"
       )} />
 
-      {/* Badge */}
       {meta.badge && (
         <div className="absolute top-5 right-5 z-10 flex items-center gap-1 bg-primary text-primary-foreground text-[9px] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg shadow-primary/20">
           <Sparkles className="size-2.5" />
@@ -441,7 +657,6 @@ function PricingCard({ plan, isAuthenticated, isPending, onSubscribe }: PricingC
         </div>
       )}
 
-      {/* Card header */}
       <div className="relative pt-7 pb-5 px-7 space-y-4">
         <div className="flex items-center gap-3">
           <div className={cn("size-11 rounded-2xl flex items-center justify-center shrink-0", meta.iconBg)}>
@@ -464,10 +679,8 @@ function PricingCard({ plan, isAuthenticated, isPending, onSubscribe }: PricingC
         </div>
       </div>
 
-      {/* Divider */}
       <div className="mx-7 h-px bg-border/40" />
 
-      {/* Perks */}
       <div className="flex-1 px-7 py-4 space-y-2.5">
         {copy.perks.map((perk) => (
           <div key={perk} className="flex items-start gap-3">
@@ -482,7 +695,6 @@ function PricingCard({ plan, isAuthenticated, isPending, onSubscribe }: PricingC
         ))}
       </div>
 
-      {/* CTA */}
       <div className="px-7 pb-6 pt-1">
         {isAuthenticated ? (
           <Button

@@ -25,9 +25,9 @@ function BillingPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [sessionCount, setSessionCount] = useState(4);
 
-  // Filter out private/custom_private plans — those are handled by PrivateSessionCard
+  // Only show standard fixed plans; private and specialized (session-based) have their own cards
   const planList: PlanRecord[] = (plans.data?.data ?? []).filter(
-    (p) => p.name !== "private" && !p.name.startsWith("custom_private_"),
+    (p) => p.category === "standard" && p.name !== "private" && !p.name.startsWith("custom_private_"),
   );
 
   const activePlan = myPlan.data?.data?.plan ?? null;
@@ -49,7 +49,7 @@ function BillingPage() {
   const handlePrivateSubscribe = (count: number) => {
     setError(null);
     setSuccess(null);
-    customCheckout.mutate(count, {
+    customCheckout.mutate({ sessionCount: count, planName: "private" }, {
       onSuccess: () => setSuccess(`Private plan activated — ${count} sessions/mo`),
       onError: (err) => setError(err instanceof Error ? err.message : "Payment failed"),
     });
