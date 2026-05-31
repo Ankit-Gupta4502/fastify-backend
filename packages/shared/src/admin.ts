@@ -15,6 +15,13 @@ export interface AdminInstructor {
   specialty: string[];
   maxConcurrentSessions: number;
   isApproved: boolean;
+  sortOrder: number;
+}
+
+export interface CreateInstructorBody {
+  name: string;
+  email: string;
+  password: string;
 }
 
 export interface AdminRoom {

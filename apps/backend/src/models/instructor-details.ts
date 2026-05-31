@@ -63,6 +63,7 @@ export const instructorDetails = pgTable(
     yearsOfExperience: integer("years_of_experience"),
 
     isApproved: boolean("is_approved").notNull().default(false),
+    sortOrder: integer("sort_order").notNull().default(0),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

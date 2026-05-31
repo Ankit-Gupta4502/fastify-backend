@@ -11,10 +11,22 @@ import {
   listGroupRooms,
   createGroupRoom,
   approveInstructor,
+  createInstructor,
+  updateInstructorPriority,
 } from "../../services/admin.service";
 
 const approveInstructorBodySchema = z.object({
   approve: z.boolean(),
+});
+
+const updatePriorityBodySchema = z.object({
+  sortOrder: z.number().int().min(0),
+});
+
+const createInstructorBodySchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(8),
 });
 
 const instructorIdParamsSchema = z.object({
@@ -55,7 +67,9 @@ export class AdminController {
       async (router) => {
         router.get("/users", { preHandler }, this.getUsers);
         router.get("/instructors", { preHandler }, this.getInstructors);
+        router.post("/instructors", { preHandler }, this.createInstructor);
         router.patch("/instructors/:id/approve", { preHandler }, this.approveInstructor);
+        router.patch("/instructors/:id/priority", { preHandler }, this.updatePriority);
         router.get("/rooms/group", { preHandler }, this.getGroupRooms);
         router.post("/rooms/group", { preHandler }, this.createGroupRoom);
       },
@@ -95,6 +109,52 @@ export class AdminController {
       message: approve ? "Instructor approved" : "Instructor approval revoked",
       data: null,
     });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private createInstructor = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: createInstructorBodySchema });
+    if (invalid) return invalid;
+
+    const { name, email, password } = request.body as z.infer<typeof createInstructorBodySchema>;
+
+    try {
+      const data = await createInstructor(drizzle, { name, email, password });
+      const { statusCode, payload } = successResponse({
+        message: "Instructor created",
+        data,
+        statusCode: 201,
+      });
+      return reply.status(statusCode).send(payload);
+    } catch (err) {
+      if (err instanceof Error && err.message.toLowerCase().includes("already")) {
+        const { statusCode, payload } = errorResponse({
+          message: "An account with this email already exists",
+          statusCode: 409,
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      throw err;
+    }
+  };
+
+  private updatePriority = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalidParams = validateWithZod(request, reply, { params: instructorIdParamsSchema });
+    if (invalidParams) return invalidParams;
+
+    const invalidBody = validateWithZod(request, reply, { body: updatePriorityBodySchema });
+    if (invalidBody) return invalidBody;
+
+    const { id } = request.params as z.infer<typeof instructorIdParamsSchema>;
+    const { sortOrder } = request.body as z.infer<typeof updatePriorityBodySchema>;
+
+    const updated = await updateInstructorPriority(drizzle, id, sortOrder);
+    if (!updated) {
+      const { statusCode, payload } = errorResponse({ message: "Instructor not found", statusCode: 404 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const { statusCode, payload } = successResponse({ message: "Priority updated", data: null });
     return reply.status(statusCode).send(payload);
   };
 

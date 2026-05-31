@@ -44,6 +44,7 @@ export const API_ENDPOINTS = {
     USERS: "/admin/users",
     INSTRUCTORS: "/admin/instructors",
     APPROVE_INSTRUCTOR: (id: string) => `/admin/instructors/${id}/approve`,
+    UPDATE_INSTRUCTOR_PRIORITY: (id: string) => `/admin/instructors/${id}/priority`,
     GROUP_ROOMS: "/admin/rooms/group",
   },
   WORKSHOPS: {

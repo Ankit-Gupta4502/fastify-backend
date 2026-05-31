@@ -326,10 +326,10 @@ export function QuizSection() {
                       🧘
                     </span>
                     {/* Orbiting small emojis */}
-                    <FloatingEmoji emoji="✨" className="top-0 right-2 animate-doodle-float-alt text-lg" style={{ animationDelay: "0.5s" } as React.CSSProperties} />
-                    <FloatingEmoji emoji="🌿" className="bottom-0 left-0 animate-doodle-float text-base" style={{ animationDelay: "1s" } as React.CSSProperties} />
-                    <FloatingEmoji emoji="💫" className="top-2 left-0 animate-doodle-float-alt text-sm" style={{ animationDelay: "1.5s" } as React.CSSProperties} />
-                    <FloatingEmoji emoji="🌸" className="bottom-2 right-0 animate-doodle-float text-base" style={{ animationDelay: "0.8s" } as React.CSSProperties} />
+                    <FloatingEmoji emoji="✨" className="top-0 right-2 animate-doodle-float-alt text-lg"  />
+                    <FloatingEmoji emoji="🌿" className="bottom-0 left-0 animate-doodle-float text-base" />
+                    <FloatingEmoji emoji="💫" className="top-2 left-0 animate-doodle-float-alt text-sm" />
+                    <FloatingEmoji emoji="🌸" className="bottom-2 right-0 animate-doodle-float text-base" />
                     {/* Dashed ring */}
                     <span className="absolute inset-0 rounded-full border-2 border-dashed border-primary/15 animate-doodle-spin-slow pointer-events-none" />
                   </div>

@@ -1,6 +1,8 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import type { AppDatabase } from "../types/database.types";
 import { user, plans, rooms, instructorDetails } from "../schema/schema";
+import { auth } from "../lib/auth";
+import { USER_ROLES } from "../constants/roles";
 import { createHmsRoom } from "./hms.service";
 import { ROOM_STATUS, ROOM_TYPE } from "../constants/sessions";
 import { notifyEligibleGroupUsers } from "./room-notification.service";
@@ -36,16 +38,49 @@ export async function listInstructors(db: AppDatabase) {
       specialty: instructorDetails.specialty,
       maxConcurrentSessions: instructorDetails.maxConcurrentSessions,
       isApproved: instructorDetails.isApproved,
+      sortOrder: instructorDetails.sortOrder,
     })
     .from(instructorDetails)
     .innerJoin(user, eq(instructorDetails.userId, user.id))
-    .orderBy(user.name);
+    .orderBy(asc(instructorDetails.sortOrder), asc(user.name));
 
   return rows.map((r) => ({
     ...r,
     specialty: r.specialty ?? [],
     maxConcurrentSessions: r.maxConcurrentSessions ?? 1,
+    sortOrder: r.sortOrder ?? 0,
   }));
+}
+
+export async function createInstructor(
+  db: AppDatabase,
+  { name, email, password }: { name: string; email: string; password: string },
+) {
+  const result = await auth.api.signUpEmail({
+    body: { name, email, password, role: USER_ROLES.INSTRUCTOR },
+    headers: new Headers(),
+  });
+
+  // better-auth returns { user, session, token } — shape is guaranteed by the library
+  const newUser = (result as unknown as { user: { id: string; name: string; email: string } }).user;
+
+  await db.insert(instructorDetails).values({ userId: newUser.id });
+
+  return { id: newUser.id, name: newUser.name, email: newUser.email };
+}
+
+export async function updateInstructorPriority(
+  db: AppDatabase,
+  instructorId: string,
+  sortOrder: number,
+) {
+  const [updated] = await db
+    .update(instructorDetails)
+    .set({ sortOrder })
+    .where(eq(instructorDetails.userId, instructorId))
+    .returning();
+
+  return updated ?? null;
 }
 
 export async function approveInstructor(

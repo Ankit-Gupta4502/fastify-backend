@@ -1,7 +1,7 @@
 import type { AdminInstructor } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
-import { useApproveInstructor } from "@/hooks/use-admin";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { useApproveInstructor, useUpdateInstructorPriority } from "@/hooks/use-admin";
+import { CheckCircle2, XCircle, ChevronUp, ChevronDown } from "lucide-react";
 import { Chip } from "@/components/shared/chip";
 import { TableSkeletonRows } from "@/components/shared/table-skeleton-rows";
 import { ErrorCard } from "@/components/shared/error-card";
@@ -15,14 +15,27 @@ interface InstructorsTableProps {
 
 export function InstructorsTable({ instructors, isLoading, error }: InstructorsTableProps) {
   const approve = useApproveInstructor();
+  const priority = useUpdateInstructorPriority();
 
   if (error) return <ErrorCard message="Failed to load instructors." />;
+
+  function movePriority(ins: AdminInstructor, direction: "up" | "down") {
+    const sorted = [...instructors].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
+    const idx = sorted.findIndex((i) => i.id === ins.id);
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= sorted.length) return;
+
+    // Use index positions as sort values to guarantee a distinct swap even when values are equal
+    priority.mutate({ id: ins.id, sortOrder: swapIdx });
+    priority.mutate({ id: sorted[swapIdx].id, sortOrder: idx });
+  }
 
   return (
     <div className="rounded-2xl border border-border/60 overflow-hidden">
       <table className="w-full text-sm">
         <thead className="bg-secondary/40">
           <tr>
+            <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Priority</th>
             <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Name</th>
             <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Email</th>
             <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Status</th>
@@ -34,12 +47,35 @@ export function InstructorsTable({ instructors, isLoading, error }: InstructorsT
         </thead>
         <tbody className="divide-y divide-border/40">
           {isLoading ? (
-            <TableSkeletonRows rows={4} cols={7} />
+            <TableSkeletonRows rows={4} cols={8} />
           ) : (
-            instructors.map((ins) => {
-              const isPending = approve.isPending && approve.variables?.id === ins.id;
+            instructors.map((ins, idx) => {
+              const isApprovePending = approve.isPending && approve.variables?.id === ins.id;
+              const isPriorityPending = priority.isPending && priority.variables?.id === ins.id;
               return (
                 <tr key={ins.id} className="hover:bg-secondary/20 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-0.5">
+                      <button
+                        className="p-0.5 rounded hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                        disabled={idx === 0 || isPriorityPending}
+                        onClick={() => movePriority(ins, "up")}
+                        title="Move up"
+                      >
+                        <ChevronUp className="size-3.5 text-muted-foreground" />
+                      </button>
+                      <span className="w-6 text-center text-xs text-muted-foreground font-mono">{ins.sortOrder}</span>
+                      <button
+                        className="p-0.5 rounded hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                        disabled={idx === instructors.length - 1 || isPriorityPending}
+                        onClick={() => movePriority(ins, "down")}
+                        title="Move down"
+                      >
+                        <ChevronDown className="size-3.5 text-muted-foreground" />
+                      </button>
+                    </div>
+                  </td>
+
                   <td className="px-4 py-3 font-medium">{ins.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{ins.email}</td>
 
@@ -86,21 +122,21 @@ export function InstructorsTable({ instructors, isLoading, error }: InstructorsT
                         size="sm"
                         variant="outline"
                         className="rounded-full text-xs gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        disabled={isPending}
+                        disabled={isApprovePending}
                         onClick={() => approve.mutate({ id: ins.id, approve: false })}
                       >
                         <XCircle className="size-3.5" />
-                        {isPending ? "Revoking…" : "Revoke"}
+                        {isApprovePending ? "Revoking…" : "Revoke"}
                       </Button>
                     ) : (
                       <Button
                         size="sm"
                         className="rounded-full text-xs gap-1.5"
-                        disabled={isPending}
+                        disabled={isApprovePending}
                         onClick={() => approve.mutate({ id: ins.id, approve: true })}
                       >
                         <CheckCircle2 className="size-3.5" />
-                        {isPending ? "Approving…" : "Approve"}
+                        {isApprovePending ? "Approving…" : "Approve"}
                       </Button>
                     )}
                   </td>
@@ -111,7 +147,7 @@ export function InstructorsTable({ instructors, isLoading, error }: InstructorsT
         </tbody>
       </table>
       {!isLoading && instructors.length === 0 && (
-        <p className="text-center text-muted-foreground text-sm py-10">No instructors found.</p>
+        <p className="text-center text-muted-foreground text-sm py-10">No instructors yet. Use "Add Instructor" to create one.</p>
       )}
     </div>
   );

@@ -224,9 +224,6 @@ function LoginPage() {
                   </div>
                 </Field>
 
-                {/* Role */}
-                <RoleSelector form={registerForm} label="Join Solara as" />
-
                 <SubmitButton loading={isSubmitting} label="Create Account" loadingLabel="Creating account…" />
               </form>
             )}

@@ -35,11 +35,32 @@ export function useAdminGroupRooms() {
   return useQuery(adminQueryOptions.groupRooms());
 }
 
+export function useCreateInstructor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: adminApi.createInstructor,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.instructors() });
+    },
+  });
+}
+
 export function useApproveInstructor() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, approve }: { id: string; approve: boolean }) =>
       adminApi.approveInstructor(id, approve),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.instructors() });
+    },
+  });
+}
+
+export function useUpdateInstructorPriority() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, sortOrder }: { id: string; sortOrder: number }) =>
+      adminApi.updateInstructorPriority(id, sortOrder),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.admin.instructors() });
     },

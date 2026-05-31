@@ -13,7 +13,6 @@ export const registerFormOptions = {
     name: "",
     email: "",
     password: "",
-    role: USER_ROLES.USER,
   } satisfies RegisterBody,
 };
 

@@ -10,15 +10,11 @@ export const authSwaggerSchemas = {
     tags: ["Auth"] as string[],
     body: {
       type: "object" as const,
-      required: ["name", "email", "password", "role"],
+      required: ["name", "email", "password"],
       properties: {
         name: { type: "string" as const },
         email: { type: "string" as const, format: "email" },
         password: { type: "string" as const, minLength: 8 },
-        role: {
-          type: "string" as const,
-          enum: ["user", "instructor"],
-        },
       },
     },
   },

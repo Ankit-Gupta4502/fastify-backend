@@ -79,7 +79,7 @@ export class AuthController {
 
     try {
       const { headers, response: data } = await auth.api.signUpEmail({
-        body,
+        body: { ...body, role: USER_ROLES.USER },
         headers: fromNodeHeaders(request.headers),
         returnHeaders: true,
       });
