@@ -7,6 +7,8 @@ export interface InstructorListItem {
   status: InstructorStatus;
   specialty: string[];
   currentRoomId: string | null;
+  profileImageUrl: string | null;
+  tagline: string | null;
 }
 
 export interface InstructorProfile {

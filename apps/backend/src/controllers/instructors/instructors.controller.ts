@@ -125,7 +125,7 @@ export class InstructorsController {
       conditions.push(eq(instructorDetails.status, query.status));
     }
     if (query.specialty) {
-      conditions.push(arrayContains(instructorDetails.specialty, [query.specialty]));
+      conditions.push(arrayContains(instructorDetails.tags, [query.specialty]));
     }
 
     const rows = await drizzle
@@ -134,8 +134,10 @@ export class InstructorsController {
         name: user.name,
         email: user.email,
         status: instructorDetails.status,
-        specialty: instructorDetails.specialty,
+        specialty: instructorDetails.tags,
         currentRoomId: instructorDetails.currentRoomId,
+        profileImageUrl: instructorDetails.profileImageUrl,
+        tagline: instructorDetails.tagline,
       })
       .from(user)
       .innerJoin(instructorDetails, eq(instructorDetails.userId, user.id))
