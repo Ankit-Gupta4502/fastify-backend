@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIntersection } from "@/hooks/use-intersection";
 import { useInstructors } from "@/hooks/use-instructors";
-import { Card } from "./Card";
+import { ExpertCard } from "@/routes/experts/_components/ExpertCard";
 import { CardSkeleton } from "./CardSkeleton";
 
 function InstructorSpotlightRoot() {
@@ -71,8 +71,8 @@ function InstructorSpotlightRoot() {
           {isLoading
             ? [...Array(4)].map((_, i) => <CardSkeleton key={i} />)
             : instructors.map((instructor, i) => (
-                <div key={instructor.id} className="snap-start">
-                  <Card instructor={instructor} index={i} />
+                <div key={instructor.id} className="snap-start flex-none w-64">
+                  <ExpertCard instructor={instructor} index={i} />
                 </div>
               ))}
         </div>
@@ -87,7 +87,6 @@ function InstructorSpotlightRoot() {
   );
 }
 
-InstructorSpotlightRoot.Card         = Card;
 InstructorSpotlightRoot.CardSkeleton = CardSkeleton;
 
 export const InstructorSpotlight = InstructorSpotlightRoot;

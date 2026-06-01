@@ -37,11 +37,8 @@ export function InstructorSidebar() {
 
       {/* Section label — Doodle: rotated pencil for sketch feel */}
       <div className="px-5 pt-6 pb-2 flex items-center gap-2">
-        <Pencil className="size-3.5 text-primary" style={{ transform: "rotate(-8deg)" }} />
-        <span
-          className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary"
-          style={{ fontFamily: "'Delius Swash Caps', cursive" }}
-        >
+        <Pencil className="size-3.5 text-primary -rotate-2" />
+        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary font-doodle">
           Instructor Studio
         </span>
       </div>

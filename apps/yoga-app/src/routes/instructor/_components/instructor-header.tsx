@@ -27,14 +27,8 @@ export function InstructorHeader() {
     <header className="h-16 shrink-0 border-b border-border/60 bg-card/20 backdrop-blur-sm flex items-center justify-between px-6">
       <div className="flex items-center gap-3">
         {/* Doodle: slow-spinning sparkle for playful feel */}
-        <Sparkles
-          className="size-4 text-primary/60"
-          style={{ animation: "spin 20s linear infinite" }}
-        />
-        <h2
-          className="text-base font-semibold tracking-tight"
-          style={{ fontFamily: "'Delius Swash Caps', cursive" }}
-        >
+        <Sparkles className="size-4 text-primary/60 animate-doodle-spin-slow" />
+        <h2 className="text-base font-semibold tracking-tight font-doodle">
           {title}
         </h2>
       </div>

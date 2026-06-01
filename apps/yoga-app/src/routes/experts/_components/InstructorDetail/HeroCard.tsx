@@ -10,8 +10,27 @@ export function HeroCard() {
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-border/50 bg-card/60 sketch-border-sm p-8">
-      <div className={cn("absolute inset-0 bg-linear-to-br opacity-[0.04]", gradient)} />
+<div className={cn("absolute inset-0 bg-linear-to-br opacity-[0.04]", gradient)} />
       <div className="absolute top-0 right-0 size-72 bg-primary/8 blur-[80px] rounded-full pointer-events-none" />
+      <div className="absolute inset-x-0 bottom-0 h-16 overflow-hidden pointer-events-none">
+        <svg
+          viewBox="0 0 2400 64"
+          className="absolute bottom-0 left-0 w-[200%] h-full animate-hero-wave"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,40 C150,20 450,56 600,40 C750,20 1050,56 1200,40 C1350,20 1650,56 1800,40 C1950,20 2250,56 2400,40 L2400,64 L0,64 Z"
+            fill="currentColor"
+            className="text-primary/5"
+          />
+          <path
+            d="M0,50 C150,34 450,62 600,50 C750,34 1050,62 1200,50 C1350,34 1650,62 1800,50 C1950,34 2250,62 2400,50 L2400,64 L0,64 Z"
+            fill="currentColor"
+            className="text-primary/8"
+          />
+        </svg>
+      </div>
 
       <div className="relative flex flex-col sm:flex-row gap-7 items-start sm:items-center">
         <InstructorAvatar

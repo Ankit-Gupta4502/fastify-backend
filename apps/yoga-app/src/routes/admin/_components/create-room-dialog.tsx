@@ -1,5 +1,4 @@
-import { useState, useMemo } from "react";
-import { fromZonedTime, toZonedTime, format as tzFormat } from "date-fns-tz";
+import { toZonedTime, format as tzFormat } from "date-fns-tz";
 import type { AdminInstructor } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,8 +8,9 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useCreateGroupRoom } from "@/hooks/use-admin";
 import { cn } from "@/lib/utils";
+import { US_TIMEZONES, PREVIEW_ZONES, formatInZone } from "./create-room-dialog-config";
+import { useCreateRoomForm } from "./use-create-room-form";
 
 interface CreateRoomDialogProps {
   open: boolean;
@@ -18,83 +18,10 @@ interface CreateRoomDialogProps {
   instructors: AdminInstructor[];
 }
 
-const US_TIMEZONES = [
-  { label: "Eastern (ET)", tz: "America/New_York" },
-  { label: "Central (CT)", tz: "America/Chicago" },
-  { label: "Mountain (MT)", tz: "America/Denver" },
-  { label: "Pacific (PT)", tz: "America/Los_Angeles" },
-] as const;
-
-const PREVIEW_ZONES = [
-  { label: "UTC", tz: "UTC" },
-  { label: "IST", tz: "Asia/Kolkata" },
-  { label: "Your local time", tz: Intl.DateTimeFormat().resolvedOptions().timeZone },
-] as const;
-
-function formatInZone(utcDate: Date, tz: string) {
-  return tzFormat(toZonedTime(utcDate, tz), "EEE, MMM d · h:mm a", { timeZone: tz });
-}
-
-interface FormState {
-  instructorId: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  capacity: number;
-  tz: string;
-}
-
-const DEFAULT_FORM: FormState = {
-  instructorId: "",
-  date: "",
-  startTime: "07:00",
-  endTime: "08:00",
-  capacity: 20,
-  tz: "America/New_York",
-};
-
 export function CreateRoomDialog({ open, onOpenChange, instructors }: CreateRoomDialogProps) {
-  const [form, setForm] = useState<FormState>(DEFAULT_FORM);
-  const [error, setError] = useState<string | null>(null);
-  const createRoom = useCreateGroupRoom();
-
-  const patch = (partial: Partial<FormState>) => setForm((f) => ({ ...f, ...partial }));
-
-  const { startUtc, endUtc } = useMemo(() => {
-    if (!form.date || !form.startTime || !form.endTime) return { startUtc: null, endUtc: null };
-    try {
-      const s = fromZonedTime(`${form.date}T${form.startTime}:00`, form.tz);
-      const e = fromZonedTime(`${form.date}T${form.endTime}:00`, form.tz);
-      return { startUtc: s, endUtc: e };
-    } catch {
-      return { startUtc: null, endUtc: null };
-    }
-  }, [form.date, form.startTime, form.endTime, form.tz]);
-
-  const handleSubmit = (evt: React.FormEvent) => {
-    evt.preventDefault();
-    setError(null);
-
-    if (!form.instructorId) return setError("Please select an instructor.");
-    if (!startUtc || !endUtc) return setError("Please fill in date and time.");
-    if (endUtc <= startUtc) return setError("End time must be after start time.");
-
-    createRoom.mutate(
-      {
-        instructorId: form.instructorId,
-        scheduledStartUtc: startUtc.toISOString(),
-        scheduledEndUtc: endUtc.toISOString(),
-        capacity: form.capacity,
-      },
-      {
-        onSuccess: () => {
-          setForm(DEFAULT_FORM);
-          onOpenChange(false);
-        },
-        onError: (err) => setError(err instanceof Error ? err.message : "Failed to create class"),
-      },
-    );
-  };
+  const { form, patch, error, startUtc, endUtc, handleSubmit, isPending } = useCreateRoomForm(
+    () => onOpenChange(false),
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -220,8 +147,8 @@ export function CreateRoomDialog({ open, onOpenChange, instructors }: CreateRoom
             <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" className="rounded-xl" disabled={createRoom.isPending}>
-              {createRoom.isPending ? "Creating…" : "Create class"}
+            <Button type="submit" className="rounded-xl" disabled={isPending}>
+              {isPending ? "Creating…" : "Create class"}
             </Button>
           </div>
         </form>

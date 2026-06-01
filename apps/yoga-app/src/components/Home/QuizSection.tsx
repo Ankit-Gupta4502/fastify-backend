@@ -1,128 +1,10 @@
-import { useReducer, useTransition, useMemo, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, RotateCcw, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIntersection } from "@/hooks/use-intersection";
-
-// ── Types ────────────────────────────────────────────────────────────────────
-
-type Goal = "stress" | "flexibility" | "strength" | "recovery" | "spiritual";
-type Frequency = "casual" | "regular" | "daily";
-type Need = "none" | "prenatal" | "injury";
-
-interface Answers {
-  goal?: Goal;
-  frequency?: Frequency;
-  need?: Need;
-}
-
-interface QuizState {
-  step: 0 | 1 | 2 | 3;
-  answers: Answers;
-}
-
-type QuizAction =
-  | { type: "START" }
-  | { type: "ANSWER_GOAL"; value: Goal }
-  | { type: "ANSWER_FREQUENCY"; value: Frequency }
-  | { type: "ANSWER_NEED"; value: Need }
-  | { type: "RESET" };
-
-function quizReducer(state: QuizState, action: QuizAction): QuizState {
-  switch (action.type) {
-    case "START":       return { ...state, step: 1 };
-    case "ANSWER_GOAL": return { step: 2, answers: { ...state.answers, goal: action.value } };
-    case "ANSWER_FREQUENCY": return { step: 3, answers: { ...state.answers, frequency: action.value } };
-    case "ANSWER_NEED": return { step: 3, answers: { ...state.answers, need: action.value } };
-    case "RESET":       return { step: 0, answers: {} };
-    default:            return state;
-  }
-}
-
-// ── Recommendation engine ─────────────────────────────────────────────────────
-
-type PlanSlug = "group_live" | "private" | "prenatal_postnatal" | "therapeutic_yoga";
-
-interface Recommendation {
-  slug: PlanSlug;
-  emoji: string;
-  title: string;
-  tagline: string;
-  why: string;
-  gradient: string;
-  href: string;
-}
-
-const RECOMMENDATIONS: Record<PlanSlug, Recommendation> = {
-  group_live: {
-    slug: "group_live",
-    emoji: "🌊",
-    title: "Group Live",
-    tagline: "Community-powered practice",
-    why: "Live group energy is exactly what you need — shared rhythm, real accountability, and expert-led flows.",
-    gradient: "from-sky-500/20 via-blue-400/8 to-transparent",
-    href: "/pricing",
-  },
-  private: {
-    slug: "private",
-    emoji: "🎯",
-    title: "Private 1:1",
-    tagline: "Personalised, on your schedule",
-    why: "With your goals and commitment level, a dedicated instructor who adapts every session to you will get you there fastest.",
-    gradient: "from-primary/20 via-primary/8 to-transparent",
-    href: "/pricing",
-  },
-  prenatal_postnatal: {
-    slug: "prenatal_postnatal",
-    emoji: "🌸",
-    title: "Prenatal & Postnatal",
-    tagline: "Safe yoga for every stage of motherhood",
-    why: "Trimester-specific sequences and postpartum flows designed for exactly where you are in your journey.",
-    gradient: "from-rose-500/20 via-pink-400/8 to-transparent",
-    href: "/pricing",
-  },
-  therapeutic_yoga: {
-    slug: "therapeutic_yoga",
-    emoji: "💚",
-    title: "Therapeutic Yoga",
-    tagline: "Heal, restore, and strengthen",
-    why: "A specialist-led plan with personalised recovery sequences will address your specific needs safely and effectively.",
-    gradient: "from-emerald-500/20 via-teal-400/8 to-transparent",
-    href: "/pricing",
-  },
-};
-
-function computeRecommendation(answers: Answers): Recommendation {
-  if (answers.need === "prenatal") return RECOMMENDATIONS.prenatal_postnatal;
-  if (answers.need === "injury")   return RECOMMENDATIONS.therapeutic_yoga;
-  if (answers.frequency === "daily" || answers.goal === "strength" || answers.goal === "flexibility") {
-    return RECOMMENDATIONS.private;
-  }
-  return RECOMMENDATIONS.group_live;
-}
-
-// ── Option data ───────────────────────────────────────────────────────────────
-
-const GOALS: { value: Goal; label: string; emoji: string; color: string }[] = [
-  { value: "stress",     label: "Stress relief",    emoji: "🧘", color: "bg-sky-500/10 hover:bg-sky-500/15 border-sky-500/20 data-[sel]:bg-sky-500/20 data-[sel]:border-sky-500/40" },
-  { value: "flexibility",label: "Flexibility",       emoji: "🌿", color: "bg-emerald-500/10 hover:bg-emerald-500/15 border-emerald-500/20 data-[sel]:bg-emerald-500/20 data-[sel]:border-emerald-500/40" },
-  { value: "strength",   label: "Strength",          emoji: "💪", color: "bg-amber-500/10 hover:bg-amber-500/15 border-amber-500/20 data-[sel]:bg-amber-500/20 data-[sel]:border-amber-500/40" },
-  { value: "recovery",   label: "Pain & recovery",   emoji: "❤️‍🩹", color: "bg-rose-500/10 hover:bg-rose-500/15 border-rose-500/20 data-[sel]:bg-rose-500/20 data-[sel]:border-rose-500/40" },
-  { value: "spiritual",  label: "Spiritual growth",  emoji: "✨", color: "bg-violet-500/10 hover:bg-violet-500/15 border-violet-500/20 data-[sel]:bg-violet-500/20 data-[sel]:border-violet-500/40" },
-];
-
-const FREQUENCIES: { value: Frequency; label: string; sub: string; emoji: string }[] = [
-  { value: "casual",  label: "1–2× a week",  sub: "Light touch",        emoji: "🌱" },
-  { value: "regular", label: "3–4× a week",  sub: "Committed practice",  emoji: "🔥" },
-  { value: "daily",   label: "Every day",    sub: "Deep immersion",      emoji: "⚡" },
-];
-
-const NEEDS: { value: Need; label: string; sub: string; emoji: string }[] = [
-  { value: "none",     label: "Just here for the flow",   sub: "No specific requirements", emoji: "🌊" },
-  { value: "prenatal", label: "Prenatal or postnatal",    sub: "Pregnancy-safe sequences",  emoji: "🌸" },
-  { value: "injury",   label: "Injury or chronic pain",   sub: "Therapeutic approach",     emoji: "💚" },
-];
+import { useQuiz } from "./use-quiz";
+import { GOALS, FREQUENCIES, NEEDS } from "./quiz-data";
 
 // ── Step indicators ───────────────────────────────────────────────────────────
 
@@ -163,7 +45,6 @@ function GoalTile({
         color,
       )}
     >
-      {/* Checkmark */}
       {selected && (
         <span className="absolute top-2 right-2 size-4 rounded-full bg-primary flex items-center justify-center animate-doodle-pop">
           <Check className="size-2.5 text-primary-foreground" strokeWidth={3} />
@@ -236,24 +117,17 @@ function FloatingEmoji({ emoji, className }: { emoji: string; className: string 
 
 export function QuizSection() {
   const [sectionRef, isVisible] = useIntersection<HTMLElement>();
-  const [state, dispatch] = useReducer(quizReducer, { step: 0, answers: {} });
-  const [isPending, startTransition] = useTransition();
-
-  const recommendation = useMemo(
-    () =>
-      state.answers.goal && state.answers.frequency && state.answers.need
-        ? computeRecommendation(state.answers)
-        : null,
-    [state.answers],
-  );
-
-  const isDone = recommendation !== null;
-
-  const handleGoal      = useCallback((value: Goal)      => startTransition(() => dispatch({ type: "ANSWER_GOAL",      value })), []);
-  const handleFrequency = useCallback((value: Frequency)  => startTransition(() => dispatch({ type: "ANSWER_FREQUENCY", value })), []);
-  const handleNeed      = useCallback((value: Need)       => startTransition(() => dispatch({ type: "ANSWER_NEED",      value })), []);
-  const handleReset     = useCallback(() => startTransition(() => dispatch({ type: "RESET" })), []);
-  const handleStart     = useCallback(() => startTransition(() => dispatch({ type: "START" })), []);
+  const {
+    state,
+    isPending,
+    recommendation,
+    isDone,
+    handleGoal,
+    handleFrequency,
+    handleNeed,
+    handleReset,
+    handleStart,
+  } = useQuiz();
 
   return (
     <section
@@ -264,7 +138,7 @@ export function QuizSection() {
       )}
     >
       {/* Gradient wash */}
-      <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary/[0.03] to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary/3 to-transparent pointer-events-none" />
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="max-w-xl mx-auto">

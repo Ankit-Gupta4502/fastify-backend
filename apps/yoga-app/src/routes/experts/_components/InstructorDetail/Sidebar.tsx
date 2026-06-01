@@ -1,6 +1,5 @@
 import { Calendar, MessageSquare, Award, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { Chip } from "@/components/shared/chip";
 import { useInstructorDetail } from "./context";
 import { SideCard, SideCardLabel } from "./primitives";

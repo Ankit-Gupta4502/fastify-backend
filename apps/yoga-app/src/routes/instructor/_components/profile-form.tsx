@@ -1,101 +1,42 @@
-import { useState, useEffect } from "react";
 import { Plus, X, ExternalLink } from "lucide-react";
 import type { InstructorProfile } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useUpdateInstructorProfile, useUploadAttachment } from "@/hooks/use-instructors";
 import { AvatarPicker } from "./avatar-picker";
+import { useProfileForm } from "./use-profile-form";
+import { TagsSection } from "./TagsSection";
 
 interface ProfileFormProps {
   profile: InstructorProfile;
 }
 
-const SUGGESTED_TAGS = [
-  "Hatha", "Vinyasa", "Ashtanga", "Yin", "Restorative",
-  "Prenatal", "Power", "Kundalini", "Meditation", "Breathwork",
-];
-
 export function ProfileForm({ profile }: ProfileFormProps) {
-  const update = useUpdateInstructorProfile();
-  const upload = useUploadAttachment();
-
-  const [bio, setBio] = useState(profile.bio ?? "");
-  const [tagline, setTagline] = useState(profile.tagline ?? "");
-  const [years, setYears] = useState<string>(profile.yearsOfExperience?.toString() ?? "");
-  const [avatarKey, setAvatarKey] = useState<string | null>(profile.avatarKey ?? null);
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(profile.profileImageUrl ?? null);
-  const [videoLinks, setVideoLinks] = useState<string[]>(profile.videoLinks ?? []);
-  const [videoInput, setVideoInput] = useState("");
-  const [tags, setTags] = useState<string[]>(profile.tags ?? []);
-  const [tagInput, setTagInput] = useState("");
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    setBio(profile.bio ?? "");
-    setTagline(profile.tagline ?? "");
-    setYears(profile.yearsOfExperience?.toString() ?? "");
-    setAvatarKey(profile.avatarKey ?? null);
-    setProfileImageUrl(profile.profileImageUrl ?? null);
-    setVideoLinks(profile.videoLinks ?? []);
-    setTags(profile.tags ?? []);
-  }, [profile]);
-
-  const handleFileSelect = (file: File) => {
-    upload.mutate(file, {
-      onSuccess: (res) => {
-        setProfileImageUrl(res.data.url);
-        setAvatarKey(null);
-      },
-    });
-  };
-
-  const handleAvatarSelect = (key: string) => {
-    setAvatarKey(key);
-    setProfileImageUrl(null);
-  };
-
-  const addVideoLink = () => {
-    const trimmed = videoInput.trim();
-    if (!trimmed || videoLinks.length >= 5) return;
-    setVideoLinks((prev) => [...prev, trimmed]);
-    setVideoInput("");
-  };
-
-  const removeVideoLink = (i: number) =>
-    setVideoLinks((prev) => prev.filter((_, idx) => idx !== i));
-
-  const toggleTag = (tag: string) =>
-    setTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-    );
-
-  const addCustomTag = () => {
-    const trimmed = tagInput.trim();
-    if (!trimmed || tags.includes(trimmed) || tags.length >= 10) return;
-    setTags((prev) => [...prev, trimmed]);
-    setTagInput("");
-  };
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    update.mutate(
-      {
-        bio: bio || undefined,
-        tagline: tagline || undefined,
-        profileImageUrl,
-        avatarKey,
-        videoLinks,
-        tags,
-        yearsOfExperience: years ? Number(years) : null,
-      },
-      {
-        onSuccess: () => {
-          setSaved(true);
-          setTimeout(() => setSaved(false), 3000);
-        },
-      },
-    );
-  };
+  const {
+    bio,
+    setBio,
+    tagline,
+    setTagline,
+    years,
+    setYears,
+    avatarKey,
+    profileImageUrl,
+    videoLinks,
+    videoInput,
+    setVideoInput,
+    tags,
+    tagInput,
+    setTagInput,
+    saved,
+    isUploading,
+    isSaving,
+    saveError,
+    handleFileSelect,
+    handleAvatarSelect,
+    addVideoLink,
+    removeVideoLink,
+    toggleTag,
+    addCustomTag,
+    handleSave,
+  } = useProfileForm(profile);
 
   return (
     <form onSubmit={handleSave} className="space-y-8 max-w-2xl">
@@ -105,7 +46,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
         <AvatarPicker
           avatarKey={avatarKey}
           profileImageUrl={profileImageUrl}
-          uploading={upload.isPending}
+          uploading={isUploading}
           onAvatarSelect={handleAvatarSelect}
           onFileSelect={handleFileSelect}
         />
@@ -154,49 +95,13 @@ export function ProfileForm({ profile }: ProfileFormProps) {
       {/* Tags */}
       <section className="space-y-3">
         <SectionLabel>Tags</SectionLabel>
-        <div className="flex flex-wrap gap-2">
-          {SUGGESTED_TAGS.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => toggleTag(tag)}
-              className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors",
-                tags.includes(tag)
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "border-border text-muted-foreground hover:border-primary/60 hover:text-foreground",
-              )}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-        {/* Custom tag */}
-        <div className="flex gap-2">
-          <input
-            className="input flex-1"
-            placeholder="Add custom tag…"
-            value={tagInput}
-            maxLength={40}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustomTag())}
-          />
-          <Button type="button" variant="outline" size="sm" className="rounded-xl" onClick={addCustomTag}>
-            <Plus className="size-3.5" />
-          </Button>
-        </div>
-        {tags.filter((t) => !SUGGESTED_TAGS.includes(t as never)).length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {tags.filter((t) => !SUGGESTED_TAGS.includes(t as never)).map((tag) => (
-              <span key={tag} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-secondary text-foreground">
-                {tag}
-                <button type="button" onClick={() => toggleTag(tag)} className="hover:text-destructive">
-                  <X className="size-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
+        <TagsSection
+          tags={tags}
+          tagInput={tagInput}
+          setTagInput={setTagInput}
+          toggleTag={toggleTag}
+          addCustomTag={addCustomTag}
+        />
       </section>
 
       {/* Video links */}
@@ -233,14 +138,12 @@ export function ProfileForm({ profile }: ProfileFormProps) {
 
       {/* Save */}
       <div className="flex items-center gap-3 pt-2">
-        <Button type="submit" className="rounded-xl px-8" disabled={update.isPending}>
-          {update.isPending ? "Saving…" : "Save profile"}
+        <Button type="submit" className="rounded-xl px-8" disabled={isSaving}>
+          {isSaving ? "Saving…" : "Save profile"}
         </Button>
         {saved && <span className="text-sm text-emerald-600 font-medium">Saved!</span>}
-        {update.isError && (
-          <span className="text-sm text-destructive">
-            {update.error instanceof Error ? update.error.message : "Save failed"}
-          </span>
+        {saveError && (
+          <span className="text-sm text-destructive">{saveError}</span>
         )}
       </div>
     </form>

@@ -1,92 +1,18 @@
-import { useRef, useState } from "react";
-import { Loader2, ToggleLeft, ToggleRight, Upload, X } from "lucide-react";
+import { Loader2, ToggleLeft, ToggleRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCreateWorkshop, useUpdateWorkshop } from "@/hooks/use-workshops";
-import { useUploadAttachment } from "@/hooks/use-instructors";
-import type { AdminWorkshop, CreateWorkshopBody } from "@yoga-app/shared";
+import type { AdminWorkshop } from "@yoga-app/shared";
+import { useWorkshopDialogForm } from "./use-workshop-dialog-form";
+import { WorkshopImageField } from "./WorkshopImageField";
 
 interface Props {
   initial: AdminWorkshop | null;
   onClose: () => void;
 }
 
-const EMPTY: CreateWorkshopBody = {
-  name: "",
-  description: "",
-  price: null,
-  image: null,
-  meetLink: "",
-  scheduledAt: null,
-  maxAttendees: 50,
-  isActive: false,
-};
-
 export function WorkshopDialog({ initial, onClose }: Props) {
-  const create = useCreateWorkshop();
-  const update = useUpdateWorkshop();
-  const upload = useUploadAttachment();
-  const fileRef = useRef<HTMLInputElement>(null);
-  const isPending = create.isPending || update.isPending;
-
-  const [form, setForm] = useState<CreateWorkshopBody>(
-    initial
-      ? {
-          name: initial.name,
-          description: initial.description,
-          price: initial.price,
-          image: initial.image ?? null,
-          meetLink: initial.meetLink ?? "",
-          scheduledAt: initial.scheduledAt
-            ? new Date(initial.scheduledAt).toISOString().slice(0, 16)
-            : "",
-          maxAttendees: initial.maxAttendees,
-          isActive: initial.isActive,
-        }
-      : EMPTY,
-  );
-  const [error, setError] = useState<string | null>(null);
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-    upload.mutate(file, {
-      onSuccess: (res) => set("image", res.data.url),
-      onError: (err) => setError(err instanceof Error ? err.message : "Image upload failed"),
-    });
-  };
-
-  const set = <K extends keyof CreateWorkshopBody>(k: K, v: CreateWorkshopBody[K]) =>
-    setForm((f) => ({ ...f, [k]: v }));
-
-  const handleSubmit = () => {
-    if (!form.name.trim() || !form.description.trim()) {
-      setError("Name and description are required.");
-      return;
-    }
-    setError(null);
-
-    const body: CreateWorkshopBody = {
-      ...form,
-      meetLink: form.meetLink?.toString().trim() || null,
-      scheduledAt: form.scheduledAt
-        ? new Date(form.scheduledAt as string).toISOString()
-        : null,
-    };
-
-    if (initial) {
-      update.mutate(
-        { id: initial.id, body },
-        { onSuccess: onClose, onError: (e) => setError(e instanceof Error ? e.message : "Update failed") },
-      );
-    } else {
-      create.mutate(body, {
-        onSuccess: onClose,
-        onError: (e) => setError(e instanceof Error ? e.message : "Create failed"),
-      });
-    }
-  };
+  const { form, error, isPending, upload, fileRef, set, handleImageSelect, handleSubmit } =
+    useWorkshopDialogForm(initial, onClose);
 
   return (
     <div
@@ -129,46 +55,13 @@ export function WorkshopDialog({ initial, onClose }: Props) {
           </Field>
 
           <Field label="Cover image">
-            <div className="flex items-center gap-3">
-              {form.image ? (
-                <div className="relative size-16 rounded-xl overflow-hidden shrink-0 border border-border">
-                  <img src={form.image} alt="Cover" className="size-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => set("image", null)}
-                    className="absolute top-0.5 right-0.5 size-4 bg-black/60 rounded-full flex items-center justify-center hover:bg-destructive"
-                  >
-                    <X className="size-2.5 text-white" />
-                  </button>
-                </div>
-              ) : (
-                <div className="size-16 rounded-xl border border-dashed border-border bg-secondary flex items-center justify-center shrink-0">
-                  {upload.isPending ? (
-                    <Loader2 className="size-4 animate-spin text-muted-foreground" />
-                  ) : (
-                    <Upload className="size-4 text-muted-foreground" />
-                  )}
-                </div>
-              )}
-              <div className="space-y-1">
-                <button
-                  type="button"
-                  onClick={() => fileRef.current?.click()}
-                  disabled={upload.isPending}
-                  className="text-xs font-semibold text-primary hover:underline disabled:opacity-50"
-                >
-                  {upload.isPending ? "Uploading…" : form.image ? "Replace image" : "Upload image"}
-                </button>
-                <p className="text-[10px] text-muted-foreground">JPEG, PNG, WebP or GIF · max 5 MB</p>
-              </div>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                className="hidden"
-                onChange={handleImageSelect}
-              />
-            </div>
+            <WorkshopImageField
+              image={form.image}
+              isUploading={upload.isPending}
+              fileRef={fileRef}
+              onClear={() => set("image", null)}
+              onFileChange={handleImageSelect}
+            />
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
