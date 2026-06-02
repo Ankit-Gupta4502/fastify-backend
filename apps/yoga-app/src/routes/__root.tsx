@@ -3,7 +3,7 @@ import {
   HeadContent,
   Outlet,
   Scripts,
-  createRootRoute,
+  createRootRouteWithContext,
   useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -12,45 +12,44 @@ import { APP_NAME } from "@yoga-app/shared";
 import Layout from "@/components/rootLayout/Layout";
 import { ReactQueryProvider } from "../lib/react-query/query-client";
 import { AuthWrapper } from "@/components/auth/AuthWrapper";
-import { userApi } from "../api";
 import { useAuthStore } from "@/store/auth.store";
+import { fetchUserFn } from "@/lib/server-auth";
+import { userApi } from "../api";
+import type { RouterContext } from "../router";
 import appCss from "../styles.css?url";
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async () => {
-    if (typeof window === "undefined") return;
+    // SSR — always fetch with forwarded cookies so guards have the user on first render
+    if (typeof window === "undefined") {
+      const user = await fetchUserFn();
+      return { user };
+    }
+
+    // Client — store already hydrated from initial load, skip the fetch entirely
     const store = useAuthStore.getState();
-    if (!store.isLoading) return;
+    if (!store.isLoading) {
+      return { user: store.user };
+    }
+
+    // First client load (store not yet hydrated) — fetch once and prime the store
     try {
       const result = await userApi.fetchDetail();
-      if (result.success && result.data) {
-        store.setUser(result.data);
-      } else {
-        store.setUser(null);
-      }
+      const user = result.success && result.data ? result.data : null;
+      store.setUser(user);
+      return { user };
     } catch {
       store.setUser(null);
+      return { user: null };
     }
   },
   head: () => ({
     meta: [
-      {
-        charSet: "utf-8",
-      },
-      {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
-      },
-      {
-        title: `${APP_NAME} Workspace`,
-      },
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { title: `${APP_NAME} Workspace` },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
+    links: [{ rel: "stylesheet", href: appCss }],
   }),
   component: RootLayout,
   shellComponent: RootDocument,
@@ -90,15 +89,8 @@ function RootDocument({ children }: { children: ReactNode }) {
           <AuthWrapper>
             {children}
             <TanStackDevtools
-              config={{
-                position: "bottom-right",
-              }}
-              plugins={[
-                {
-                  name: "Tanstack Router",
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-              ]}
+              config={{ position: "bottom-right" }}
+              plugins={[{ name: "Tanstack Router", render: <TanStackRouterDevtoolsPanel /> }]}
             />
             <Scripts />
           </AuthWrapper>
