@@ -25,7 +25,7 @@ async function resetWeeklyQuota(db: AppDatabase, log: FastifyBaseLogger) {
       ),
     );
 
-  log.info({ rowsReset: result.rowCount ?? 0 }, "Weekly quota reset complete");
+  log.info({ rowsReset: result.count ?? 0 }, "Weekly quota reset complete");
 }
 
 async function resetMonthlyQuota(db: AppDatabase, log: FastifyBaseLogger) {
@@ -49,7 +49,7 @@ async function resetMonthlyQuota(db: AppDatabase, log: FastifyBaseLogger) {
       ),
     );
 
-  log.info({ rowsReset: result.rowCount ?? 0 }, "Monthly quota reset complete");
+  log.info({ rowsReset: result.count ?? 0 }, "Monthly quota reset complete");
 }
 
 export function registerQuotaResetJob(db: AppDatabase, log: FastifyBaseLogger) {

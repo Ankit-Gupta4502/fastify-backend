@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
-import { drizzle as drizzleOrm } from "drizzle-orm/node-postgres";
+import { drizzle as drizzleOrm } from "drizzle-orm/postgres-js";
 import fp from "fastify-plugin";
-import { Pool } from "pg";
+import postgres from "postgres";
 import { backendEnvPath } from "../config/env";
 import { getDatabaseUrl } from "../config/database";
 import * as schema from "../schema/schema";
@@ -10,9 +10,9 @@ dotenv.config({
   path: backendEnvPath,
 });
 
-const pool = new Pool({ connectionString: getDatabaseUrl() });
+const pool = postgres(getDatabaseUrl(), { prepare: false });
 
-export const drizzle = drizzleOrm(pool, { schema });
+export const drizzle = drizzleOrm(pool, { schema, });
 
 export type { AppDatabase } from "../types/database.types";
 
