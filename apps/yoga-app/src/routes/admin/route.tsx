@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-router";
 import { useAuthStore } from "@/store/auth.store";
 import { USER_ROLES } from "@yoga-app/shared";
-import { AdminNav } from "./_components/admin-nav";
+import { AdminNav } from "./-components/admin-nav";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIntersection } from "@/hooks/use-intersection";
 import { useInstructors } from "@/hooks/use-instructors";
-import { ExpertCard } from "@/routes/experts/_components/ExpertCard";
+import { ExpertCard } from "@/components/ExpertCard";
 import { CardSkeleton } from "./CardSkeleton";
 
 function InstructorSpotlightRoot() {

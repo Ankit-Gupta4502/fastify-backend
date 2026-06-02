@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 import { useInstructors } from "@/hooks/use-instructors";
-import { ExpertCard } from "./_components/ExpertCard";
+import { ExpertCard } from "@/components/ExpertCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 

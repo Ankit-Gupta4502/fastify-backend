@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { createFileRoute, Outlet, redirect, useNavigate, useLocation } from "@tanstack/react-router";
 import { useAuthStore } from "@/store/auth.store";
 import { USER_ROLES } from "@yoga-app/shared";
-import { InstructorSidebar } from "./_components/instructor-sidebar";
-import { InstructorHeader } from "./_components/instructor-header";
+import { InstructorSidebar } from "./-components/instructor-sidebar";
+import { InstructorHeader } from "./-components/instructor-header";
 
 export const Route = createFileRoute("/instructor")({
   component: InstructorLayout,

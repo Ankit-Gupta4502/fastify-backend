@@ -79,6 +79,10 @@ function Home() {
         <QuizSection />
       </Suspense>
 
+      <Suspense fallback={<SectionFallback height="h-[700px]" />}>
+        <Reviews />
+      </Suspense>
+
       <Suspense fallback={<SectionFallback />}>
         <InstructorSpotlight />
       </Suspense>
@@ -93,10 +97,6 @@ function Home() {
 
       <Suspense fallback={<SectionFallback height="h-[640px]" />}>
         <Features />
-      </Suspense>
-
-      <Suspense fallback={<SectionFallback height="h-[700px]" />}>
-        <Reviews />
       </Suspense>
 
       {/* StickyTrialBar observes heroRef — no scroll listener, no layout jank */}

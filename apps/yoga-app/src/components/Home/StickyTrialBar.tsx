@@ -52,7 +52,7 @@ export function StickyTrialBar({ heroRef }: StickyTrialBarProps) {
           <div className="absolute inset-0 rounded-2xl bg-linear-to-r from-primary/5 via-transparent to-primary/5 pointer-events-none" />
 
           <div className="flex-1 min-w-0 relative">
-            <p className="font-bold text-sm truncate">14-day free trial</p>
+            <p className="font-bold text-sm truncate">1st Demo Class free</p>
             <p className="text-xs text-muted-foreground truncate">No credit card required.</p>
           </div>
 

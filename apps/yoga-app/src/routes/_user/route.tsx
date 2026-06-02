@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { createFileRoute, Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { useAuthStore } from "@/store/auth.store";
 import { USER_ROLES } from "@yoga-app/shared";
-import { UserNav } from "./_components/user-nav";
+import { UserNav } from "./-components/user-nav";
 
 export const Route = createFileRoute("/_user")({
   component: UserLayout,

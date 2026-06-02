@@ -93,7 +93,7 @@ export function Hero() {
               <div className="relative">
                 <p className="text-sm text-muted-foreground">
                   Joined by{" "}
-                  <span className="font-bold text-foreground">12k+</span>{" "}
+                  <span className="font-bold text-foreground">1k+</span>{" "}
                   mindful souls
                 </p>
                 <StarDoodle className="absolute -top-3 -right-5 size-3.5 text-primary/50 animate-doodle-float" style={{ animationDelay: '0.9s' }} />

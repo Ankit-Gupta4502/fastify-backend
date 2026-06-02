@@ -6,7 +6,7 @@ const steps = [
     number: "01",
     icon: UserPlus,
     title: "Create your account",
-    description: "Sign up in seconds — no credit card required. Start with a free 14-day trial of Group Live.",
+    description: "Sign up in seconds — no credit card required. Your 1st Demo Class is free.",
     accent: "bg-sky-500/10 text-sky-500 border-sky-500/20",
     line: "from-sky-500/20 to-primary/20",
   },
