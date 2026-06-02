@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  USER_ROLES,
   loginBodySchema,
   registerBodySchema,
   type LoginBody,
@@ -22,6 +21,5 @@ export const loginFormOptions = {
     email: "",
     password: "",
     rememberMe: true,
-    role: USER_ROLES.USER,
   } satisfies LoginBody,
 };

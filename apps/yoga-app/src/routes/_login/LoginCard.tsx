@@ -1,8 +1,6 @@
 import { useForm } from "react-hook-form";
 import { MoveRight, Mail, Lock, UserCircle } from "lucide-react";
 import {
-  USER_ROLES,
-  PUBLIC_USER_ROLE_VALUES,
   type LoginBody,
   type RegisterBody,
 } from "@yoga-app/shared";
@@ -86,9 +84,6 @@ export function LoginCard({
                   {...loginForm.register("password")} />
               </div>
             </Field>
-
-            {/* Role */}
-            <RoleSelector form={loginForm} label="Sign in as" />
 
             {/* Remember */}
             <div className="flex items-center gap-2">
@@ -202,32 +197,6 @@ function Field({
   );
 }
 
-function RoleSelector({ form, label }: { form: ReturnType<typeof useForm<any>>; label: string }) {
-  const selected = form.watch("role");
-  return (
-    <div className="space-y-2">
-      <Label className="text-xs font-medium">{label}</Label>
-      <div className="grid grid-cols-2 gap-2.5">
-        {PUBLIC_USER_ROLE_VALUES.map((role: string) => (
-          <label
-            key={role}
-            className={cn(
-              "flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 py-2.5 px-3 transition-all duration-200",
-              selected === role
-                ? "border-primary bg-primary/8 text-primary shadow-sm shadow-primary/10"
-                : "border-border/50 bg-muted/30 text-muted-foreground hover:border-border hover:text-foreground",
-            )}
-          >
-            <input type="radio" value={role} className="sr-only" {...form.register("role")} />
-            <span className="text-xs font-semibold">
-              {role === USER_ROLES.INSTRUCTOR ? "Instructor" : "Student"}
-            </span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function SubmitButton({ loading, label, loadingLabel }: { loading: boolean; label: string; loadingLabel: string }) {
   return (

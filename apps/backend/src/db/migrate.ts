@@ -1,17 +1,28 @@
+import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { fileURLToPath } from "node:url";
-import { drizzle } from "./index";
+import postgres from "postgres";
+import dotenv from "dotenv";
+import { backendEnvPath } from "../config/env";
+
+dotenv.config({ path: backendEnvPath });
 
 const migrationsFolder = fileURLToPath(
   new URL("../migrations", import.meta.url),
 );
 
 async function runMigrations() {
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error("DATABASE_URL is required");
+
+  const client = postgres(url, { prepare: false, max: 1 });
+  const db = drizzle(client);
+
   console.log("Running migrations with driver: postgres-js (Supabase)");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await migrate(drizzle as any, { migrationsFolder });
+  await migrate(db, { migrationsFolder });
 
+  await client.end();
   console.log("Migrations completed successfully");
 }
 

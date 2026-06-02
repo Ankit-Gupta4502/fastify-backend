@@ -120,14 +120,6 @@ export class AuthController {
         return reply.status(statusCode).send(payload);
       }
 
-      if (existingUser.role !== body.role) {
-        const { statusCode, payload } = errorResponse({
-          message: `This account is registered as ${existingUser.role}. Choose the matching role to sign in.`,
-          statusCode: 403,
-        });
-        return reply.status(statusCode).send(payload);
-      }
-
       const { headers, response: data } = await auth.api.signInEmail({
         body: {
           email: body.email,
