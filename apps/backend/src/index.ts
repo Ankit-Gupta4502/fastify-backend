@@ -29,9 +29,6 @@ import { backendEnvPath } from "./config/env";
 import { DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_URL } from "@yoga-app/shared";
 import { drizzle } from "./db";
 import { registerQuotaResetJob } from "./jobs/quota-reset.job";
-import { fromNodeHeaders } from "better-auth/node";
-import { auth } from "./lib/auth";
-import { applyAuthResponseHeaders } from "./lib/auth-cookies";
 
 export const fastify = Fastify({
   logger: true,
@@ -163,25 +160,6 @@ const start = async () => {
     new WorkshopsController(authMiddleware, fastify);
     new ReviewsController(fastify);
 
-    fastify.all("/api/auth/*", async (request, reply) => {
-      const hasBody = request.method !== "GET" && request.method !== "HEAD";
-
-      const response = await auth.handler(
-        new Request(
-          new URL(request.url, `${request.protocol}://${request.headers.host}`).toString(),
-          {
-            method: request.method,
-            headers: fromNodeHeaders(request.headers),
-            body: hasBody ? JSON.stringify(request.body) : undefined,
-          }
-        )
-      );
-
-      reply.status(response.status);
-      applyAuthResponseHeaders(reply, response.headers);
-
-      return reply.send(await response.text());
-    });
 
     fastify.get("/health", async () => {
       return { status: "ok", timestamp: new Date().toISOString() };
