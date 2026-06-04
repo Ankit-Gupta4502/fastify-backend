@@ -4,7 +4,7 @@ import { authQueryOptions, useAuth } from "../../hooks/use-auth";
 
 export function AuthWrapper({ children }: { children: ReactNode }) {
   const { setUser, setLoading } = useAuth();
-  const { data, isLoading, isError } = useQuery(authQueryOptions.userDetail());
+  const { data, isLoading, isError } = useQuery({...authQueryOptions.userDetail(),retry:0});
 
   useEffect(() => {
     if (isLoading) {

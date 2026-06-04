@@ -47,7 +47,7 @@ export function useLogin() {
   function handleGoogleSignIn() {
     const callbackURL = typeof window !== "undefined" ? window.location.origin : "";
     console.log(getGoogleUrl(callbackURL),"urllll")
-    window.location.assign(getGoogleUrl(callbackURL));
+    // window.location.assign(getGoogleUrl(callbackURL));
   }
 
   const switchMode = (next: "login" | "register") => {
