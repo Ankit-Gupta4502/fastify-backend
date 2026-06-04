@@ -129,7 +129,6 @@ export class AuthController {
         headers: fromNodeHeaders(request.headers),
         returnHeaders: true,
       });
-
       applyAuthResponseHeaders(reply, headers);
 
       const { statusCode, payload } = successResponse({
@@ -213,6 +212,9 @@ export class AuthController {
         headers: fromNodeHeaders(request.headers),
         returnHeaders: true,
       });
+
+      console.log("SIGN_IN_SOCIAL RESULT");
+      console.dir(response, { depth: null });
 
       applyAuthResponseHeaders(reply, headers);
 
