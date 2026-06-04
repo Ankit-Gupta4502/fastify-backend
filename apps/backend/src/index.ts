@@ -27,11 +27,15 @@ import { logError } from "./lib/logger";
 import { getDatabaseDriver } from "./config/database";
 import { backendEnvPath } from "./config/env";
 import { DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_URL } from "@yoga-app/shared";
-import {drizzle} from "./db"
-import { registerQuotaResetJob } from "./jobs/quota-reset.job"
+import { drizzle } from "./db";
+import { registerQuotaResetJob } from "./jobs/quota-reset.job";
+import { fromNodeHeaders } from "better-auth/node";
+import { auth } from "./lib/auth";
+import { applyAuthResponseHeaders } from "./lib/auth-cookies";
 
 export const fastify = Fastify({
   logger: true,
+  trustProxy: true,
 });
 
 fastify.setErrorHandler((err: FastifyError, req, reply) => {
@@ -87,8 +91,7 @@ const start = async () => {
     });
     fastify.register(middleware);
 
-    const frontendUrl =
-      process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL;
+    const frontendUrl = process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL;
 
     fastify.register(fastifyCors, {
       origin: frontendUrl,
@@ -100,7 +103,9 @@ const start = async () => {
     await fastify.register(db);
     await fastify.register(cookie);
     await fastify.register(authPlugin);
-    await fastify.register(fastifyMultipart, { limits: { fileSize: 5 * 1024 * 1024 } });
+    await fastify.register(fastifyMultipart, {
+      limits: { fileSize: 5 * 1024 * 1024 },
+    });
 
     const isProd = process.env.NODE_ENV === "production";
     const prodUrl = process.env.PROD_BASE_URL || "https://api.example.com";
@@ -157,6 +162,26 @@ const start = async () => {
     new UploadsController(authMiddleware, fastify);
     new WorkshopsController(authMiddleware, fastify);
     new ReviewsController(fastify);
+
+    fastify.all("/api/auth/*", async (request, reply) => {
+      const hasBody = request.method !== "GET" && request.method !== "HEAD";
+
+      const response = await auth.handler(
+        new Request(
+          new URL(request.url, `${request.protocol}://${request.headers.host}`).toString(),
+          {
+            method: request.method,
+            headers: fromNodeHeaders(request.headers),
+            body: hasBody ? JSON.stringify(request.body) : undefined,
+          }
+        )
+      );
+
+      reply.status(response.status);
+      applyAuthResponseHeaders(reply, response.headers);
+
+      return reply.send(await response.text());
+    });
 
     fastify.get("/health", async () => {
       return { status: "ok", timestamp: new Date().toISOString() };
