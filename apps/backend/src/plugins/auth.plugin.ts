@@ -9,7 +9,8 @@ export default fp(async (fastify) => {
     url: "/auth/*",
     async handler(request, reply) {
       request.log.info({ method: request.method, url: request.url }, "[auth-plugin] incoming request");
-
+      console.log("PROTOCOL", request.protocol);
+      console.log("XFP", request.headers["x-forwarded-proto"]);
       try {
         const url = new URL(
           request.url,
