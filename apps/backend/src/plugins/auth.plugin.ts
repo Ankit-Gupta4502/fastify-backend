@@ -6,7 +6,7 @@ import { applyAuthResponseHeaders } from "../lib/auth-cookies";
 export default fp(async (fastify) => {
   fastify.route({
     method: ["GET", "POST"],
-    url: "/api/auth/*",
+    url: "/auth/*",
     async handler(request, reply) {
       try {
         const url = new URL(
