@@ -19,7 +19,7 @@ interface LoginCardProps {
   isSubmitting: boolean;
   onLoginSubmit: (values: LoginBody) => Promise<void>;
   onRegisterSubmit: (values: RegisterBody) => Promise<void>;
-  handleGoogleSignIn: () => void;
+  handleGoogleSignIn: () => Promise<void>;
   switchMode: (next: "login" | "register") => void;
 }
 

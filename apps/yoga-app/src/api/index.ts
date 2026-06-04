@@ -5,7 +5,7 @@ import {
   type HealthResponse,
 } from "@yoga-app/shared";
 import { ENDPOINTS } from "../constants/endpoints";
-import { API_BASE_URL, apiRequest, apiGet } from "../lib/http";
+import { apiRequest, apiGet } from "../lib/http";
 
 export interface SessionPayload {
   session: { id: string; expiresAt: string };
@@ -40,11 +40,10 @@ export const authApi = {
       method: "POST",
     }),
     
-  getGoogleUrl: (callbackURL: string) => {
-    const url = new URL(ENDPOINTS.AUTH.GOOGLE, API_BASE_URL);
-    url.searchParams.set("callbackURL", callbackURL);
-    return url.toString();
-  },
+  getGoogleUrl: (callbackURL: string) =>
+    apiRequest<{ url: string | null }>(ENDPOINTS.AUTH.GOOGLE, {
+      params: { callbackURL },
+    }),
 };
 
 // User Fetchers

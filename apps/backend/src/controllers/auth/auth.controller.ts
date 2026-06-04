@@ -218,13 +218,9 @@ export class AuthController {
 
       applyAuthResponseHeaders(reply, headers);
 
-      if (response.url) {
-        return reply.redirect(response.url);
-      }
-
       const { statusCode, payload } = successResponse({
         message: "Google sign-in initiated",
-        data: response,
+        data: { url: response.url ?? null },
       });
       return reply.status(statusCode).send(payload);
     } catch (error) {

@@ -44,10 +44,14 @@ export function useLogin() {
     }
   }
 
-  function handleGoogleSignIn() {
-    const callbackURL = typeof window !== "undefined" ? window.location.origin : "";
-    console.log(getGoogleUrl(callbackURL),"urllll")
-    // window.location.assign(getGoogleUrl(callbackURL));
+  async function handleGoogleSignIn() {
+    const callbackURL = window.location.origin;
+    try {
+      const response = await getGoogleUrl(callbackURL);
+      if (response.data?.url) window.location.assign(response.data.url);
+    } catch (error) {
+      setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Google sign-in failed");
+    }
   }
 
   const switchMode = (next: "login" | "register") => {
