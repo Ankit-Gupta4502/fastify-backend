@@ -13,7 +13,7 @@ export default fp(async (fastify) => {
       console.log("XFP", request.headers["x-forwarded-proto"]);
       try {
         const url = new URL(
-          request.url,
+          `/api${request.url}`,
           `${request.protocol}://${request.headers.host}`
         );
         request.log.debug({ url: url.toString() }, "[auth-plugin] constructed web URL");
