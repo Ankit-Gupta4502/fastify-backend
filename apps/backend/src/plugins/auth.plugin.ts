@@ -6,14 +6,14 @@ import { applyAuthResponseHeaders } from "../lib/auth-cookies";
 export default fp(async (fastify) => {
   fastify.route({
     method: ["GET", "POST"],
-    url: "/api/auth/*",
+    url: "/auth/*",
     async handler(request, reply) {
       request.log.info({ method: request.method, url: request.url }, "[auth-plugin] incoming request");
       console.log("PROTOCOL", request.protocol);
       console.log("XFP", request.headers["x-forwarded-proto"]);
       try {
         const url = new URL(
-          `${request.url}`,
+          `/api${request.url}`,
           `${request.protocol}://${request.headers.host}`
         );
         request.log.debug({ url: url.toString() }, "[auth-plugin] constructed web URL");
