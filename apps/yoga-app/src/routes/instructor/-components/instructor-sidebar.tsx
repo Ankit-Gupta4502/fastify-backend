@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, IndianRupee, UserCircle, Pencil, LogOut, Sparkles } from "lucide-react";
+import { LayoutDashboard, IndianRupee, UserCircle, Pencil, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
@@ -26,12 +26,12 @@ export function InstructorSidebar() {
     <aside className="w-64 shrink-0 border-r border-border/60 bg-card/40 flex flex-col h-full overflow-hidden">
       {/* Logo */}
       <div className="h-16 flex items-center px-5 border-b border-border/40">
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <span className="relative flex size-8 items-center justify-center rounded-full bg-primary/20 text-primary overflow-hidden group-hover:bg-primary/30 transition-colors duration-300">
-            <Sparkles className="size-4 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300" />
-            <span className="absolute inset-0 rounded-full bg-primary/20 scale-0 group-hover:scale-100 group-hover:opacity-0 transition-all duration-500" />
+        <Link to="/" className="flex items-center gap-2 group">
+          <img src="/logo.svg" alt="" className="size-8 group-hover:scale-110 transition-transform duration-300" />
+          <span className="text-sm font-bold leading-none tracking-tight">
+            <span className="block text-foreground">Book Your</span>
+            <span className="block text-primary font-doodle italic">Yoga Teacher</span>
           </span>
-          <span className="text-xl font-bold tracking-tight doodle-shimmer-text">Solara</span>
         </Link>
       </div>
 

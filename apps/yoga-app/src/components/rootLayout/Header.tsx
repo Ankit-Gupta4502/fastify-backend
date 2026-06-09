@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles, User, LogOut, LayoutDashboard, ShieldCheck, Tag } from "lucide-react";
+import { User, LogOut, LayoutDashboard, ShieldCheck, Tag } from "lucide-react";
 import { USER_ROLES } from "@yoga-app/shared";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
@@ -17,13 +17,14 @@ export function Header() {
         <div className="flex items-center gap-10">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <span className="relative flex size-8 items-center justify-center rounded-full bg-primary/15 text-primary overflow-hidden group-hover:bg-primary/25 transition-colors duration-300">
-              <Sparkles className="size-4 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300" />
-              {/* Subtle ping on hover */}
-              <span className="absolute inset-0 rounded-full bg-primary/20 scale-0 group-hover:scale-100 group-hover:opacity-0 transition-all duration-500" />
-            </span>
-            <span className="text-xl font-bold tracking-tight">
-              <span className="doodle-shimmer-text">Solara</span>
+            <img
+              src="/logo.svg"
+              alt=""
+              className="size-8 group-hover:scale-110 transition-transform duration-300"
+            />
+            <span className="text-sm font-bold leading-none tracking-tight">
+              <span className="block text-foreground">Book Your</span>
+              <span className="block text-primary font-doodle italic">Yoga Teacher</span>
             </span>
           </Link>
 

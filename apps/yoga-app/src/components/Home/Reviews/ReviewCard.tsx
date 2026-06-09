@@ -50,7 +50,7 @@ export function ReviewCard({ review, index, isVisible }: { review: PublicReview;
               <CheckCircle2 className="size-3.5 text-primary/40 group-hover:text-primary/70 transition-colors duration-300" />
             </div>
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-0.5">
-              Solara member
+              Verified member
             </p>
           </div>
         </div>

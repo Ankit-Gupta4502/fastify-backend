@@ -12,6 +12,7 @@ export default fp(async (fastify) => {
       console.log("PROTOCOL", request.protocol);
       console.log("XFP", request.headers["x-forwarded-proto"]);
       try {
+        // /api is added because in production /api is needed for redirection and nginx is stripping down /api then passing to backend and then data is being saved in db that's why it does not exit in better auth config
         const url = new URL(
           `/api${request.url}`,
           `${request.protocol}://${request.headers.host}`

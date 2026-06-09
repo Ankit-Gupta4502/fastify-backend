@@ -50,9 +50,9 @@ export function Hero() {
             </h1>
 
             <p className="text-lg text-muted-foreground max-w-md leading-relaxed">
-              Solara blends ancient mindfulness practices with modern wellness
-              technology to help you navigate life with clarity, balance, and
-              profound calm.
+              Book Your Yoga Teacher connects you with world-class instructors
+              for personalized sessions — helping you build a consistent practice
+              at your own pace, from anywhere.
             </p>
 
             {/* CTAs */}

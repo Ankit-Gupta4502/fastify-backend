@@ -22,14 +22,14 @@ export function useCustomCheckout() {
         key: keyId,
         amount,
         currency,
-        name: "Solara Yoga",
+        name: "Book Your Yoga Teacher",
         description: `${planName} — ${sessionCount} sessions/mo`,
         order_id: orderId,
         prefill: {
           name: user?.name ?? undefined,
           email: user?.email ?? undefined,
         },
-        theme: { color: "#d96b3a" },
+        theme: { color: "#D97706" },
         handler: () => {},
       });
 
@@ -69,14 +69,14 @@ export function useCheckout() {
         key: keyId,
         amount,
         currency,
-        name: "Solara Yoga",
+        name: "Book Your Yoga Teacher",
         description: `Plan: ${planName}`,
         order_id: orderId,
         prefill: {
           name: user?.name ?? undefined,
           email: user?.email ?? undefined,
         },
-        theme: { color: "#d96b3a" },
+        theme: { color: "#D97706" },
         handler: () => {},
       });
 

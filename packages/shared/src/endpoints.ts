@@ -56,6 +56,19 @@ export const API_ENDPOINTS = {
     ADMIN_UPDATE: (id: string) => `/admin/workshops/${id}`,
     ADMIN_DELETE: (id: string) => `/admin/workshops/${id}`,
   },
+  DEMO: {
+    CREATE_REQUEST: "/demo/request",
+    MY_REQUESTS: "/demo/my-requests",
+    UPDATE_MY_REQUEST: (id: string) => `/demo/my-requests/${id}`,
+    ADMIN_LIST: "/admin/demo-requests",
+    ADMIN_DETAIL: (id: string) => `/admin/demo-requests/${id}`,
+    ADMIN_UPDATE_STATUS: (id: string) => `/admin/demo-requests/${id}/status`,
+    ADMIN_ASSIGN_INSTRUCTOR: (id: string) =>
+      `/admin/demo-requests/${id}/assign-instructor`,
+    ADMIN_SCHEDULE_MEETING: (id: string) =>
+      `/admin/demo-requests/${id}/meeting`,
+    INSTRUCTOR_SESSIONS: "/instructor/demo-sessions",
+  },
   SYSTEM: {
     HEALTH: "/health",
   },

@@ -10,13 +10,16 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as InstructorRouteRouteImport } from './routes/instructor/route'
+import { Route as DemoRouteRouteImport } from './routes/demo/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as UserRouteRouteImport } from './routes/_user/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PricingIndexRouteImport } from './routes/pricing/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as ExpertsIndexRouteImport } from './routes/experts/index'
+import { Route as DemoIndexRouteImport } from './routes/demo/index'
 import { Route as AdminLoginIndexRouteImport } from './routes/admin-login/index'
+import { Route as DemoSuccessRouteImport } from './routes/demo/success'
 import { Route as SessionRoomIdIndexRouteImport } from './routes/session.$roomId/index'
 import { Route as InstructorProfileIndexRouteImport } from './routes/instructor/profile/index'
 import { Route as InstructorEarningsIndexRouteImport } from './routes/instructor/earnings/index'
@@ -26,6 +29,7 @@ import { Route as AdminWorkshopsIndexRouteImport } from './routes/admin/workshop
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
 import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
 import { Route as AdminInstructorsIndexRouteImport } from './routes/admin/instructors/index'
+import { Route as AdminDemoRequestsIndexRouteImport } from './routes/admin/demo-requests/index'
 import { Route as UserRoomsIndexRouteImport } from './routes/_user/rooms/index'
 import { Route as UserDashboardIndexRouteImport } from './routes/_user/dashboard/index'
 import { Route as UserBillingIndexRouteImport } from './routes/_user/billing/index'
@@ -33,6 +37,11 @@ import { Route as UserBillingIndexRouteImport } from './routes/_user/billing/ind
 const InstructorRouteRoute = InstructorRouteRouteImport.update({
   id: '/instructor',
   path: '/instructor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRouteRoute = DemoRouteRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRouteRoute = AdminRouteRouteImport.update({
@@ -64,10 +73,20 @@ const ExpertsIndexRoute = ExpertsIndexRouteImport.update({
   path: '/experts/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoIndexRoute = DemoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DemoRouteRoute,
+} as any)
 const AdminLoginIndexRoute = AdminLoginIndexRouteImport.update({
   id: '/admin-login/',
   path: '/admin-login/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DemoSuccessRoute = DemoSuccessRouteImport.update({
+  id: '/success',
+  path: '/success',
+  getParentRoute: () => DemoRouteRoute,
 } as any)
 const SessionRoomIdIndexRoute = SessionRoomIdIndexRouteImport.update({
   id: '/session/$roomId/',
@@ -115,6 +134,11 @@ const AdminInstructorsIndexRoute = AdminInstructorsIndexRouteImport.update({
   path: '/instructors/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminDemoRequestsIndexRoute = AdminDemoRequestsIndexRouteImport.update({
+  id: '/demo-requests/',
+  path: '/demo-requests/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const UserRoomsIndexRoute = UserRoomsIndexRouteImport.update({
   id: '/rooms/',
   path: '/rooms/',
@@ -134,14 +158,18 @@ const UserBillingIndexRoute = UserBillingIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/demo': typeof DemoRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/demo/success': typeof DemoSuccessRoute
   '/admin-login/': typeof AdminLoginIndexRoute
+  '/demo/': typeof DemoIndexRoute
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/billing/': typeof UserBillingIndexRoute
   '/dashboard/': typeof UserDashboardIndexRoute
   '/rooms/': typeof UserRoomsIndexRoute
+  '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
@@ -156,13 +184,16 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/demo/success': typeof DemoSuccessRoute
   '/admin-login': typeof AdminLoginIndexRoute
+  '/demo': typeof DemoIndexRoute
   '/experts': typeof ExpertsIndexRoute
   '/login': typeof LoginIndexRoute
   '/pricing': typeof PricingIndexRoute
   '/billing': typeof UserBillingIndexRoute
   '/dashboard': typeof UserDashboardIndexRoute
   '/rooms': typeof UserRoomsIndexRoute
+  '/admin/demo-requests': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors': typeof AdminInstructorsIndexRoute
   '/admin/rooms': typeof AdminRoomsIndexRoute
   '/admin/users': typeof AdminUsersIndexRoute
@@ -178,14 +209,18 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_user': typeof UserRouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
+  '/demo': typeof DemoRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/demo/success': typeof DemoSuccessRoute
   '/admin-login/': typeof AdminLoginIndexRoute
+  '/demo/': typeof DemoIndexRoute
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/_user/billing/': typeof UserBillingIndexRoute
   '/_user/dashboard/': typeof UserDashboardIndexRoute
   '/_user/rooms/': typeof UserRoomsIndexRoute
+  '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
@@ -201,14 +236,18 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/demo'
     | '/instructor'
+    | '/demo/success'
     | '/admin-login/'
+    | '/demo/'
     | '/experts/'
     | '/login/'
     | '/pricing/'
     | '/billing/'
     | '/dashboard/'
     | '/rooms/'
+    | '/admin/demo-requests/'
     | '/admin/instructors/'
     | '/admin/rooms/'
     | '/admin/users/'
@@ -223,13 +262,16 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/instructor'
+    | '/demo/success'
     | '/admin-login'
+    | '/demo'
     | '/experts'
     | '/login'
     | '/pricing'
     | '/billing'
     | '/dashboard'
     | '/rooms'
+    | '/admin/demo-requests'
     | '/admin/instructors'
     | '/admin/rooms'
     | '/admin/users'
@@ -244,14 +286,18 @@ export interface FileRouteTypes {
     | '/'
     | '/_user'
     | '/admin'
+    | '/demo'
     | '/instructor'
+    | '/demo/success'
     | '/admin-login/'
+    | '/demo/'
     | '/experts/'
     | '/login/'
     | '/pricing/'
     | '/_user/billing/'
     | '/_user/dashboard/'
     | '/_user/rooms/'
+    | '/admin/demo-requests/'
     | '/admin/instructors/'
     | '/admin/rooms/'
     | '/admin/users/'
@@ -267,6 +313,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   UserRouteRoute: typeof UserRouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  DemoRouteRoute: typeof DemoRouteRouteWithChildren
   InstructorRouteRoute: typeof InstructorRouteRouteWithChildren
   AdminLoginIndexRoute: typeof AdminLoginIndexRoute
   ExpertsIndexRoute: typeof ExpertsIndexRoute
@@ -283,6 +330,13 @@ declare module '@tanstack/react-router' {
       path: '/instructor'
       fullPath: '/instructor'
       preLoaderRoute: typeof InstructorRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -327,12 +381,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExpertsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo/': {
+      id: '/demo/'
+      path: '/'
+      fullPath: '/demo/'
+      preLoaderRoute: typeof DemoIndexRouteImport
+      parentRoute: typeof DemoRouteRoute
+    }
     '/admin-login/': {
       id: '/admin-login/'
       path: '/admin-login'
       fullPath: '/admin-login/'
       preLoaderRoute: typeof AdminLoginIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/demo/success': {
+      id: '/demo/success'
+      path: '/success'
+      fullPath: '/demo/success'
+      preLoaderRoute: typeof DemoSuccessRouteImport
+      parentRoute: typeof DemoRouteRoute
     }
     '/session/$roomId/': {
       id: '/session/$roomId/'
@@ -397,6 +465,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInstructorsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/demo-requests/': {
+      id: '/admin/demo-requests/'
+      path: '/demo-requests'
+      fullPath: '/admin/demo-requests/'
+      preLoaderRoute: typeof AdminDemoRequestsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/_user/rooms/': {
       id: '/_user/rooms/'
       path: '/rooms'
@@ -438,6 +513,7 @@ const UserRouteRouteWithChildren = UserRouteRoute._addFileChildren(
 )
 
 interface AdminRouteRouteChildren {
+  AdminDemoRequestsIndexRoute: typeof AdminDemoRequestsIndexRoute
   AdminInstructorsIndexRoute: typeof AdminInstructorsIndexRoute
   AdminRoomsIndexRoute: typeof AdminRoomsIndexRoute
   AdminUsersIndexRoute: typeof AdminUsersIndexRoute
@@ -445,6 +521,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminDemoRequestsIndexRoute: AdminDemoRequestsIndexRoute,
   AdminInstructorsIndexRoute: AdminInstructorsIndexRoute,
   AdminRoomsIndexRoute: AdminRoomsIndexRoute,
   AdminUsersIndexRoute: AdminUsersIndexRoute,
@@ -453,6 +530,20 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
   AdminRouteRouteChildren,
+)
+
+interface DemoRouteRouteChildren {
+  DemoSuccessRoute: typeof DemoSuccessRoute
+  DemoIndexRoute: typeof DemoIndexRoute
+}
+
+const DemoRouteRouteChildren: DemoRouteRouteChildren = {
+  DemoSuccessRoute: DemoSuccessRoute,
+  DemoIndexRoute: DemoIndexRoute,
+}
+
+const DemoRouteRouteWithChildren = DemoRouteRoute._addFileChildren(
+  DemoRouteRouteChildren,
 )
 
 interface InstructorRouteRouteChildren {
@@ -475,6 +566,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   UserRouteRoute: UserRouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  DemoRouteRoute: DemoRouteRouteWithChildren,
   InstructorRouteRoute: InstructorRouteRouteWithChildren,
   AdminLoginIndexRoute: AdminLoginIndexRoute,
   ExpertsIndexRoute: ExpertsIndexRoute,

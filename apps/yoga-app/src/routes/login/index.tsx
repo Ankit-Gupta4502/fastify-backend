@@ -89,7 +89,7 @@ function LoginPage() {
         />
 
         <p className="text-center text-[10px] text-muted-foreground leading-relaxed px-4">
-          By continuing, you agree to Solara's{" "}
+          By continuing, you agree to Book Your Yoga Teacher's{" "}
           <Link to="/" className="underline hover:text-primary transition-colors">Terms</Link> and{" "}
           <Link to="/" className="underline hover:text-primary transition-colors">Privacy Policy</Link>.
         </p>

@@ -20,6 +20,7 @@ import { AdminController } from "./controllers/admin/admin.controller";
 import { UploadsController } from "./controllers/uploads/uploads.controller";
 import { WorkshopsController } from "./controllers/workshops/workshops.controller";
 import { ReviewsController } from "./controllers/reviews/reviews.controller";
+import { DemoController } from "./controllers/demo/demo.controller";
 import fastifyMultipart from "@fastify/multipart";
 import { errorResponse } from "./utils";
 import { FastifyError } from "fastify";
@@ -159,6 +160,7 @@ const start = async () => {
     new UploadsController(authMiddleware, fastify);
     new WorkshopsController(authMiddleware, fastify);
     new ReviewsController(fastify);
+    new DemoController(authMiddleware, fastify);
 
 
     fastify.get("/health", async () => {

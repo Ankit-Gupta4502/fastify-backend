@@ -42,4 +42,11 @@ export const queryKeys = {
     list: () => [...queryKeys.workshops.all, "list"] as const,
     detail: (id: string) => [...queryKeys.workshops.all, "detail", id] as const,
   },
+  demo: {
+    all: ["demo"] as const,
+    myRequests: () => [...queryKeys.demo.all, "my-requests"] as const,
+    adminList: () => [...queryKeys.demo.all, "admin-list"] as const,
+    adminDetail: (id: string) => [...queryKeys.demo.all, "admin-detail", id] as const,
+    instructorSessions: () => [...queryKeys.demo.all, "instructor-sessions"] as const,
+  },
 } as const;

@@ -182,7 +182,7 @@ export function Features() {
             well-being
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            Every feature in Solara is crafted to bring more clarity, balance, and intentionality to your daily mindfulness journey.
+            Every feature in Book Your Yoga Teacher is crafted to help you find the perfect instructor and build a sustainable, fulfilling yoga practice.
           </p>
         </div>
 

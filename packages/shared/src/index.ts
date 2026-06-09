@@ -2,6 +2,7 @@ export * from "./admin";
 export * from "./api";
 export * from "./auth";
 export * from "./constants";
+export * from "./demo";
 export * from "./endpoints";
 export * from "./instructors";
 export * from "./payments";

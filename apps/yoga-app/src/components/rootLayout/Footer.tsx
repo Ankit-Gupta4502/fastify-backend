@@ -1,6 +1,6 @@
 
 import { Link } from "@tanstack/react-router";
-import { Flower2, Instagram, Linkedin, Music2 } from "lucide-react";
+import { Instagram, Linkedin, Music2 } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
 
@@ -45,15 +45,16 @@ export function Footer() {
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
           <div className="space-y-4">
-            <Link className="inline-flex items-center gap-2 text-xl font-semibold" to="/">
-              <span className="flex size-8 items-center justify-center rounded-full bg-primary/20 text-primary">
-                <Flower2 className="size-4" />
+            <Link className="inline-flex items-center gap-2" to="/">
+              <img src="/logo.svg" alt="" className="size-8" />
+              <span className="text-sm font-bold leading-none tracking-tight">
+                <span className="block text-foreground">Book Your</span>
+                <span className="block text-primary font-doodle italic">Yoga Teacher</span>
               </span>
-              Solara
             </Link>
             <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-              A calm, structured workspace for yoga studios, instructors, and
-              practitioners to flow through planning, booking, and mindfulness.
+              Connect with world-class yoga instructors for personalized sessions.
+              Book, practice, and grow — at your own pace, on your own schedule.
             </p>
             <div className="flex flex-wrap gap-2">
               <Badge variant="outline">Built with TanStack Start</Badge>
@@ -94,7 +95,7 @@ export function Footer() {
         <Separator className="my-8" />
 
         <div className="flex flex-col items-start justify-between gap-4 text-sm text-muted-foreground md:flex-row md:items-center">
-          <p>© {year} Solara Yoga Workspace. All rights reserved.</p>
+          <p>© {year} Book Your Yoga Teacher. All rights reserved.</p>
           <div className="flex items-center gap-3">
             <a
               className="rounded-full p-2 transition-colors hover:bg-background hover:text-foreground"

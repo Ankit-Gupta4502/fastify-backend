@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, CalendarDays, Wallet, LogOut, Sparkles, User } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Wallet, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
@@ -17,11 +17,12 @@ export function UserNav() {
     <aside className="w-60 shrink-0 border-r border-border/60 bg-card/40 flex flex-col h-full overflow-hidden">
       {/* Logo */}
       <div className="h-16 flex items-center px-5 border-b border-border/40">
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <span className="flex size-8 items-center justify-center rounded-full bg-primary/20 text-primary transition-transform group-hover:scale-110">
-            <Sparkles className="size-4" />
+        <Link to="/" className="flex items-center gap-2 group">
+          <img src="/logo.svg" alt="" className="size-8 group-hover:scale-110 transition-transform" />
+          <span className="text-sm font-bold leading-none tracking-tight">
+            <span className="block text-foreground">Book Your</span>
+            <span className="block text-primary font-doodle italic">Yoga Teacher</span>
           </span>
-          <span className="text-xl font-bold tracking-tight">Solara</span>
         </Link>
       </div>
 

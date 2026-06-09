@@ -48,3 +48,9 @@ export {
   walletTransactionRelations,
   walletTransactionTypeEnum,
 } from "../models/instructor-wallet";
+
+export {
+  demoRequests,
+  demoRequestsRelations,
+  demoRequestStatusEnum,
+} from "../models/demo-request";

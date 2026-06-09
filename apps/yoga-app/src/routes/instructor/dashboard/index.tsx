@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Activity, CalendarDays, Clock, IndianRupee, Users, UserCircle } from "lucide-react";
+import { Activity, CalendarDays, Clock, IndianRupee, Users, UserCircle, ExternalLink, Video } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/shared/StatCard";
@@ -8,6 +8,7 @@ import { NextClassCard } from "../-components/NextClassCard";
 import { ScheduleList } from "../-components/ScheduleList";
 import { useInstructorSchedule, useJoinRoom } from "@/hooks/use-rooms";
 import { useInstructorWallet } from "@/hooks/use-instructors";
+import { useInstructorDemoSessions } from "@/hooks/use-demo";
 import { INSTRUCTOR_IANA, INSTRUCTOR_TIMEZONE_LABEL } from "@/constants/sessions";
 
 export const Route = createFileRoute("/instructor/dashboard/")({
@@ -20,7 +21,9 @@ function InstructorDashboard() {
   const schedule = useInstructorSchedule();
   const join = useJoinRoom();
   const wallet = useInstructorWallet();
+  const demoSessions = useInstructorDemoSessions();
   const rooms = schedule.data?.data ?? [];
+  const demos = demoSessions.data?.data ?? [];
 
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [joinError, setJoinError] = useState<string | null>(null);
@@ -147,6 +150,86 @@ function InstructorDashboard() {
       <NextClassCard room={nextRoom} isLoading={schedule.isLoading} joiningId={joiningId} onJoin={handleJoin} />
 
       <ScheduleList rooms={rooms} isLoading={schedule.isLoading} joiningId={joiningId} onJoin={handleJoin} />
+
+      {/* Demo Sessions */}
+      {(demoSessions.isLoading || demos.length > 0) && (
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Video className="size-4 text-primary" />
+            <h2 className="text-lg font-bold tracking-tight">Assigned Demo Sessions</h2>
+            {demos.length > 0 && (
+              <Badge className="bg-primary/10 text-primary border-none text-[10px] font-bold uppercase tracking-wider">
+                {demos.length}
+              </Badge>
+            )}
+          </div>
+
+          {demoSessions.isLoading ? (
+            <div className="rounded-2xl border border-border/60 p-6 text-center text-sm text-muted-foreground animate-pulse">
+              Loading demo sessions…
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {demos.map((demo) => (
+                <div
+                  key={demo.id}
+                  className="rounded-2xl border border-border/60 bg-card px-5 py-4 space-y-3"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-semibold text-sm">{demo.userName}</p>
+                      <p className="text-xs text-muted-foreground">{demo.userEmail}</p>
+                    </div>
+                    <Badge className="text-[10px] font-bold uppercase tracking-wider border rounded-full px-2.5 py-0.5 shrink-0 bg-indigo-500/10 text-indigo-600 border-indigo-500/20">
+                      {demo.status === "instructor_assigned" ? "Awaiting Link" : demo.status === "meeting_scheduled" ? "Scheduled" : "Completed"}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <p className="text-muted-foreground font-medium">Phone</p>
+                      <p className="font-semibold">{demo.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground font-medium">Date & Time</p>
+                      <p className="font-semibold">{demo.preferredDate} {demo.preferredTime}</p>
+                      <p className="text-muted-foreground">{demo.timezone}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5">
+                      Goals
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {demo.purposes.map((p) => (
+                        <span
+                          key={p}
+                          className="inline-block rounded-full bg-primary/10 text-primary text-[10px] font-semibold px-2 py-0.5"
+                        >
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {demo.meetingLink && (
+                    <a
+                      href={demo.meetingLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 w-full justify-center py-2.5 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+                    >
+                      <ExternalLink className="size-3.5" />
+                      Join Demo Session
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }
