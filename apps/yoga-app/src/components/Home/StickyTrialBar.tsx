@@ -1,41 +1,54 @@
-import { useEffect, useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import {  useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/auth.store";
+import { planQueryOptions } from "@/hooks/use-plans";
+import { demoQueryOptions } from "@/hooks/use-demo";
 import { cn } from "@/lib/utils";
 
-interface StickyTrialBarProps {
-  /** Ref of the hero section — bar appears once hero scrolls out of view */
-  heroRef: React.RefObject<Element | null>;
-}
+
 
 /**
  * Sticky bottom CTA that appears once the hero scrolls out of view.
  * Uses IntersectionObserver (Vercel best practice) instead of scroll events
  * to avoid layout-thrashing passive-listener patterns.
  */
-export function StickyTrialBar({ heroRef }: StickyTrialBarProps) {
-  const [isVisible, setIsVisible] = useState(false);
+export function StickyTrialBar() {
   const [isDismissed, setIsDismissed] = useState(false);
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
 
-  useEffect(() => {
-    const hero = heroRef.current;
-    if (!hero) return;
+  // Only fetch for authenticated users — skip the API calls entirely for guests
+  const { data: planData } = useQuery({
+    ...planQueryOptions.mine(),
+    enabled: isAuthenticated,
+  });
+  const { data: demoData } = useQuery({
+    ...demoQueryOptions.myRequests(),
+    enabled: isAuthenticated,
+  });
 
-    observerRef.current = new IntersectionObserver(
-      ([entry]) => {
-        // Show bar when hero is NO LONGER intersecting (scrolled past)
-        setIsVisible(!entry.isIntersecting);
-      },
-      { threshold: 0.1 },
-    );
+  const hasPaidPlan = Boolean(planData?.data?.plan);
+  const hasActiveOrCompletedDemo = Boolean(
+    demoData?.data?.some((r) =>
+      ["pending", "approved", "instructor_assigned", "meeting_scheduled", "completed"].includes(
+        r.status,
+      ),
+    ),
+  );
+  // Suppress the bar once the user already has a plan or a demo in progress/done
+  const suppress = isAuthenticated && (hasPaidPlan || hasActiveOrCompletedDemo);
 
-    observerRef.current.observe(hero);
-    return () => observerRef.current?.disconnect();
-  }, [heroRef]);
+  const handleGetStarted = () => {
+    localStorage.setItem("demoClassIntent", "true");
+    void navigate({ to: isAuthenticated ? "/demo" : "/login" });
+  };
 
-  const show = isVisible && !isDismissed;
+
+
+  const show =  !isDismissed && !suppress;
 
   return (
     <div
@@ -59,13 +72,11 @@ export function StickyTrialBar({ heroRef }: StickyTrialBarProps) {
           <div className="relative shrink-0 group">
             <div className="doodle-glow-ring" />
             <Button
-              asChild
               size="sm"
               className="relative rounded-full px-5 gap-1.5 font-bold shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-105 transition-all duration-300"
+              onClick={handleGetStarted}
             >
-              <Link to="/login">
-                Get started <ArrowRight className="size-3.5" />
-              </Link>
+              Get started <ArrowRight className="size-3.5" />
             </Button>
           </div>
 

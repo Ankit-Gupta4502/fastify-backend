@@ -20,7 +20,7 @@ export function Header() {
             <img
               src="/logo.svg"
               alt=""
-              className="size-8 group-hover:scale-110 transition-transform duration-300"
+              className="size-10 group-hover:scale-110 transition-transform duration-300"
             />
             <span className="text-sm font-bold leading-none tracking-tight">
               <span className="block text-foreground">Book Your</span>

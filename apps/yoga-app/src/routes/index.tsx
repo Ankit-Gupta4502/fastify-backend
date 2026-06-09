@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { lazy, Suspense, useRef } from "react";
 import { getQueryClient } from "@/lib/react-query/query-client.tsx";
 
@@ -21,6 +21,18 @@ const StickyTrialBar     = lazy(() => import("@/components/Home/StickyTrialBar")
 // ── Route ─────────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute("/")({
+  // After Google OAuth the user lands here. If they originally clicked the
+  // "Get started" CTA we stored a flag — consume it and send them to /demo.
+  beforeLoad: ({ context }) => {
+    if (
+      context.user &&
+      typeof window !== "undefined" &&
+      localStorage.getItem("demoClassIntent")
+    ) {
+      localStorage.removeItem("demoClassIntent");
+      throw redirect({ to: "/demo" });
+    }
+  },
   // Parallel prefetch: kick off all public data fetches before the component
   // tree even renders. Vercel best practice: avoid request waterfalls by
   // co-locating data requirements with the route.
@@ -101,7 +113,7 @@ function Home() {
 
       {/* StickyTrialBar observes heroRef — no scroll listener, no layout jank */}
       <Suspense fallback={null}>
-        <StickyTrialBar heroRef={heroRef} />
+        <StickyTrialBar  />
       </Suspense>
     </div>
   );

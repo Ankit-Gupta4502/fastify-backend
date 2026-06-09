@@ -46,7 +46,7 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
           <div className="space-y-4">
             <Link className="inline-flex items-center gap-2" to="/">
-              <img src="/logo.svg" alt="" className="size-8" />
+              <img src="/logo.svg" alt="" className="size-10" />
               <span className="text-sm font-bold leading-none tracking-tight">
                 <span className="block text-foreground">Book Your</span>
                 <span className="block text-primary font-doodle italic">Yoga Teacher</span>

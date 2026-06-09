@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { cn } from "@/lib/utils";
 import { useSubmitDemoRequest, useMyDemoRequests } from "@/hooks/use-demo";
 import type {
@@ -88,8 +89,8 @@ function DemoOnboardingPage() {
   const validateStep1 = (): boolean => {
     const errs: typeof errors = {};
     if (!form.gender) errs.gender = "Please select your gender";
-    if (!form.phone.trim()) errs.phone = "Phone number is required";
-    else if (form.phone.trim().length < 7) errs.phone = "Enter a valid phone number";
+    if (!form.phone || form.phone === "+") errs.phone = "Phone number is required";
+    else if (form.phone.replace(/\D/g, "").length < 7) errs.phone = "Enter a valid phone number";
     if (Object.keys(errs).length) { setErrors(errs); return false; }
     return true;
   };
@@ -236,23 +237,13 @@ function DemoOnboardingPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-sm font-semibold">
-                  Phone Number
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+1 (555) 000-0000"
+                <Label className="text-sm font-semibold">Phone Number</Label>
+                <PhoneInput
                   value={form.phone}
-                  onChange={(e) => setField("phone", e.target.value)}
-                  className={cn(
-                    "rounded-xl",
-                    errors.phone && "border-destructive focus-visible:ring-destructive",
-                  )}
+                  onChange={(phone) => setField("phone", phone)}
+                  error={Boolean(errors.phone)}
+                  defaultCountry="in"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Include your country code (e.g. +91, +1)
-                </p>
                 {errors.phone && (
                   <p className="text-xs text-destructive">{errors.phone}</p>
                 )}
