@@ -13,6 +13,7 @@ import {
   listAllDemoRequests,
   getDemoRequest,
   updateDemoStatus,
+  approveAndSchedule,
   assignDemoInstructor,
   scheduleDemoMeeting,
   completeDemoSession,
@@ -88,6 +89,13 @@ const scheduleMeetingSchema = z.object({
   meetingPlatform: z.enum(MEETING_PLATFORMS),
 });
 
+const approveWithScheduleSchema = z.object({
+  instructorId: z.string().uuid("Invalid instructor id"),
+  meetingLink: z.string().url("Must be a valid URL"),
+  meetingPlatform: z.enum(MEETING_PLATFORMS),
+  adminNotes: z.string().optional(),
+});
+
 const demoRequestIdSchema = z.object({
   id: z.string().uuid("Invalid request id"),
 });
@@ -139,6 +147,11 @@ export class DemoController {
           "/demo-requests/:id/status",
           { preHandler: adminGuard },
           this.adminUpdateStatus,
+        );
+        router.post(
+          "/demo-requests/:id/approve",
+          { preHandler: adminGuard },
+          this.adminApproveWithSchedule,
         );
         router.post(
           "/demo-requests/:id/assign-instructor",
@@ -370,6 +383,61 @@ export class DemoController {
           message: "This status transition is not allowed",
           statusCode: 409,
           error: "INVALID_STATUS_TRANSITION",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      throw err;
+    }
+  };
+
+  // ── Admin: approve + assign instructor + schedule meeting ─────────────────
+
+  private adminApproveWithSchedule = async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ) => {
+    const invalidParams = validateWithZod(request, reply, {
+      params: demoRequestIdSchema,
+    });
+    if (invalidParams) return invalidParams;
+
+    const invalidBody = validateWithZod(request, reply, {
+      body: approveWithScheduleSchema,
+    });
+    if (invalidBody) return invalidBody;
+
+    const { id } = request.params as z.infer<typeof demoRequestIdSchema>;
+    const body = request.body as z.infer<typeof approveWithScheduleSchema>;
+
+    try {
+      const ok = await approveAndSchedule(drizzle, id, body);
+      if (!ok) {
+        const { statusCode, payload } = errorResponse({
+          message: "Demo request not found",
+          statusCode: 404,
+        });
+        return reply.status(statusCode).send(payload);
+      }
+
+      const { statusCode, payload } = successResponse({
+        message: "Demo request approved and meeting scheduled",
+        data: null,
+      });
+      return reply.status(statusCode).send(payload);
+    } catch (err) {
+      if (err instanceof Error && err.message === "INVALID_STATUS_TRANSITION") {
+        const { statusCode, payload } = errorResponse({
+          message: "Request must be pending or awaiting information to approve",
+          statusCode: 409,
+          error: "INVALID_STATUS_TRANSITION",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      if (err instanceof Error && err.message === "INSTRUCTOR_NOT_FOUND") {
+        const { statusCode, payload } = errorResponse({
+          message: "Instructor not found",
+          statusCode: 404,
+          error: "INSTRUCTOR_NOT_FOUND",
         });
         return reply.status(statusCode).send(payload);
       }

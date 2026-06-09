@@ -1,5 +1,6 @@
 import type {
   AdminDemoRequest,
+  ApproveWithScheduleBody,
   AssignInstructorBody,
   CreateDemoRequestBody,
   CreateDemoRequestResult,
@@ -48,6 +49,12 @@ export const demoApi = {
 
   adminScheduleMeeting: (id: string, body: ScheduleMeetingBody) =>
     apiRequest<null>(API_ENDPOINTS.DEMO.ADMIN_SCHEDULE_MEETING(id), {
+      method: "POST",
+      data: body,
+    }),
+
+  adminApproveWithSchedule: (id: string, body: ApproveWithScheduleBody) =>
+    apiRequest<null>(API_ENDPOINTS.DEMO.ADMIN_APPROVE(id), {
       method: "POST",
       data: body,
     }),

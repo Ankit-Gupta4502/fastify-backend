@@ -383,6 +383,93 @@ export async function updateDemoStatus(
   return { userEmail: userRow.email, userName: userRow.name, status: update.status };
 }
 
+// ── Admin: approve + assign instructor + schedule meeting (combined) ─────────
+
+export async function approveAndSchedule(
+  db: DB,
+  id: string,
+  params: {
+    instructorId: string;
+    meetingLink: string;
+    meetingPlatform: string;
+    adminNotes?: string;
+  },
+): Promise<boolean> {
+  const [existing] = await db
+    .select({
+      id: demoRequests.id,
+      status: demoRequests.status,
+      userId: demoRequests.userId,
+      phone: demoRequests.phone,
+      purposes: demoRequests.purposes,
+      preferredDate: demoRequests.preferredDate,
+      preferredTime: demoRequests.preferredTime,
+      timezone: demoRequests.timezone,
+    })
+    .from(demoRequests)
+    .where(eq(demoRequests.id, id))
+    .limit(1);
+
+  if (!existing) return false;
+
+  if (!["pending", "needs_information"].includes(existing.status)) {
+    throw new Error("INVALID_STATUS_TRANSITION");
+  }
+
+  const [instructorRow] = await db
+    .select({ id: user.id, name: user.name, email: user.email })
+    .from(user)
+    .where(eq(user.id, params.instructorId))
+    .limit(1);
+
+  if (!instructorRow) throw new Error("INSTRUCTOR_NOT_FOUND");
+
+  await db
+    .update(demoRequests)
+    .set({
+      status: "meeting_scheduled",
+      assignedInstructorId: params.instructorId,
+      meetingLink: params.meetingLink,
+      meetingPlatform: params.meetingPlatform,
+      adminNotes: params.adminNotes ?? null,
+    })
+    .where(eq(demoRequests.id, id));
+
+  const [userRow] = await db
+    .select({ email: user.email, name: user.name })
+    .from(user)
+    .where(eq(user.id, existing.userId))
+    .limit(1);
+
+  if (userRow) {
+    void Promise.allSettled([
+      sendDemoMeetingScheduled({
+        userEmail: userRow.email,
+        userName: userRow.name,
+        instructorName: instructorRow.name,
+        preferredDate: existing.preferredDate,
+        preferredTime: existing.preferredTime,
+        timezone: existing.timezone,
+        meetingLink: params.meetingLink,
+      }),
+      sendDemoInstructorNotification({
+        instructorEmail: instructorRow.email,
+        instructorName: instructorRow.name,
+        userName: userRow.name,
+        userEmail: userRow.email,
+        phone: existing.phone,
+        purposes: existing.purposes,
+        preferredDate: existing.preferredDate,
+        preferredTime: existing.preferredTime,
+        timezone: existing.timezone,
+        meetingLink: params.meetingLink,
+      }),
+    ]);
+  }
+
+  return true;
+}
+
 // ── Admin: assign instructor ─────────────────────────────────────────────────
 
 export async function assignDemoInstructor(

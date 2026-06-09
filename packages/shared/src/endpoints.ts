@@ -67,6 +67,7 @@ export const API_ENDPOINTS = {
       `/admin/demo-requests/${id}/assign-instructor`,
     ADMIN_SCHEDULE_MEETING: (id: string) =>
       `/admin/demo-requests/${id}/meeting`,
+    ADMIN_APPROVE: (id: string) => `/admin/demo-requests/${id}/approve`,
     INSTRUCTOR_SESSIONS: "/instructor/demo-sessions",
   },
   SYSTEM: {

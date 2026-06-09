@@ -5,6 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import type {
+  ApproveWithScheduleBody,
   AssignInstructorBody,
   CreateDemoRequestBody,
   ScheduleMeetingBody,
@@ -79,6 +80,18 @@ export function useAdminDemoRequests() {
 
 export function useAdminDemoRequest(id: string) {
   return useQuery(demoQueryOptions.adminDetail(id));
+}
+
+export function useAdminApproveWithSchedule() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: ApproveWithScheduleBody }) =>
+      demoApi.adminApproveWithSchedule(id, body),
+    onSuccess: (_data, { id }) => {
+      void qc.invalidateQueries({ queryKey: queryKeys.demo.adminList() });
+      void qc.invalidateQueries({ queryKey: queryKeys.demo.adminDetail(id) });
+    },
+  });
 }
 
 export function useAdminUpdateDemoStatus() {

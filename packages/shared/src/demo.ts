@@ -58,6 +58,13 @@ export interface ScheduleMeetingBody {
   meetingPlatform: MeetingPlatform;
 }
 
+export interface ApproveWithScheduleBody {
+  instructorId: string;
+  meetingLink: string;
+  meetingPlatform: MeetingPlatform;
+  adminNotes?: string;
+}
+
 export interface MyDemoRequest {
   id: string;
   gender: DemoGender;
