@@ -442,6 +442,9 @@ export async function approveAndSchedule(
     .limit(1);
 
   if (userRow) {
+    // Fire both user-facing confirmation and instructor assignment email in parallel.
+    // No separate "approved" email — the meeting-scheduled email contains everything
+    // (instructor, date/time, and the meeting link the admin pasted).
     void Promise.allSettled([
       sendDemoMeetingScheduled({
         userEmail: userRow.email,
