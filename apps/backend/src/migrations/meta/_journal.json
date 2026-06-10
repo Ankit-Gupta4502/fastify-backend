@@ -43,6 +43,13 @@
       "when": 1781020468116,
       "tag": "0005_sour_komodo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781113432737,
+      "tag": "0006_certain_venus",
+      "breakpoints": true
     }
   ]
 }
