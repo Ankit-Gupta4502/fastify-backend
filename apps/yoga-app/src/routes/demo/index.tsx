@@ -1,16 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { Fragment, useState } from "react";
+import { format } from "date-fns";
+import { CalendarIcon, ClockIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useSubmitDemoRequest, useMyDemoRequests } from "@/hooks/use-demo";
-import type {
-  CreateDemoRequestBody,
-  DemoGender,
-  DemoPurpose,
-} from "@yoga-app/shared";
+import type { CreateDemoRequestBody, DemoGender, DemoPurpose } from "@yoga-app/shared";
 import { ApiRequestError } from "@/lib/http";
 
 export const Route = createFileRoute("/demo/")({
@@ -29,12 +33,30 @@ const PURPOSES: DemoPurpose[] = [
   "Other",
 ];
 
+// Half-hour time slots for the time picker
+const TIME_SLOTS: string[] = Array.from({ length: 48 }, (_, i) => {
+  const h = Math.floor(i / 2);
+  const m = i % 2 === 0 ? "00" : "30";
+  const ampm = h < 12 ? "AM" : "PM";
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${String(h12).padStart(2, "0")}:${m} ${ampm}`;
+});
+
+function parseTimeSlot(slot: string): string {
+  const [time, ampm] = slot.split(" ");
+  const [hStr, mStr] = time.split(":");
+  let h = parseInt(hStr, 10);
+  if (ampm === "AM" && h === 12) h = 0;
+  if (ampm === "PM" && h !== 12) h += 12;
+  return `${String(h).padStart(2, "0")}:${mStr}`;
+}
+
 type FormState = {
   gender: DemoGender | "";
   phone: string;
   purposes: DemoPurpose[];
   otherPurpose: string;
-  preferredDate: string;
+  preferredDate: Date | undefined;
   preferredTime: string;
   timezone: string;
 };
@@ -44,7 +66,7 @@ const INITIAL_FORM: FormState = {
   phone: "",
   purposes: [],
   otherPurpose: "",
-  preferredDate: "",
+  preferredDate: undefined,
   preferredTime: "",
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 };
@@ -58,12 +80,11 @@ function DemoOnboardingPage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [serverError, setServerError] = useState<string | null>(null);
+  const [timeOpen, setTimeOpen] = useState(false);
 
-  // If user already has an active request, redirect to success/status page
   const activeRequest = existing?.data?.find((r) =>
     ["pending", "approved", "instructor_assigned", "meeting_scheduled"].includes(r.status),
   );
-
   if (!checkingExisting && activeRequest) {
     void navigate({ to: "/demo/success", search: { id: activeRequest.id } });
     return null;
@@ -84,13 +105,14 @@ function DemoOnboardingPage() {
     setErrors((prev) => ({ ...prev, purposes: undefined }));
   };
 
-  // ── Step validation ───────────────────────────────────────────────────────
+  // ── Validation ────────────────────────────────────────────────────────────
 
   const validateStep1 = (): boolean => {
     const errs: typeof errors = {};
     if (!form.gender) errs.gender = "Please select your gender";
-    if (!form.phone || form.phone === "+") errs.phone = "Phone number is required";
-    else if (form.phone.replace(/\D/g, "").length < 7) errs.phone = "Enter a valid phone number";
+    if (form.phone && form.phone.replace(/\D/g, "").length < 7) {
+      errs.phone = "Enter a valid phone number";
+    }
     if (Object.keys(errs).length) { setErrors(errs); return false; }
     return true;
   };
@@ -114,24 +136,21 @@ function DemoOnboardingPage() {
   };
 
   const handleNext = () => {
-    const validators: Record<number, () => boolean> = {
-      1: validateStep1,
-      2: validateStep2,
-    };
+    const validators: Record<number, () => boolean> = { 1: validateStep1, 2: validateStep2 };
     if (validators[step]?.()) setStep((s) => s + 1);
   };
 
   const handleSubmit = async () => {
     if (!validateStep3()) return;
-
     setServerError(null);
+
     const body: CreateDemoRequestBody = {
       gender: form.gender as DemoGender,
-      phone: form.phone.trim(),
+      phone: form.phone.trim() || undefined,
       purposes: form.purposes,
       otherPurpose: form.purposes.includes("Other") ? form.otherPurpose.trim() : undefined,
-      preferredDate: form.preferredDate,
-      preferredTime: form.preferredTime,
+      preferredDate: format(form.preferredDate!, "yyyy-MM-dd"),
+      preferredTime: parseTimeSlot(form.preferredTime),
       timezone: form.timezone,
     };
 
@@ -142,7 +161,7 @@ function DemoOnboardingPage() {
       },
       onError: (err) => {
         if (err instanceof ApiRequestError && err.status === 409) {
-          setServerError("You already have an active demo request. Redirecting to your status…");
+          setServerError("You already have an active demo request. Redirecting…");
           setTimeout(() => void navigate({ to: "/demo/success", search: { id: "" } }), 1500);
         } else {
           setServerError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -151,19 +170,21 @@ function DemoOnboardingPage() {
     });
   };
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
-        {/* Progress bar */}
+
+        {/* ── Stepper ─────────────────────────────────────────────────────── */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center">
             {[1, 2, 3].map((s) => (
-              <div key={s} className="flex items-center gap-2">
+              <Fragment key={s}>
                 <div
                   className={cn(
-                    "size-8 rounded-full flex items-center justify-center text-sm font-bold transition-all",
+                    "size-8 rounded-full flex items-center justify-center text-sm font-bold transition-all shrink-0",
                     step >= s
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground",
@@ -174,15 +195,15 @@ function DemoOnboardingPage() {
                 {s < 3 && (
                   <div
                     className={cn(
-                      "flex-1 h-0.5 w-32 transition-all",
+                      "flex-1 h-0.5 transition-all",
                       step > s ? "bg-primary" : "bg-muted",
                     )}
                   />
                 )}
-              </div>
+              </Fragment>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground text-center">Step {step} of 3</p>
+          <p className="text-xs text-muted-foreground text-center mt-3">Step {step} of 3</p>
         </div>
 
         <div className="bg-card rounded-3xl border border-border/60 shadow-sm p-8 space-y-6">
@@ -231,22 +252,21 @@ function DemoOnboardingPage() {
                     </button>
                   ))}
                 </div>
-                {errors.gender && (
-                  <p className="text-xs text-destructive">{errors.gender}</p>
-                )}
+                {errors.gender && <p className="text-xs text-destructive">{errors.gender}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">Phone Number</Label>
+                <Label className="text-sm font-semibold">
+                  Phone Number{" "}
+                  <span className="text-muted-foreground font-normal">(optional)</span>
+                </Label>
                 <PhoneInput
                   value={form.phone}
                   onChange={(phone) => setField("phone", phone)}
                   error={Boolean(errors.phone)}
                   defaultCountry="in"
                 />
-                {errors.phone && (
-                  <p className="text-xs text-destructive">{errors.phone}</p>
-                )}
+                {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
               </div>
             </div>
           )}
@@ -271,9 +291,7 @@ function DemoOnboardingPage() {
                   </button>
                 ))}
               </div>
-              {errors.purposes && (
-                <p className="text-xs text-destructive">{errors.purposes}</p>
-              )}
+              {errors.purposes && <p className="text-xs text-destructive">{errors.purposes}</p>}
 
               {form.purposes.includes("Other") && (
                 <div className="space-y-2">
@@ -287,8 +305,7 @@ function DemoOnboardingPage() {
                     onChange={(e) => setField("otherPurpose", e.target.value)}
                     className={cn(
                       "rounded-xl",
-                      errors.otherPurpose &&
-                        "border-destructive focus-visible:ring-destructive",
+                      errors.otherPurpose && "border-destructive focus-visible:ring-destructive",
                     )}
                   />
                   {errors.otherPurpose && (
@@ -302,47 +319,89 @@ function DemoOnboardingPage() {
           {/* ── Step 3: Schedule ─────────────────────────────────────────── */}
           {step === 3 && (
             <div className="space-y-5">
+
+              {/* Date picker */}
               <div className="space-y-2">
-                <Label htmlFor="date" className="text-sm font-semibold">
-                  Preferred Date
-                </Label>
-                <Input
-                  id="date"
-                  type="date"
-                  min={today}
-                  value={form.preferredDate}
-                  onChange={(e) => setField("preferredDate", e.target.value)}
-                  className={cn(
-                    "rounded-xl",
-                    errors.preferredDate &&
-                      "border-destructive focus-visible:ring-destructive",
-                  )}
-                />
+                <Label className="text-sm font-semibold">Preferred Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className={cn(
+                        "flex h-10 w-full items-center justify-between rounded-xl border border-input bg-background px-3 text-sm transition-colors",
+                        "hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                        !form.preferredDate && "text-muted-foreground",
+                        errors.preferredDate && "border-destructive",
+                      )}
+                    >
+                      <span>
+                        {form.preferredDate
+                          ? format(form.preferredDate, "MMMM d, yyyy")
+                          : "Pick a date"}
+                      </span>
+                      <CalendarIcon className="size-4 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 rounded-2xl" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={form.preferredDate}
+                      onSelect={(date) => setField("preferredDate", date)}
+                      disabled={(date) => date < today}
+                    />
+                  </PopoverContent>
+                </Popover>
                 {errors.preferredDate && (
                   <p className="text-xs text-destructive">{errors.preferredDate}</p>
                 )}
               </div>
 
+              {/* Time picker */}
               <div className="space-y-2">
-                <Label htmlFor="time" className="text-sm font-semibold">
-                  Preferred Time
-                </Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={form.preferredTime}
-                  onChange={(e) => setField("preferredTime", e.target.value)}
-                  className={cn(
-                    "rounded-xl",
-                    errors.preferredTime &&
-                      "border-destructive focus-visible:ring-destructive",
-                  )}
-                />
+                <Label className="text-sm font-semibold">Preferred Time</Label>
+                <Popover open={timeOpen} onOpenChange={setTimeOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className={cn(
+                        "flex h-10 w-full items-center justify-between rounded-xl border border-input bg-background px-3 text-sm transition-colors",
+                        "hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                        !form.preferredTime && "text-muted-foreground",
+                        errors.preferredTime && "border-destructive",
+                      )}
+                    >
+                      <span>{form.preferredTime || "Pick a time"}</span>
+                      <ClockIcon className="size-4 text-muted-foreground" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-1 rounded-2xl" align="start">
+                    <div className="max-h-60 overflow-y-auto">
+                      {TIME_SLOTS.map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => {
+                            setField("preferredTime", slot);
+                            setTimeOpen(false);
+                          }}
+                          className={cn(
+                            "flex w-full items-center rounded-lg px-3 py-1.5 text-sm transition-colors",
+                            "hover:bg-muted/60",
+                            form.preferredTime === slot && "bg-primary/10 text-primary font-semibold",
+                          )}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
                 {errors.preferredTime && (
                   <p className="text-xs text-destructive">{errors.preferredTime}</p>
                 )}
               </div>
 
+              {/* Timezone display */}
               <div className="rounded-xl border border-border/60 bg-muted/30 px-4 py-3 flex items-center justify-between text-sm">
                 <span className="text-muted-foreground font-medium">Your timezone</span>
                 <span className="font-semibold text-foreground">{form.timezone}</span>
@@ -362,7 +421,6 @@ function DemoOnboardingPage() {
                 Back
               </Button>
             )}
-
             {step < 3 ? (
               <Button className="flex-1 rounded-xl" onClick={handleNext}>
                 Continue

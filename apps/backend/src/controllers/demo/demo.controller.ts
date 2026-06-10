@@ -40,7 +40,7 @@ const MEETING_PLATFORMS = ["google_meet", "zoom", "teams"] as const;
 const createDemoRequestSchema = z
   .object({
     gender: z.enum(DEMO_GENDERS),
-    phone: z.string().min(7, "Phone number is required"),
+    phone: z.string().min(7, "Enter a valid phone number").optional(),
     purposes: z
       .array(z.enum(DEMO_PURPOSES))
       .min(1, "Select at least one goal"),
@@ -211,7 +211,7 @@ export class DemoController {
         adminEmail: process.env.ADMIN_EMAIL ?? process.env.EMAIL_FROM!,
         userName: me.name,
         userEmail: me.email,
-        phone: body.phone,
+        phone: body.phone ?? "",
         purposes: body.purposes,
         preferredDate: body.preferredDate,
         preferredTime: body.preferredTime,

@@ -159,7 +159,7 @@ export function LoginCard({
 
         {/* Google */}
         <Button type="button" variant="outline"
-          className="w-full h-10 rounded-xl border-border/60 hover:bg-muted/40 text-sm font-medium gap-2.5"
+          className="w-full h-10 rounded-xl border-border/60 hover:bg-muted/40  hover:text-black text-sm font-medium gap-2.5"
           onClick={handleGoogleSignIn} disabled={isSubmitting}
         >
           <svg className="size-4" viewBox="0 0 24 24">

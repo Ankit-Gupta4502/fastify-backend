@@ -47,7 +47,7 @@ export async function createDemoRequest(
   userId: string,
   body: {
     gender: string;
-    phone: string;
+    phone?: string;
     purposes: string[];
     otherPurpose?: string;
     preferredDate: string;
@@ -81,7 +81,7 @@ export async function createDemoRequest(
     .values({
       userId,
       gender: body.gender,
-      phone: body.phone,
+      phone: body.phone ?? null,
       purposes: body.purposes,
       otherPurpose: body.otherPurpose ?? null,
       preferredDate: body.preferredDate,
@@ -100,7 +100,7 @@ export async function notifyOnDemoCreated(params: {
   adminEmail: string;
   userName: string;
   userEmail: string;
-  phone: string;
+  phone?: string | null;
   purposes: string[];
   preferredDate: string;
   preferredTime: string;
@@ -111,7 +111,7 @@ export async function notifyOnDemoCreated(params: {
       adminEmail: params.adminEmail,
       userName: params.userName,
       userEmail: params.userEmail,
-      phone: params.phone,
+      phone: params.phone ?? "",
       purposes: params.purposes,
       preferredDate: params.preferredDate,
       preferredTime: params.preferredTime,
@@ -187,7 +187,7 @@ export async function updateUserDemoRequest(
   userId: string,
   body: {
     gender: string;
-    phone: string;
+    phone?: string;
     purposes: string[];
     otherPurpose?: string;
     preferredDate: string;
@@ -221,7 +221,7 @@ export async function updateUserDemoRequest(
     .update(demoRequests)
     .set({
       gender: body.gender,
-      phone: body.phone,
+      phone: body.phone ?? null,
       purposes: body.purposes,
       otherPurpose: body.otherPurpose ?? null,
       preferredDate: body.preferredDate,
@@ -460,7 +460,7 @@ export async function approveAndSchedule(
         instructorName: instructorRow.name,
         userName: userRow.name,
         userEmail: userRow.email,
-        phone: existing.phone,
+        phone: existing.phone ?? "",
         purposes: existing.purposes,
         preferredDate: existing.preferredDate,
         preferredTime: existing.preferredTime,

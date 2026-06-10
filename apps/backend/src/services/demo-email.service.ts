@@ -2,8 +2,11 @@ import { EmailService } from "./EmailService";
 
 const APP_NAME = "BookYourYogaTeacher";
 
-// Logo hosted on the frontend — works once FRONTEND_URL is set in prod
-const LOGO_URL = `${process.env.FRONTEND_URL ?? "https://bookyouryogateacher.com"}/logo512.png`;
+// Serve logo from the backend itself so it's always reachable in emails.
+// Set BACKEND_URL in prod (e.g. https://api.bookyouryogateacher.com).
+const BACKEND_URL = process.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+const LOGO_URL =
+  process.env.APP_LOGO_URL ?? `${BACKEND_URL}/static/logo.png`;
 const BRAND_PRIMARY = "#d96b3a";
 const BRAND_DARK = "#b45309";
 const BRAND_LIGHT = "#fdf8f4";
@@ -146,9 +149,10 @@ function layout(title: string, preheader: string, body: string): string {
               <tr>
                 <td style="vertical-align:middle;padding-right:10px;">
                   <img src="${LOGO_URL}"
-                    alt="${APP_NAME} logo"
+                    alt="${APP_NAME}"
                     width="40" height="40"
-                    style="display:block;border-radius:8px;"/>
+                    style="display:block;border-radius:8px;border:0;outline:none;text-decoration:none;"
+                    onerror="this.style.display='none'"/>
                 </td>
                 <td style="vertical-align:middle;">
                   <span style="font-size:15px;font-weight:700;color:#b45309;letter-spacing:.02em;">${APP_NAME}</span>

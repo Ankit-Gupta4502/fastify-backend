@@ -67,14 +67,16 @@ const STATUS_META: Record<
 function DemoSuccessPage() {
   const { id } = Route.useSearch();
   const navigate = useNavigate();
-  const { data, isLoading } = useMyDemoRequests();
+  const { data, isLoading, isFetching } = useMyDemoRequests();
 
   const requests = data?.data ?? [];
   const request: MyDemoRequest | undefined = id
     ? requests.find((r) => r.id === id)
     : requests[requests.length - 1];
 
-  if (isLoading) {
+  // Show spinner on initial load OR while refetching after a submission
+  // (cache may hold stale data that doesn't include the new request yet)
+  if (isLoading || (isFetching && !request)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />

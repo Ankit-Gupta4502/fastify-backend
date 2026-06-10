@@ -29,7 +29,7 @@ export const demoRequests = pgTable(
 
     // Personal info
     gender: text("gender").notNull(),
-    phone: text("phone").notNull(),
+    phone: text("phone"),
 
     // Goals
     purposes: text("purposes").array().notNull(),

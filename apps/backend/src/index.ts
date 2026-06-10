@@ -1,4 +1,7 @@
 import Fastify from "fastify";
+import fastifyStatic from "@fastify/static";
+import { fileURLToPath } from "node:url";
+import { join, dirname } from "node:path";
 import middleware from "@fastify/express";
 import { AuthMiddleware } from "./middleware/auth.middleware";
 import { UserController } from "./controllers/users/user.controller";
@@ -105,6 +108,12 @@ const start = async () => {
       limits: { fileSize: 5 * 1024 * 1024 },
     });
 
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+    await fastify.register(fastifyStatic, {
+      root: join(__dirname, "static"),
+      prefix: "/static/",
+    });
+
     const isProd = process.env.NODE_ENV === "production";
     const prodUrl = process.env.PROD_BASE_URL || "https://api.example.com";
     const devUrl = `http://localhost:${process.env.PORT || DEFAULT_BACKEND_PORT}`;
@@ -166,6 +175,8 @@ const start = async () => {
     fastify.get("/health", async () => {
       return { status: "ok", timestamp: new Date().toISOString() };
     });
+
+
     registerQuotaResetJob(drizzle, fastify.log);
 
     await fastify.ready();

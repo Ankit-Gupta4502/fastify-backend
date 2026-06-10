@@ -24,7 +24,7 @@ export type MeetingPlatform = "google_meet" | "zoom" | "teams";
 
 export interface CreateDemoRequestBody {
   gender: DemoGender;
-  phone: string;
+  phone?: string;
   purposes: DemoPurpose[];
   otherPurpose?: string;
   preferredDate: string;
@@ -34,7 +34,7 @@ export interface CreateDemoRequestBody {
 
 export interface UpdateDemoRequestBody {
   gender: DemoGender;
-  phone: string;
+  phone?: string;
   purposes: DemoPurpose[];
   otherPurpose?: string;
   preferredDate: string;
