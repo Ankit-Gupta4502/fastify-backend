@@ -29,6 +29,7 @@ import { Route as ExpertsExpertIdIndexRouteImport } from './routes/experts/$expe
 import { Route as AdminWorkshopsIndexRouteImport } from './routes/admin/workshops/index'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
 import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
+import { Route as AdminReviewsIndexRouteImport } from './routes/admin/reviews/index'
 import { Route as AdminInstructorsIndexRouteImport } from './routes/admin/instructors/index'
 import { Route as AdminDemoRequestsIndexRouteImport } from './routes/admin/demo-requests/index'
 import { Route as UserRoomsIndexRouteImport } from './routes/_user/rooms/index'
@@ -135,6 +136,11 @@ const AdminRoomsIndexRoute = AdminRoomsIndexRouteImport.update({
   path: '/rooms/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminReviewsIndexRoute = AdminReviewsIndexRouteImport.update({
+  id: '/reviews/',
+  path: '/reviews/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminInstructorsIndexRoute = AdminInstructorsIndexRouteImport.update({
   id: '/instructors/',
   path: '/instructors/',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/rooms/': typeof UserRoomsIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
+  '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
   '/admin/workshops/': typeof AdminWorkshopsIndexRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/rooms': typeof UserRoomsIndexRoute
   '/admin/demo-requests': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors': typeof AdminInstructorsIndexRoute
+  '/admin/reviews': typeof AdminReviewsIndexRoute
   '/admin/rooms': typeof AdminRoomsIndexRoute
   '/admin/users': typeof AdminUsersIndexRoute
   '/admin/workshops': typeof AdminWorkshopsIndexRoute
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/_user/rooms/': typeof UserRoomsIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
+  '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
   '/admin/workshops/': typeof AdminWorkshopsIndexRoute
@@ -259,6 +268,7 @@ export interface FileRouteTypes {
     | '/rooms/'
     | '/admin/demo-requests/'
     | '/admin/instructors/'
+    | '/admin/reviews/'
     | '/admin/rooms/'
     | '/admin/users/'
     | '/admin/workshops/'
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/rooms'
     | '/admin/demo-requests'
     | '/admin/instructors'
+    | '/admin/reviews'
     | '/admin/rooms'
     | '/admin/users'
     | '/admin/workshops'
@@ -311,6 +322,7 @@ export interface FileRouteTypes {
     | '/_user/rooms/'
     | '/admin/demo-requests/'
     | '/admin/instructors/'
+    | '/admin/reviews/'
     | '/admin/rooms/'
     | '/admin/users/'
     | '/admin/workshops/'
@@ -478,6 +490,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRoomsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/reviews/': {
+      id: '/admin/reviews/'
+      path: '/reviews'
+      fullPath: '/admin/reviews/'
+      preLoaderRoute: typeof AdminReviewsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/instructors/': {
       id: '/admin/instructors/'
       path: '/instructors'
@@ -535,6 +554,7 @@ const UserRouteRouteWithChildren = UserRouteRoute._addFileChildren(
 interface AdminRouteRouteChildren {
   AdminDemoRequestsIndexRoute: typeof AdminDemoRequestsIndexRoute
   AdminInstructorsIndexRoute: typeof AdminInstructorsIndexRoute
+  AdminReviewsIndexRoute: typeof AdminReviewsIndexRoute
   AdminRoomsIndexRoute: typeof AdminRoomsIndexRoute
   AdminUsersIndexRoute: typeof AdminUsersIndexRoute
   AdminWorkshopsIndexRoute: typeof AdminWorkshopsIndexRoute
@@ -543,6 +563,7 @@ interface AdminRouteRouteChildren {
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminDemoRequestsIndexRoute: AdminDemoRequestsIndexRoute,
   AdminInstructorsIndexRoute: AdminInstructorsIndexRoute,
+  AdminReviewsIndexRoute: AdminReviewsIndexRoute,
   AdminRoomsIndexRoute: AdminRoomsIndexRoute,
   AdminUsersIndexRoute: AdminUsersIndexRoute,
   AdminWorkshopsIndexRoute: AdminWorkshopsIndexRoute,

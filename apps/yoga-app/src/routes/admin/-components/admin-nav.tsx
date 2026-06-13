@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   LogOut,
   ClipboardList,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ const navItems = [
   { label: "Demo Requests", to: "/admin/demo-requests", icon: ClipboardList },
   { label: "Classes", to: "/admin/rooms", icon: CalendarDays },
   { label: "Workshops", to: "/admin/workshops", icon: BookOpen },
+  { label: "Reviews", to: "/admin/reviews", icon: Star },
 ] as const;
 
 export function AdminNav() {

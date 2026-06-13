@@ -50,6 +50,13 @@
       "when": 1781113432737,
       "tag": "0006_certain_venus",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1781350334975,
+      "tag": "0007_stormy_scarlet_witch",
+      "breakpoints": true
     }
   ]
 }

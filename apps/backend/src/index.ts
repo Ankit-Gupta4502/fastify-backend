@@ -168,7 +168,7 @@ const start = async () => {
     new AdminController(authMiddleware, fastify);
     new UploadsController(authMiddleware, fastify);
     new WorkshopsController(authMiddleware, fastify);
-    new ReviewsController(fastify);
+    new ReviewsController(authMiddleware, fastify);
     new DemoController(authMiddleware, fastify);
 
 

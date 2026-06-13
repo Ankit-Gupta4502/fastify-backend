@@ -48,6 +48,8 @@ export const API_ENDPOINTS = {
     APPROVE_INSTRUCTOR: (id: string) => `/admin/instructors/${id}/approve`,
     UPDATE_INSTRUCTOR_PRIORITY: (id: string) => `/admin/instructors/${id}/priority`,
     GROUP_ROOMS: "/admin/rooms/group",
+    REVIEWS: "/admin/reviews",
+    REVIEW: (id: string) => `/admin/reviews/${id}`,
   },
   WORKSHOPS: {
     LIST: "/workshops",
