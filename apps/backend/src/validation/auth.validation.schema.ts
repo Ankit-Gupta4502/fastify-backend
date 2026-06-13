@@ -2,6 +2,8 @@ export {
   loginBodySchema,
   registerBodySchema,
   socialCallbackQuerySchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from "@yoga-app/shared";
 
 export const authSwaggerSchemas = {
@@ -51,6 +53,29 @@ export const authSwaggerSchemas = {
           type: "string" as const,
           description: "Frontend URL to return to after sign-in",
         },
+      },
+    },
+  },
+  forgotPassword: {
+    description: "Send a password reset email",
+    tags: ["Auth"] as string[],
+    body: {
+      type: "object" as const,
+      required: ["email"],
+      properties: {
+        email: { type: "string" as const, format: "email" },
+      },
+    },
+  },
+  resetPassword: {
+    description: "Reset password using a token from email",
+    tags: ["Auth"] as string[],
+    body: {
+      type: "object" as const,
+      required: ["token", "newPassword"],
+      properties: {
+        token: { type: "string" as const },
+        newPassword: { type: "string" as const, minLength: 8 },
       },
     },
   },

@@ -14,6 +14,7 @@ import { Route as DemoRouteRouteImport } from './routes/demo/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as UserRouteRouteImport } from './routes/_user/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ResetPasswordIndexRouteImport } from './routes/reset-password/index'
 import { Route as PricingIndexRouteImport } from './routes/pricing/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as ExpertsIndexRouteImport } from './routes/experts/index'
@@ -56,6 +57,11 @@ const UserRouteRoute = UserRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordIndexRoute = ResetPasswordIndexRouteImport.update({
+  id: '/reset-password/',
+  path: '/reset-password/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingIndexRoute = PricingIndexRouteImport.update({
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
   '/pricing/': typeof PricingIndexRoute
+  '/reset-password/': typeof ResetPasswordIndexRoute
   '/billing/': typeof UserBillingIndexRoute
   '/dashboard/': typeof UserDashboardIndexRoute
   '/rooms/': typeof UserRoomsIndexRoute
@@ -190,6 +197,7 @@ export interface FileRoutesByTo {
   '/experts': typeof ExpertsIndexRoute
   '/login': typeof LoginIndexRoute
   '/pricing': typeof PricingIndexRoute
+  '/reset-password': typeof ResetPasswordIndexRoute
   '/billing': typeof UserBillingIndexRoute
   '/dashboard': typeof UserDashboardIndexRoute
   '/rooms': typeof UserRoomsIndexRoute
@@ -217,6 +225,7 @@ export interface FileRoutesById {
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
   '/pricing/': typeof PricingIndexRoute
+  '/reset-password/': typeof ResetPasswordIndexRoute
   '/_user/billing/': typeof UserBillingIndexRoute
   '/_user/dashboard/': typeof UserDashboardIndexRoute
   '/_user/rooms/': typeof UserRoomsIndexRoute
@@ -244,6 +253,7 @@ export interface FileRouteTypes {
     | '/experts/'
     | '/login/'
     | '/pricing/'
+    | '/reset-password/'
     | '/billing/'
     | '/dashboard/'
     | '/rooms/'
@@ -268,6 +278,7 @@ export interface FileRouteTypes {
     | '/experts'
     | '/login'
     | '/pricing'
+    | '/reset-password'
     | '/billing'
     | '/dashboard'
     | '/rooms'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/experts/'
     | '/login/'
     | '/pricing/'
+    | '/reset-password/'
     | '/_user/billing/'
     | '/_user/dashboard/'
     | '/_user/rooms/'
@@ -319,6 +331,7 @@ export interface RootRouteChildren {
   ExpertsIndexRoute: typeof ExpertsIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   PricingIndexRoute: typeof PricingIndexRoute
+  ResetPasswordIndexRoute: typeof ResetPasswordIndexRoute
   ExpertsExpertIdIndexRoute: typeof ExpertsExpertIdIndexRoute
   SessionRoomIdIndexRoute: typeof SessionRoomIdIndexRoute
 }
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password/': {
+      id: '/reset-password/'
+      path: '/reset-password'
+      fullPath: '/reset-password/'
+      preLoaderRoute: typeof ResetPasswordIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing/': {
@@ -572,6 +592,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExpertsIndexRoute: ExpertsIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   PricingIndexRoute: PricingIndexRoute,
+  ResetPasswordIndexRoute: ResetPasswordIndexRoute,
   ExpertsExpertIdIndexRoute: ExpertsExpertIdIndexRoute,
   SessionRoomIdIndexRoute: SessionRoomIdIndexRoute,
 }

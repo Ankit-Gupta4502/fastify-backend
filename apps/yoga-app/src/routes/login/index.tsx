@@ -15,9 +15,12 @@ function LoginPage() {
     feedback,
     loginForm,
     registerForm,
+    forgotForm,
     isSubmitting,
+    isForgotPending,
     onLoginSubmit,
     onRegisterSubmit,
+    onForgotSubmit,
     handleGoogleSignIn,
     switchMode,
   } = useLogin();
@@ -67,12 +70,14 @@ function LoginPage() {
             <span className="absolute inset-0 rounded-2xl border border-primary/20 animate-ping opacity-40" />
           </div>
           <h1 className="text-2xl md:text-3xl font-serif font-bold tracking-tight">
-            {mode === "login" ? "Welcome back" : "Join the sangha"}
+            {mode === "login" ? "Welcome back" : mode === "register" ? "Join the sangha" : "Forgot password?"}
           </h1>
           <p className="text-muted-foreground text-sm">
             {mode === "login"
               ? "Continue your journey to inner peace"
-              : "Start your structured path to wellness today"}
+              : mode === "register"
+                ? "Start your structured path to wellness today"
+                : "No worries — we'll send you a reset link"}
           </p>
         </div>
 
@@ -81,9 +86,12 @@ function LoginPage() {
           feedback={feedback}
           loginForm={loginForm}
           registerForm={registerForm}
+          forgotForm={forgotForm}
           isSubmitting={isSubmitting}
+          isForgotPending={isForgotPending}
           onLoginSubmit={onLoginSubmit}
           onRegisterSubmit={onRegisterSubmit}
+          onForgotSubmit={onForgotSubmit}
           handleGoogleSignIn={handleGoogleSignIn}
           switchMode={switchMode}
         />

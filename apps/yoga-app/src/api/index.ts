@@ -3,6 +3,8 @@ import {
   type RegisterBody,
   type UserRole,
   type HealthResponse,
+  type ForgotPasswordBody,
+  type ResetPasswordBody,
 } from "@yoga-app/shared";
 import { ENDPOINTS } from "../constants/endpoints";
 import { apiRequest, apiGet } from "../lib/http";
@@ -43,6 +45,18 @@ export const authApi = {
   getGoogleUrl: (callbackURL: string) =>
     apiRequest<{ url: string | null }>(ENDPOINTS.AUTH.GOOGLE, {
       params: { callbackURL },
+    }),
+
+  forgotPassword: (payload: ForgotPasswordBody) =>
+    apiRequest<null>(ENDPOINTS.AUTH.FORGOT_PASSWORD, {
+      method: "POST",
+      data: payload,
+    }),
+
+  resetPassword: (payload: ResetPasswordBody) =>
+    apiRequest<null>(ENDPOINTS.AUTH.RESET_PASSWORD, {
+      method: "POST",
+      data: payload,
     }),
 };
 

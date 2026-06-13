@@ -17,6 +17,17 @@ export const socialCallbackQuerySchema = z.object({
   callbackURL: z.url().optional(),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.email("Invalid email address"),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Token is required"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+});
+
 export type RegisterBody = z.infer<typeof registerBodySchema>;
 export type LoginBody = z.infer<typeof loginBodySchema>;
 export type SocialCallbackQuery = z.infer<typeof socialCallbackQuerySchema>;
+export type ForgotPasswordBody = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordBody = z.infer<typeof resetPasswordSchema>;

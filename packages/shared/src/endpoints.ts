@@ -5,6 +5,8 @@ export const API_ENDPOINTS = {
     LOGOUT: "/auth/logout",
     SESSION: "/auth/session",
     GOOGLE: "/auth/google",
+    FORGOT_PASSWORD: "/auth/forgot-password",
+    RESET_PASSWORD: "/auth/reset-password",
   },
   USER: {
     DETAIL: "/user/detail",

@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "@tanstack/react-router";
-import { type LoginBody, type RegisterBody } from "@yoga-app/shared";
+import { type LoginBody, type RegisterBody, type ForgotPasswordBody } from "@yoga-app/shared";
 
-import { loginFormOptions, registerFormOptions } from "@/lib/validation/auth";
+import { loginFormOptions, registerFormOptions, forgotPasswordFormOptions } from "@/lib/validation/auth";
 import { useAuth } from "@/hooks/use-auth";
 import { ApiRequestError } from "@/lib/http";
 import { useAuthStore } from "@/store/auth.store";
+import { authApi } from "@/api";
 
 /** Reads and clears the demo-class intent flag, returning the correct redirect path. */
 function consumeDemoIntent(): "/" | "/demo" {
@@ -17,8 +18,10 @@ function consumeDemoIntent(): "/" | "/demo" {
   return "/";
 }
 
+export type LoginMode = "login" | "register" | "forgot";
+
 export function useLogin() {
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<LoginMode>("login");
   const [feedback, setFeedback] = useState<string | null>(null);
   const { login, register: registerUserMutation, getGoogleUrl } = useAuth();
   const navigate = useNavigate();
@@ -32,7 +35,9 @@ export function useLogin() {
 
   const loginForm    = useForm<LoginBody>(loginFormOptions);
   const registerForm = useForm<RegisterBody>(registerFormOptions);
+  const forgotForm   = useForm<ForgotPasswordBody>(forgotPasswordFormOptions);
   const isSubmitting = login.isPending || registerUserMutation.isPending;
+  const [isForgotPending, setIsForgotPending] = useState(false);
 
   async function onLoginSubmit(values: LoginBody) {
     setFeedback(null);
@@ -56,6 +61,19 @@ export function useLogin() {
     }
   }
 
+  async function onForgotSubmit(values: ForgotPasswordBody) {
+    setFeedback(null);
+    setIsForgotPending(true);
+    try {
+      await authApi.forgotPassword(values);
+      setFeedback("success:If an account exists for that email, a reset link is on its way.");
+    } catch (error) {
+      setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Something went wrong");
+    } finally {
+      setIsForgotPending(false);
+    }
+  }
+
   async function handleGoogleSignIn() {
     // Keep the intent flag alive — the home-page beforeLoad will consume it
     // after Google redirects back to the origin.
@@ -68,11 +86,12 @@ export function useLogin() {
     }
   }
 
-  const switchMode = (next: "login" | "register") => {
+  const switchMode = (next: LoginMode) => {
     setMode(next);
     setFeedback(null);
     loginForm.reset();
     registerForm.reset();
+    forgotForm.reset();
   };
 
   return {
@@ -80,9 +99,12 @@ export function useLogin() {
     feedback,
     loginForm,
     registerForm,
+    forgotForm,
     isSubmitting,
+    isForgotPending,
     onLoginSubmit,
     onRegisterSubmit,
+    onForgotSubmit,
     handleGoogleSignIn,
     switchMode,
   };

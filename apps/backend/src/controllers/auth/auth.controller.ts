@@ -17,6 +17,8 @@ import {
   loginBodySchema,
   registerBodySchema,
   socialCallbackQuerySchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from "../../validation/auth.validation.schema";
 import { USER_ROLES } from "../../constants/roles";
 import {
@@ -58,6 +60,16 @@ export class AuthController {
           "/google",
           { schema: authSwaggerSchemas.googleLogin },
           this.googleLogin,
+        );
+        router.post(
+          "/forgot-password",
+          { schema: authSwaggerSchemas.forgotPassword },
+          this.forgotPassword,
+        );
+        router.post(
+          "/reset-password",
+          { schema: authSwaggerSchemas.resetPassword },
+          this.resetPassword,
         );
       },
       { prefix: "/auth" },
@@ -226,6 +238,53 @@ export class AuthController {
     } catch (error) {
       console.info(error);
       
+      return this.handleAuthError(error, reply);
+    }
+  };
+
+  private forgotPassword = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: forgotPasswordSchema });
+    if (invalid) return invalid;
+
+    const body = request.body as z.infer<typeof forgotPasswordSchema>;
+
+    try {
+      await auth.api.requestPasswordReset({
+        body: {
+          email: body.email,
+          redirectTo: `${config.frontend.url}/reset-password`,
+        },
+        headers: fromNodeHeaders(request.headers),
+      });
+    } catch {
+      // Swallow errors — never reveal whether the email exists
+    }
+
+    const { statusCode, payload } = successResponse({
+      message: "If an account with that email exists, a reset link has been sent.",
+      data: null,
+    });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private resetPassword = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: resetPasswordSchema });
+    if (invalid) return invalid;
+
+    const body = request.body as z.infer<typeof resetPasswordSchema>;
+
+    try {
+      await auth.api.resetPassword({
+        body: { newPassword: body.newPassword, token: body.token },
+        headers: fromNodeHeaders(request.headers),
+      });
+
+      const { statusCode, payload } = successResponse({
+        message: "Password updated successfully.",
+        data: null,
+      });
+      return reply.status(statusCode).send(payload);
+    } catch (error) {
       return this.handleAuthError(error, reply);
     }
   };

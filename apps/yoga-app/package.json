@@ -42,7 +42,7 @@
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.0",
     "tw-merge": "0.0.1-alpha.3",
-    "zod": "^4.0.10",
+    "zod": "4.4.3",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

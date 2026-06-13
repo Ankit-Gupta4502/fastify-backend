@@ -110,7 +110,9 @@ function DemoOnboardingPage() {
   const validateStep1 = (): boolean => {
     const errs: typeof errors = {};
     if (!form.gender) errs.gender = "Please select your gender";
-    if (form.phone && form.phone.replace(/\D/g, "").length < 7) {
+    const phoneDigits = form.phone.replace(/\D/g, "");
+    // digits <= 3 means only a dial code was set — treat as empty
+    if (phoneDigits.length > 3 && phoneDigits.length < 7) {
       errs.phone = "Enter a valid phone number";
     }
     if (Object.keys(errs).length) { setErrors(errs); return false; }
@@ -146,7 +148,7 @@ function DemoOnboardingPage() {
 
     const body: CreateDemoRequestBody = {
       gender: form.gender as DemoGender,
-      phone: form.phone.trim() || undefined,
+      phone: form.phone.replace(/\D/g, "").length >= 7 ? form.phone.trim() : undefined,
       purposes: form.purposes,
       otherPurpose: form.purposes.includes("Other") ? form.otherPurpose.trim() : undefined,
       preferredDate: format(form.preferredDate!, "yyyy-MM-dd"),

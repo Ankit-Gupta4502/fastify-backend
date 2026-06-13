@@ -4,6 +4,8 @@ import { DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_URL } from "@yoga-app/shared";
 import { drizzle } from "../db";
 import * as schema from "../schema/schema";
 import { USER_ROLES, USER_ROLE_VALUES } from "../constants/roles";
+import { EmailService } from "../services/EmailService";
+import { config } from "../config";
 
 const baseURL =
   process.env.BETTER_AUTH_URL ||
@@ -38,6 +40,10 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }: { user: { email: string; name: string }; url: string }) => {
+      await EmailService.sendPasswordResetEmail(user.email, user.name, url);
+    },
+    resetPasswordTokenExpiresIn: 3600,
   },
 
   ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
