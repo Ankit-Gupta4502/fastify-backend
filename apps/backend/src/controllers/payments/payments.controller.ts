@@ -115,7 +115,7 @@ export class PaymentsController {
       const order = await getRazorpay().orders.create({
         amount: plan.priceCents,
         currency: "USD",
-        receipt: `cplan-${plan.id}-${me.id.slice(0, 8)}-${Date.now()}`,
+        receipt: `cplan-${plan.id.slice(0, 8)}-${Date.now()}`,
         notes: { userId: me.id, planId: plan.id, planName: plan.name },
       });
 
@@ -175,7 +175,7 @@ export class PaymentsController {
       const order = await getRazorpay().orders.create({
         amount: plan.priceCents, // stored in cents; Razorpay expects smallest unit (cents for USD)
         currency: "USD",
-        receipt: `plan-${plan.id}-${me.id.slice(0, 8)}-${Date.now()}`,
+        receipt: `plan-${plan.id.slice(0, 8)}-${Date.now()}`,
         notes: { userId: me.id, planId: plan.id, planName: plan.name },
       });
 
