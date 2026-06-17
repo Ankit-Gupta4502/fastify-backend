@@ -1,4 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { PAGE_SEO } from "@/lib/seo";
 import { lazy, Suspense, useRef } from "react";
 import { getQueryClient } from "@/lib/react-query/query-client.tsx";
 
@@ -21,6 +22,7 @@ const StickyTrialBar     = lazy(() => import("@/components/Home/StickyTrialBar")
 // ── Route ─────────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute("/")({
+  head: () => PAGE_SEO.home,
   // After Google OAuth the user lands here. If they originally clicked the
   // "Get started" CTA we stored a flag — consume it and send them to /demo.
   beforeLoad: ({ context }) => {

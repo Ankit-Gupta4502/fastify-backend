@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PAGE_SEO } from "@/lib/seo";
 import { useState } from "react";
 import { ShieldCheck, ArrowRight, Zap, CreditCard } from "lucide-react";
 
@@ -27,6 +28,7 @@ import { SpecializedPricingCard } from "./-components/SpecializedPricingCard";
 type Tab = "standard" | "specialized";
 
 export const Route = createFileRoute("/pricing/")({
+  head: () => PAGE_SEO.pricing,
   component: PricingPage,
 });
 

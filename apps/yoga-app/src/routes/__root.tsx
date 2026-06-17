@@ -9,6 +9,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { APP_NAME } from "@yoga-app/shared";
+import { PAGE_SEO, ROOT_GLOBAL_META } from "@/lib/seo";
 import Layout from "@/components/rootLayout/Layout";
 import { ReactQueryProvider } from "../lib/react-query/query-client";
 import { AuthWrapper } from "@/components/auth/AuthWrapper";
@@ -47,9 +48,17 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: `${APP_NAME} Workspace` },
+      ...ROOT_GLOBAL_META,
+      ...PAGE_SEO.home.meta,
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+      { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
+      { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
+      { rel: "manifest", href: "/site.webmanifest" },
+      ...PAGE_SEO.home.links,
+    ],
   }),
   component: RootLayout,
   shellComponent: RootDocument,

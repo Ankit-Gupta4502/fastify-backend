@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { PAGE_SEO } from "@/lib/seo";
 import { Fragment, useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, ClockIcon } from "lucide-react";
@@ -18,6 +19,7 @@ import type { CreateDemoRequestBody, DemoGender, DemoPurpose } from "@yoga-app/s
 import { ApiRequestError } from "@/lib/http";
 
 export const Route = createFileRoute("/demo/")({
+  head: () => PAGE_SEO.demo,
   component: DemoOnboardingPage,
 });
 
