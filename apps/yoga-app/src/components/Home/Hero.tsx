@@ -41,12 +41,12 @@ export function Hero() {
 
             {/* Headline */}
             <h1 className="text-4xl md:text-5xl lg:text-[3.6rem] font-serif tracking-tight leading-[1.08] text-balance">
-              Your journey to{" "}
+              India's Best Yogis.{" "}
               <span className="doodle-underline font-doodle text-primary italic">
-                inner peace
+                Now In Your
               </span>
               <br />
-              <span className="text-foreground/65">starts here.</span>
+              <span className="text-foreground/65">Living Room.</span>
             </h1>
 
             <p className="text-lg text-muted-foreground max-w-md leading-relaxed">
