@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PAGE_SEO } from "@/lib/seo";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, ClockIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -87,10 +87,17 @@ function DemoOnboardingPage() {
   const activeRequest = existing?.data?.find((r) =>
     ["pending", "approved", "instructor_assigned", "meeting_scheduled"].includes(r.status),
   );
-  if (!checkingExisting && activeRequest) {
-    void navigate({ to: "/demo/success", search: { id: activeRequest.id } });
-    return null;
-  }
+  const completedRequest = existing?.data?.find((r) => r.status === "completed");
+
+  // If the user already has any demo request and just navigates to /demo
+  // (back button, direct URL, post-login redirect), send them home.
+  // Only the form submit handlers send to /demo/success.
+  useEffect(() => {
+    if (checkingExisting) return;
+    if (activeRequest || completedRequest) {
+      void navigate({ to: "/", replace: true });
+    }
+  }, [checkingExisting, activeRequest, completedRequest, navigate]);
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -161,12 +168,12 @@ function DemoOnboardingPage() {
     submit.mutate(body, {
       onSuccess: (res) => {
         localStorage.removeItem("demoClassIntent");
-        void navigate({ to: "/demo/success", search: { id: res.data?.id ?? "" } });
+        void navigate({ to: "/demo/success", search: { id: res.data?.id ?? "" }, replace: true });
       },
       onError: (err) => {
         if (err instanceof ApiRequestError && err.status === 409) {
           setServerError("You already have an active demo request. Redirecting…");
-          setTimeout(() => void navigate({ to: "/demo/success", search: { id: "" } }), 1500);
+          setTimeout(() => void navigate({ to: "/demo/success", search: { id: "" }, replace: true }), 1500);
         } else {
           setServerError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
         }
