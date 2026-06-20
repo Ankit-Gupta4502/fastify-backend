@@ -122,10 +122,9 @@ export function Reviews() {
           )}
         >
           <div className="absolute inset-0 bg-linear-to-br from-primary/4 via-transparent to-accent/4 pointer-events-none" />
-          <div className="relative grid grid-cols-3 divide-x divide-border/40">
-            <StatBlock value="1k+"  label="Mindful souls"    delay={250} isVisible={isVisible} />
-            <StatBlock value="400+" label="Studios connected" delay={350} isVisible={isVisible} />
-            <StatBlock value="98%"  label="Calm index"        delay={450} isVisible={isVisible} />
+          <div className="relative grid grid-cols-2 divide-x divide-border/40">
+            <StatBlock value="1k+"  label="Mindful souls" delay={250} isVisible={isVisible} />
+            <StatBlock value="98%"  label="Calm index"    delay={350} isVisible={isVisible} />
           </div>
         </div>
       </div>
