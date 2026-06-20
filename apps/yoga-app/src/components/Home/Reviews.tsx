@@ -57,7 +57,7 @@ export function Reviews() {
   const reviews = data?.data?.length ? data.data : FALLBACK_REVIEWS;
 
   return (
-    <section ref={sectionRef} className="py-24 relative overflow-hidden">
+    <section id="reviews" ref={sectionRef} className="py-24 relative overflow-hidden">
       {/* Ambient background */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-border/60 to-transparent" />

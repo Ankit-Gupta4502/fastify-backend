@@ -1,6 +1,6 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { Play, Heart, Sparkles } from "lucide-react"
+import { Star, Heart, Sparkles } from "lucide-react"
 import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/components/shared/doodles"
 
 export function Hero() {
@@ -40,7 +40,7 @@ export function Hero() {
             </div>
 
             {/* Headline */}
-            <h1 className="text-4xl md:text-5xl lg:text-[3.6rem] font-serif tracking-tight leading-[1.08] text-balance">
+            <h1 className="text-4xl md:text-5xl lg:text-[3.6rem] font-serif font-black tracking-tight leading-[1.08] text-balance">
               India's Best Yogis.{" "}
               <span className="doodle-underline font-doodle text-primary italic">
                 Now In Your
@@ -68,37 +68,13 @@ export function Hero() {
               <Button
                 variant="outline"
                 className="rounded-full px-8 py-6 text-base border-foreground/20 hover:bg-foreground/5 hover:scale-105 transition-all duration-300 sketch-border-sm"
+                onClick={() => document.getElementById("reviews")?.scrollIntoView({ behavior: "smooth" })}
               >
-                <Play className="mr-2 h-4 w-4" />
-                Watch Preview
+                <Star className="mr-2 h-4 w-4" />
+                See Reviews
               </Button>
             </div>
 
-            {/* Social proof */}
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2.5">
-                {[
-                  { initials: "JA", bg: "bg-primary/20" },
-                  { initials: "MC", bg: "bg-accent/30" },
-                  { initials: "ER", bg: "bg-primary/30" },
-                ].map(({ initials, bg }) => (
-                  <div
-                    key={initials}
-                    className={`size-10 rounded-full ${bg} ring-2 ring-background flex items-center justify-center text-xs font-bold hover:scale-110 hover:z-10 transition-transform duration-200 cursor-default relative`}
-                  >
-                    {initials}
-                  </div>
-                ))}
-              </div>
-              <div className="relative">
-                <p className="text-sm text-muted-foreground">
-                  Joined by{" "}
-                  <span className="font-bold text-foreground">1k+</span>{" "}
-                  mindful souls
-                </p>
-                <StarDoodle className="absolute -top-3 -right-5 size-3.5 text-primary/50 animate-doodle-float" style={{ animationDelay: '0.9s' }} />
-              </div>
-            </div>
           </div>
 
           {/* ── Right: Image ── */}
