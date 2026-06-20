@@ -18,6 +18,7 @@ function LoginPage() {
     forgotForm,
     isSubmitting,
     isForgotPending,
+    isGooglePending,
     onLoginSubmit,
     onRegisterSubmit,
     onForgotSubmit,
@@ -89,6 +90,7 @@ function LoginPage() {
           forgotForm={forgotForm}
           isSubmitting={isSubmitting}
           isForgotPending={isForgotPending}
+          isGooglePending={isGooglePending}
           onLoginSubmit={onLoginSubmit}
           onRegisterSubmit={onRegisterSubmit}
           onForgotSubmit={onForgotSubmit}

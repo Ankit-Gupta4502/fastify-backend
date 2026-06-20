@@ -38,6 +38,7 @@ export function useLogin() {
   const forgotForm   = useForm<ForgotPasswordBody>(forgotPasswordFormOptions);
   const isSubmitting = login.isPending || registerUserMutation.isPending;
   const [isForgotPending, setIsForgotPending] = useState(false);
+  const [isGooglePending, setIsGooglePending] = useState(false);
 
   async function onLoginSubmit(values: LoginBody) {
     setFeedback(null);
@@ -75,14 +76,14 @@ export function useLogin() {
   }
 
   async function handleGoogleSignIn() {
-    // Keep the intent flag alive — the home-page beforeLoad will consume it
-    // after Google redirects back to the origin.
+    setIsGooglePending(true);
     const callbackURL = window.location.origin;
     try {
       const response = await getGoogleUrl(callbackURL);
       if (response.data?.url) window.location.assign(response.data.url);
     } catch (error) {
       setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Google sign-in failed");
+      setIsGooglePending(false);
     }
   }
 
@@ -102,6 +103,7 @@ export function useLogin() {
     forgotForm,
     isSubmitting,
     isForgotPending,
+    isGooglePending,
     onLoginSubmit,
     onRegisterSubmit,
     onForgotSubmit,

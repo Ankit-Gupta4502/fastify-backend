@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Info } from "lucide-react";
 import { z } from "zod";
 
 import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/components/shared/doodles";
@@ -83,12 +83,20 @@ function ResetPasswordPage() {
             </p>
           </div>
         ) : (
-          <ResetPasswordCard
-            token={token}
-            onSubmit={handleSubmit}
-            isPending={isPending}
-            feedback={feedback}
-          />
+          <>
+            <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/25 bg-amber-500/8 px-4 py-3">
+              <Info className="size-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-relaxed">
+                If you originally signed in with Google or another platform, please reset your password from that service's account settings — not here.
+              </p>
+            </div>
+            <ResetPasswordCard
+              token={token}
+              onSubmit={handleSubmit}
+              isPending={isPending}
+              feedback={feedback}
+            />
+          </>
         )}
 
         <p className="text-center text-[10px] text-muted-foreground">

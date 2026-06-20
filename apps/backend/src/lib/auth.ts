@@ -41,6 +41,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url }: { user: { email: string; name: string }; url: string }) => {
+      console.log("[auth] sendResetPassword called for", user.email, "| url:", url);
       await EmailService.sendPasswordResetEmail(user.email, user.name, url);
     },
     resetPasswordTokenExpiresIn: 3600,

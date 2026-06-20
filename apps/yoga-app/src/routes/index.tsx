@@ -40,6 +40,7 @@ export const Route = createFileRoute("/")({
   // co-locating data requirements with the route.
   loader: async () => {
     const qc = getQueryClient();
+
     const { roomQueryOptions }    = await import("@/hooks/use-rooms");
     const { reviewQueryOptions }  = await import("@/hooks/use-reviews");
     const { instructorQueryOptions } = await import("@/hooks/use-instructors");

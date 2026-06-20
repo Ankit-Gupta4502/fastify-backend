@@ -249,15 +249,22 @@ export class AuthController {
     const body = request.body as z.infer<typeof forgotPasswordSchema>;
 
     try {
-      await auth.api.requestPasswordReset({
+      const result = await auth.api.requestPasswordReset({
         body: {
           email: body.email,
           redirectTo: `${config.frontend.url}/reset-password`,
         },
         headers: fromNodeHeaders(request.headers),
       });
-    } catch {
-      // Swallow errors — never reveal whether the email exists
+      // better-auth returns error objects rather than always throwing
+      if (result && typeof result === "object" && "error" in result && result.error) {
+        console.error("[forgotPassword] better-auth error:", result.error);
+      }
+    } catch (err) {
+      // Log in dev so we can diagnose failures; never expose to client
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[forgotPassword] requestPasswordReset threw:", err);
+      }
     }
 
     const { statusCode, payload } = successResponse({
