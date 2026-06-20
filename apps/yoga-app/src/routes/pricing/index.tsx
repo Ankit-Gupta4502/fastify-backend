@@ -25,8 +25,6 @@ import { PricingCard } from "./-components/PricingCard";
 import { PrivatePricingCard } from "./-components/PrivatePricingCard";
 import { SpecializedPricingCard } from "./-components/SpecializedPricingCard";
 
-type Tab = "standard" | "specialized";
-
 export const Route = createFileRoute("/pricing/")({
   head: () => PAGE_SEO.pricing,
   component: PricingPage,
@@ -39,7 +37,6 @@ function PricingPage() {
   const customCheckout = useCustomCheckout();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("standard");
   const [sessionCount, setSessionCount] = useState(MIN_SESSIONS);
   const [prenatalSessions, setPrenatalSessions] = useState(MIN_SESSIONS);
   const [therapeuticSessions, setTherapeuticSessions] = useState(MIN_SESSIONS);
@@ -57,15 +54,6 @@ function PricingPage() {
     });
   };
 
-  const handlePrivateSubscribe = () => {
-    setError(null);
-    setSuccess(null);
-    customCheckout.mutate({ sessionCount, planName: "private" }, {
-      onSuccess: () => setSuccess(`Private plan activated — ${sessionCount} sessions/mo`),
-      onError: (err) => setError(err instanceof Error ? err.message : "Payment failed"),
-    });
-  };
-
   const handleSpecializedSubscribe = (planName: string, sessions: number) => {
     setError(null);
     setSuccess(null);
@@ -76,23 +64,32 @@ function PricingPage() {
     });
   };
 
+  const handlePrivateSubscribe = () => {
+    setError(null);
+    setSuccess(null);
+    customCheckout.mutate({ sessionCount, planName: "private" }, {
+      onSuccess: () => setSuccess(`Private plan activated — ${sessionCount} sessions/mo`),
+      onError: (err) => setError(err instanceof Error ? err.message : "Payment failed"),
+    });
+  };
+
   return (
     <div className="relative">
       {/* Ambient glow */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 size-[700px] bg-primary/5 blur-[130px] rounded-full" />
-        <div className="absolute bottom-1/3 right-0 size-[450px] bg-sky-500/4 blur-[110px] rounded-full" />
-        <div className="absolute top-1/2 left-0 size-[300px] bg-accent/4 blur-[90px] rounded-full" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 size-175 bg-primary/5 blur-[130px] rounded-full" />
+        <div className="absolute bottom-1/3 right-0 size-112.5 bg-sky-500/4 blur-[110px] rounded-full" />
+        <div className="absolute top-1/2 left-0 size-75 bg-accent/4 blur-[90px] rounded-full" />
       </div>
 
-      {/* Floating doodle decorations */}
+      {/* Floating doodles */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
         <StarDoodle className="absolute top-20 right-[8%] size-7 text-primary/20 animate-doodle-float" />
         <CircleDoodle className="absolute top-10 left-[4%] size-32 text-primary/7 animate-doodle-spin-slow" />
-        <PlusDoodle className="absolute top-[40%] right-[3%] size-5 text-primary/15 animate-doodle-float-alt" style={{ animationDelay: '1.5s' }} />
-        <StarDoodle className="absolute top-[55%] left-[6%] size-4 text-accent/30 animate-doodle-float" style={{ animationDelay: '2s' }} />
+        <PlusDoodle className="absolute top-[40%] right-[3%] size-5 text-primary/15 animate-doodle-float-alt" style={{ animationDelay: "1.5s" }} />
+        <StarDoodle className="absolute top-[55%] left-[6%] size-4 text-accent/30 animate-doodle-float" style={{ animationDelay: "2s" }} />
         <CircleDoodle className="absolute bottom-[20%] right-[5%] size-44 text-accent/6 animate-doodle-spin-rev" />
-        <StarDoodle className="absolute top-[25%] left-[12%] size-2.5 text-primary/25 animate-doodle-float-alt" style={{ animationDelay: '0.8s' }} />
+        <StarDoodle className="absolute top-[25%] left-[12%] size-2.5 text-primary/25 animate-doodle-float-alt" style={{ animationDelay: "0.8s" }} />
       </div>
 
       <div className="py-10 md:py-16 space-y-16">
@@ -108,28 +105,8 @@ function PricingPage() {
             <span className="font-doodle italic doodle-underline text-primary">inner peace</span>
           </h1>
           <p className="text-muted-foreground text-lg leading-relaxed max-w-md mx-auto">
-            Two honest plans. No hidden fees. No first-month discounts. Just the same fair price, always.
+            Four honest plans. No hidden fees. No first-month discounts. Just the same fair price, always.
           </p>
-        </div>
-
-        {/* ── Tab navigation ── */}
-        <div className="flex justify-center px-4">
-          <div className="flex bg-muted/50 border border-border/50 p-1 rounded-full gap-1">
-            {(["standard", "specialized"] as Tab[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={cn(
-                  "px-6 py-2 rounded-full text-sm font-semibold capitalize transition-all duration-200",
-                  activeTab === tab
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* ── Feedback ── */}
@@ -148,65 +125,61 @@ function PricingPage() {
           </div>
         )}
 
-        {/* ── Plan Cards ── */}
-        <div className="max-w-3xl mx-auto px-4 space-y-8">
+        {/* ── Plans ── */}
+        <div className="max-w-3xl mx-auto px-4 space-y-6">
           {isLoading ? (
             <div className="grid md:grid-cols-2 gap-8">
-              <Skeleton className="h-[540px] rounded-4xl" />
-              <Skeleton className="h-[540px] rounded-4xl" />
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-135 rounded-4xl" />
+              ))}
             </div>
-          ) : activeTab === "standard" ? (
-            <>
-              <div className="grid md:grid-cols-2 gap-8 items-start">
-                {groupPlan && (
-                  <PricingCard
-                    plan={groupPlan}
-                    isAuthenticated={isAuthenticated}
-                    isPending={isPending}
-                    onSubscribe={handleSubscribe}
-                  />
-                )}
-                <PrivatePricingCard
-                  sessionCount={sessionCount}
-                  onSessionCountChange={setSessionCount}
-                  isAuthenticated={isAuthenticated}
-                  isPending={isPending}
-                  onSubscribe={handlePrivateSubscribe}
-                />
-              </div>
-              <p className="text-center text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground/60">Group Live</span> — perfect for getting started with live classes.{" "}
-                <span className="font-semibold text-foreground/60">Private 1:1</span> — personalised sessions starting at {centsToDisplay(calcPrivatePrice(MIN_SESSIONS))}/mo.
-              </p>
-            </>
           ) : (
-            <>
-              <div className="grid md:grid-cols-2 gap-8 items-start">
-                <SpecializedPricingCard
-                  planName="prenatal_postnatal"
-                  config={specializedPlanConfig.prenatal_postnatal}
-                  sessionCount={prenatalSessions}
-                  onSessionCountChange={setPrenatalSessions}
+            <div className={cn(
+              "grid gap-8 items-start md:grid-cols-2",
+              !groupPlan && "[&>*:last-child]:col-span-2 [&>*:last-child]:mx-auto [&>*:last-child]:w-[calc(50%-1rem)]"
+            )}>
+              {groupPlan && (
+                <PricingCard
+                  plan={groupPlan}
                   isAuthenticated={isAuthenticated}
                   isPending={isPending}
-                  onSubscribe={() => handleSpecializedSubscribe("prenatal_postnatal", prenatalSessions)}
+                  onSubscribe={handleSubscribe}
                 />
-                <SpecializedPricingCard
-                  planName="therapeutic_yoga"
-                  config={specializedPlanConfig.therapeutic_yoga}
-                  sessionCount={therapeuticSessions}
-                  onSessionCountChange={setTherapeuticSessions}
-                  isAuthenticated={isAuthenticated}
-                  isPending={isPending}
-                  onSubscribe={() => handleSpecializedSubscribe("therapeutic_yoga", therapeuticSessions)}
-                />
-              </div>
-              <p className="text-center text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground/60">Prenatal & Postnatal</span> — safe, supported yoga from bump to baby.{" "}
-                <span className="font-semibold text-foreground/60">Therapeutic Yoga</span> — heal and restore with a specialist. Both start at {centsToDisplay(calcSpecializedPrice(MIN_SESSIONS))}/mo.
-              </p>
-            </>
+              )}
+              <PrivatePricingCard
+                sessionCount={sessionCount}
+                onSessionCountChange={setSessionCount}
+                isAuthenticated={isAuthenticated}
+                isPending={isPending}
+                onSubscribe={handlePrivateSubscribe}
+              />
+              <SpecializedPricingCard
+                planName="prenatal_postnatal"
+                config={specializedPlanConfig.prenatal_postnatal}
+                sessionCount={prenatalSessions}
+                onSessionCountChange={setPrenatalSessions}
+                isAuthenticated={isAuthenticated}
+                isPending={isPending}
+                onSubscribe={() => handleSpecializedSubscribe("prenatal_postnatal", prenatalSessions)}
+              />
+              <SpecializedPricingCard
+                planName="therapeutic_yoga"
+                config={specializedPlanConfig.therapeutic_yoga}
+                sessionCount={therapeuticSessions}
+                onSessionCountChange={setTherapeuticSessions}
+                isAuthenticated={isAuthenticated}
+                isPending={isPending}
+                onSubscribe={() => handleSpecializedSubscribe("therapeutic_yoga", therapeuticSessions)}
+              />
+            </div>
           )}
+
+          <p className="text-center text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground/60">Group Live</span> — live classes for everyone.{" "}
+            <span className="font-semibold text-foreground/60">Private 1:1</span> — from {centsToDisplay(calcPrivatePrice(MIN_SESSIONS))}/mo.{" "}
+            <span className="font-semibold text-foreground/60">Prenatal & Postnatal</span> and{" "}
+            <span className="font-semibold text-foreground/60">Therapeutic Yoga</span> — from {centsToDisplay(calcSpecializedPrice(MIN_SESSIONS))}/mo.
+          </p>
         </div>
 
         {/* ── Not signed in CTA ── */}
@@ -240,7 +213,10 @@ function PricingPage() {
               return (
                 <div
                   key={faq.q}
-                  className="group relative p-6 rounded-3xl border border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/20 hover:bg-card/80 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 space-y-3"
+                  className={cn(
+                    "group relative p-6 rounded-3xl border border-border/50 bg-card/50 backdrop-blur-sm",
+                    "hover:border-primary/20 hover:bg-card/80 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 space-y-3"
+                  )}
                 >
                   <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="flex items-center gap-3">
@@ -249,9 +225,7 @@ function PricingPage() {
                     </div>
                     <h4 className="font-bold text-sm leading-tight">{faq.q}</h4>
                   </div>
-                  <p className="text-muted-foreground text-sm leading-relaxed pl-11">
-                    {faq.a}
-                  </p>
+                  <p className="text-muted-foreground text-sm leading-relaxed pl-11">{faq.a}</p>
                 </div>
               );
             })}

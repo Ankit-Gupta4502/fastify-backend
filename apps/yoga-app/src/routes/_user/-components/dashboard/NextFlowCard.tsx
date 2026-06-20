@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { formatCompact, relativeFromNow } from "@/lib/timezone";
+import { formatCompact, relativeFromNow, userTimezone } from "@/lib/timezone";
 import { Chip } from "@/components/shared/chip";
 import { EmptyState } from "@/components/shared/empty-state";
 
@@ -19,7 +19,6 @@ import { EmptyState } from "@/components/shared/empty-state";
 interface NextFlowCardProps {
   room: UpcomingRoom | undefined;
   isLoading: boolean;
-  timezone: string;
   actingId: string | null;
   onEnrol: (roomId: string) => void;
   onJoinLive: (roomId: string) => void;
@@ -28,18 +27,18 @@ interface NextFlowCardProps {
 export function NextFlowCard({
   room,
   isLoading,
-  timezone,
   actingId,
   onEnrol,
   onJoinLive,
 }: NextFlowCardProps) {
+  const timezone = userTimezone();
   return (
     <Card className="lg:col-span-2 border-none shadow-sm bg-card/50 overflow-hidden rounded-3xl">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-xl">Your next flow</CardTitle>
-            <CardDescription>Auto-converted to {timezone}</CardDescription>
+            <CardDescription>Upcoming sessions</CardDescription>
           </div>
           {room && (
             <Chip variant="info" icon={TrendingUp} size="md">

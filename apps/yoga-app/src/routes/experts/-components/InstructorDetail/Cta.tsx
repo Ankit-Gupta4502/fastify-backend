@@ -1,10 +1,20 @@
 import { Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useInstructorDetail } from "./context";
+import { useMyPlan } from "@/hooks/use-plans";
+import { useNavigate } from "@tanstack/react-router";
 
 export function Cta() {
   const { instructor } = useInstructorDetail();
   const firstName = instructor.name.split(" ")[0];
+  const { data: myPlan } = useMyPlan();
+  const navigate = useNavigate();
+
+  function handleBook() {
+    if (!myPlan?.data) {
+      navigate({ to: "/pricing" });
+    }
+  }
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-primary/5 p-8 space-y-5 sketch-border-sm">
@@ -20,7 +30,7 @@ export function Cta() {
           Book your first session and discover the transformative power of personalized instruction.
         </p>
       </div>
-      <Button className="relative rounded-2xl gap-2 font-bold shadow-lg shadow-primary/20 px-6">
+      <Button onClick={handleBook} className="relative rounded-2xl gap-2 font-bold shadow-lg shadow-primary/20 px-6">
         <Calendar className="size-4" />
         Book now
       </Button>

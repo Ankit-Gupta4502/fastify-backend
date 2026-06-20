@@ -4,14 +4,13 @@ import type { UpcomingRoom } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { formatCompact } from "@/lib/timezone";
+import { formatCompact, userTimezone } from "@/lib/timezone";
 import { Chip } from "@/components/shared/chip";
 
 
 interface UpcomingSessionListProps {
   rooms: UpcomingRoom[];
   isLoading: boolean;
-  timezone: string;
   actingId: string | null;
   onEnrol: (roomId: string) => void;
   onJoinLive: (roomId: string) => void;
@@ -20,11 +19,11 @@ interface UpcomingSessionListProps {
 export function UpcomingSessionList({
   rooms,
   isLoading,
-  timezone,
   actingId,
   onEnrol,
   onJoinLive,
 }: UpcomingSessionListProps) {
+  const timezone = userTimezone();
   return (
     <div className="space-y-5">
       <div className="flex items-baseline justify-between">

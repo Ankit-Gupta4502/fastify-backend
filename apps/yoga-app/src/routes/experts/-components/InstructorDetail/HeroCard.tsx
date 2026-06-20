@@ -1,12 +1,22 @@
-import { Calendar, MessageSquare, Sparkles, Star } from "lucide-react";
+import { Calendar, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { InstructorAvatar } from "@/components/shared/InstructorAvatar";
 import { useInstructorDetail } from "./context";
+import { useMyPlan } from "@/hooks/use-plans";
+import { useNavigate } from "@tanstack/react-router";
 
 export function HeroCard() {
   const { instructor, gradient, status } = useInstructorDetail();
   const StatusIcon = status.icon;
+  const { data: myPlan } = useMyPlan();
+  const navigate = useNavigate();
+
+  function handleBook() {
+    if (!myPlan?.data) {
+      navigate({ to: "/pricing" });
+    }
+  }
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-border/50 bg-card/60 sketch-border-sm p-8">
@@ -80,13 +90,9 @@ export function HeroCard() {
         </div>
 
         <div className="hidden md:flex flex-col gap-2 shrink-0">
-          <Button className="rounded-2xl gap-2 font-bold shadow-md shadow-primary/20 px-6">
+          <Button onClick={handleBook} className="rounded-2xl gap-2 font-bold shadow-md shadow-primary/20 px-6">
             <Calendar className="size-4" />
             Book a Session
-          </Button>
-          <Button variant="outline" className="rounded-2xl gap-2 font-bold px-6">
-            <MessageSquare className="size-4" />
-            Message
           </Button>
         </div>
       </div>

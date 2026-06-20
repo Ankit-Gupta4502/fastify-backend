@@ -1,11 +1,21 @@
-import { Calendar, MessageSquare, Award, Users } from "lucide-react";
+import { Calendar, Award, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/shared/chip";
 import { useInstructorDetail } from "./context";
 import { SideCard, SideCardLabel } from "./primitives";
+import { useMyPlan } from "@/hooks/use-plans";
+import { useNavigate } from "@tanstack/react-router";
 
 export function Sidebar() {
   const { instructor } = useInstructorDetail();
+  const { data: myPlan } = useMyPlan();
+  const navigate = useNavigate();
+
+  function handleBook() {
+    if (!myPlan?.data) {
+      navigate({ to: "/pricing" });
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -50,13 +60,9 @@ export function Sidebar() {
 
       {/* Mobile actions */}
       <div className="md:hidden space-y-2.5">
-        <Button className="w-full rounded-2xl h-11 gap-2 font-bold shadow-md shadow-primary/20">
+        <Button onClick={handleBook} className="w-full rounded-2xl h-11 gap-2 font-bold shadow-md shadow-primary/20">
           <Calendar className="size-4" />
           Book a Session
-        </Button>
-        <Button variant="outline" className="w-full rounded-2xl h-11 gap-2 font-bold">
-          <MessageSquare className="size-4" />
-          Send Message
         </Button>
       </div>
     </div>

@@ -53,13 +53,13 @@ export function StickyTrialBar() {
   return (
     <div
       className={cn(
-        "fixed bottom-0 inset-x-0 z-40 transition-all duration-500 ease-out",
-        show ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none",
+        "fixed bottom-0 inset-x-0 z-40 transition-all duration-500 ease-out pointer-events-none",
+        show ? "translate-y-0 opacity-100" : "translate-y-full opacity-0",
       )}
       aria-hidden={!show}
     >
       {/* Backdrop blur bar */}
-      <div className="mx-4 mb-4 md:mx-auto md:max-w-lg">
+      <div className="mx-4 mb-4 md:mx-auto md:max-w-lg pointer-events-auto">
         <div className="relative bg-card/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl shadow-black/10 px-5 py-4 flex items-center gap-4 sketch-border-sm">
           {/* Glow */}
           <div className="absolute inset-0 rounded-2xl bg-linear-to-r from-primary/5 via-transparent to-primary/5 pointer-events-none" />

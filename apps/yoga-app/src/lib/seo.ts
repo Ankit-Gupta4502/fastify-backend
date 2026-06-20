@@ -70,6 +70,33 @@ export const PAGE_SEO = {
       "free yoga class, demo yoga session, try yoga online, yoga trial class, book yoga free, online yoga demo, prenatal yoga trial, therapeutic yoga free session",
     canonical: `${SITE.url}/demo`,
   }),
+
+  privacy: buildPageHead({
+    title: "Privacy Policy | Book Your Yoga Teacher",
+    description:
+      "Learn how Book Your Yoga Teacher collects, uses, and protects your personal information. We are committed to your privacy and data security.",
+    keywords:
+      "privacy policy, data protection, personal information, yoga platform privacy, user data",
+    canonical: `${SITE.url}/privacy`,
+  }),
+
+  terms: buildPageHead({
+    title: "Terms of Service | Book Your Yoga Teacher",
+    description:
+      "Read the Terms of Service for Book Your Yoga Teacher. Understand your rights and responsibilities when using our platform.",
+    keywords:
+      "terms of service, terms and conditions, user agreement, yoga platform terms",
+    canonical: `${SITE.url}/terms`,
+  }),
+
+  contact: buildPageHead({
+    title: "Contact Us | Book Your Yoga Teacher",
+    description:
+      "Have a question or need support? Get in touch with the Book Your Yoga Teacher team. We're here to help with bookings, plans, and anything else.",
+    keywords:
+      "contact yoga teacher, support, yoga booking help, get in touch, customer service",
+    canonical: `${SITE.url}/contact`,
+  }),
 } as const;
 
 // Global meta added by the root route (site-wide, not per-page).
