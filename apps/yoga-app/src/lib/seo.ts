@@ -38,18 +38,18 @@ export const PAGE_SEO = {
   home: buildPageHead({
     title: "Book Your Yoga Teacher | Live Online Yoga Classes",
     description:
-      "Book live 1-on-1 and group yoga classes with certified instructors. Prenatal yoga, therapeutic yoga, stress relief, flexibility, and more — from home.",
+      "Book live 1-on-1 yoga sessions with certified instructors. Prenatal yoga, therapeutic yoga, stress relief, flexibility, and more — from home.",
     keywords:
-      "online yoga classes, book yoga teacher, live yoga sessions, prenatal yoga, therapeutic yoga, stress relief yoga, private yoga instructor, group yoga class, yoga for beginners, mindfulness meditation",
+      "online yoga classes, book yoga teacher, live yoga sessions, prenatal yoga, therapeutic yoga, stress relief yoga, private yoga instructor, yoga for beginners, mindfulness meditation",
     canonical: `${SITE.url}/`,
   }),
 
   pricing: buildPageHead({
     title: "Yoga Class Plans & Pricing | Book Your Yoga Teacher",
     description:
-      "Flexible yoga plans for every lifestyle. Choose from group live sessions, private 1-on-1 classes, prenatal yoga, and therapeutic yoga programs. Start your free demo today.",
+      "Flexible yoga plans for every lifestyle. Choose from private 1-on-1 classes, prenatal yoga, and therapeutic yoga programs. Start your free demo today.",
     keywords:
-      "yoga class pricing, yoga subscription plans, group yoga sessions, private yoga classes, prenatal yoga pricing, therapeutic yoga plan, online yoga membership",
+      "yoga class pricing, yoga subscription plans, private yoga classes, prenatal yoga pricing, therapeutic yoga plan, online yoga membership",
     canonical: `${SITE.url}/pricing`,
   }),
 

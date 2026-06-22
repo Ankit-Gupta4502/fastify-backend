@@ -15,12 +15,10 @@ import { SpecializedPricingCard } from "./SpecializedPricingCard";
 interface PlansGridProps {
   isLoading: boolean;
   isAuthenticated: boolean;
-  groupPlan: PlanRecord | null;
   privatePlan: PlanRecord | null;
   prenatalPlan: PlanRecord | null;
   therapeuticPlan: PlanRecord | null;
   pendingCard: string | null;
-  isGroupPlanActive: boolean;
   isPrivatePlanActive: boolean;
   isPrenatalPlanActive: boolean;
   isTherapeuticPlanActive: boolean;
@@ -31,7 +29,6 @@ interface PlansGridProps {
   onSessionCountChange: (n: number) => void;
   onPrenatalSessionsChange: (n: number) => void;
   onTherapeuticSessionsChange: (n: number) => void;
-  onGroupSubscribe: (plan: PlanRecord) => void;
   onPrivateSubscribe: () => void;
   onSpecializedSubscribe: (planName: "private" | "prenatal_postnatal" | "therapeutic_yoga", sessions: number) => void;
 }
@@ -39,12 +36,10 @@ interface PlansGridProps {
 export function PlansGrid({
   isLoading,
   isAuthenticated,
-  groupPlan,
   privatePlan,
   prenatalPlan,
   therapeuticPlan,
   pendingCard,
-  isGroupPlanActive,
   isPrivatePlanActive,
   isPrenatalPlanActive,
   isTherapeuticPlanActive,
@@ -55,7 +50,6 @@ export function PlansGrid({
   onSessionCountChange,
   onPrenatalSessionsChange,
   onTherapeuticSessionsChange,
-  onGroupSubscribe,
   onPrivateSubscribe,
   onSpecializedSubscribe,
 }: PlansGridProps) {
@@ -117,7 +111,6 @@ export function PlansGrid({
       )}
 
       <p className="text-center text-xs text-muted-foreground">
-        <span className="font-semibold text-foreground/60">Group Live</span> — live classes for everyone.{" "}
         <span className="font-semibold text-foreground/60">Private 1:1</span> — from {centsToDisplay(calcPrivatePrice(MIN_SESSIONS))}/mo.{" "}
         <span className="font-semibold text-foreground/60">Prenatal & Postnatal</span> and{" "}
         <span className="font-semibold text-foreground/60">Therapeutic Yoga</span> — from {centsToDisplay(calcSpecializedPrice(MIN_SESSIONS))}/mo.

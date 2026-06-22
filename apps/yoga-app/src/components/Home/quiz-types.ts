@@ -35,7 +35,7 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
 
 // ── Recommendation types ──────────────────────────────────────────────────────
 
-export type PlanSlug = "group_live" | "private" | "prenatal_postnatal" | "therapeutic_yoga";
+export type PlanSlug = "private" | "prenatal_postnatal" | "therapeutic_yoga";
 
 export interface Recommendation {
   slug: PlanSlug;

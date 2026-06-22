@@ -77,7 +77,7 @@ export function RoomsTable({ rooms, isLoading, error }: RoomsTableProps) {
       </table>
       {!isLoading && rooms.length === 0 && (
         <p className="text-center text-muted-foreground text-sm py-10">
-          No group classes scheduled yet.
+          No live sessions scheduled yet.
         </p>
       )}
     </div>

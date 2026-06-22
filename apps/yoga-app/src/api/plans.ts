@@ -6,13 +6,12 @@ export type PlanFeatures = Omit<PlanRecord, "priceCents">;
 
 export interface MyPlanResponse {
   subscriptionId: string;
-  sessionsTotal: number | null;   // null = recurring (group_live)
+  sessionsTotal: number | null;
   sessionsUsed: number;
   pricePaidCents: number;
   purchasedAt: string;
   expiresAt: string | null;
   plan: PlanRecord;
-  // Weekly quota fields (populated for group_live recurring plans)
   sessionsUsedThisWeek: number;
   weekResetAt: string;
 }

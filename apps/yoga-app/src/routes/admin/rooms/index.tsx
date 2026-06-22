@@ -23,8 +23,8 @@ function AdminRoomsPage() {
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <SectionHeader
           eyebrow="Admin"
-          title="Group Classes"
-          description="Schedule upcoming group sessions and assign instructors."
+          title="Live Rooms"
+          description="Schedule upcoming live sessions and assign instructors."
         />
         <Button className="rounded-2xl gap-2 shadow-sm" onClick={() => setOpen(true)}>
           <Plus className="size-4" />

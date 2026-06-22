@@ -3,15 +3,6 @@ import type { Goal, Frequency, Need, PlanSlug, Recommendation, Answers } from ".
 // ── Recommendation engine ─────────────────────────────────────────────────────
 
 export const RECOMMENDATIONS: Record<PlanSlug, Recommendation> = {
-  group_live: {
-    slug: "group_live",
-    emoji: "🌊",
-    title: "Group Live",
-    tagline: "Community-powered practice",
-    why: "Live group energy is exactly what you need — shared rhythm, real accountability, and expert-led flows.",
-    gradient: "from-sky-500/20 via-blue-400/8 to-transparent",
-    href: "/pricing",
-  },
   private: {
     slug: "private",
     emoji: "🎯",
@@ -44,10 +35,7 @@ export const RECOMMENDATIONS: Record<PlanSlug, Recommendation> = {
 export function computeRecommendation(answers: Answers): Recommendation {
   if (answers.need === "prenatal") return RECOMMENDATIONS.prenatal_postnatal;
   if (answers.need === "injury")   return RECOMMENDATIONS.therapeutic_yoga;
-  if (answers.frequency === "daily" || answers.goal === "strength" || answers.goal === "flexibility") {
-    return RECOMMENDATIONS.private;
-  }
-  return RECOMMENDATIONS.group_live;
+  return RECOMMENDATIONS.private;
 }
 
 // ── Option data ───────────────────────────────────────────────────────────────

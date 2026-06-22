@@ -14,7 +14,7 @@ const steps = [
     number: "02",
     icon: CreditCard,
     title: "Choose your plan",
-    description: "Pick Group Live for shared flows or Private for dedicated 1:1 time with your chosen instructor.",
+    description: "Pick Private for dedicated 1:1 time with your chosen instructor, or choose Prenatal or Therapeutic yoga for specialised care.",
     accent: "bg-violet-500/10 text-violet-500 border-violet-500/20",
     line: "from-primary/20 to-emerald-500/20",
   },

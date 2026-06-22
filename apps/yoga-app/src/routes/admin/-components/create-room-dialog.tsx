@@ -27,7 +27,7 @@ export function CreateRoomDialog({ open, onOpenChange, instructors }: CreateRoom
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg rounded-3xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Schedule group class</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Schedule live session</DialogTitle>
           <DialogDescription>
             Enter times in a US timezone — we'll show you how it converts for users worldwide.
           </DialogDescription>

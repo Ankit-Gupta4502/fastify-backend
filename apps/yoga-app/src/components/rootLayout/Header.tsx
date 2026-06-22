@@ -1,21 +1,37 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { User, LogOut, LayoutDashboard, ShieldCheck, Tag } from "lucide-react";
+import { User, LogOut, LayoutDashboard, ShieldCheck, Tag, Menu, BookOpen, Home } from "lucide-react";
 import { USER_ROLES } from "@yoga-app/shared";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
+import { Separator } from "../ui/separator";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+
+const NAV_LINKS = [
+  { to: "/", label: "Home", icon: Home },
+  { to: "/experts", label: "Experts", icon: BookOpen },
+  { to: "/pricing", label: "Pricing", icon: Tag },
+] as const;
 
 export function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const isInstructor = user?.role === USER_ROLES.INSTRUCTOR;
   const isAdmin = user?.role === USER_ROLES.ADMIN;
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const dashboardTo = isAdmin
+    ? "/admin/rooms"
+    : isInstructor
+    ? "/instructor/dashboard"
+    : "/dashboard";
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-xl transition-all">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        {/* Left: logo + desktop nav */}
         <div className="flex items-center gap-10">
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
             <img
               src="/logo.svg"
@@ -47,7 +63,8 @@ export function Header() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* Right: auth actions + mobile hamburger */}
+        <div className="flex items-center gap-3">
           {isLoading ? (
             <div className="flex items-center gap-3">
               <Skeleton className="h-8 w-28 rounded-full hidden sm:block" />
@@ -73,38 +90,29 @@ export function Header() {
                 )}
               </div>
 
-              {isAdmin ? (
-                <Button asChild className="rounded-full px-6 shadow-sm hover:shadow-primary/20 transition-all duration-300">
-                  <Link to="/admin/rooms" className="flex items-center gap-2">
-                    <ShieldCheck className="size-3.5" />
-                    <span>Admin</span>
-                  </Link>
-                </Button>
-              ) : (
-                <Button asChild className="rounded-full px-6 shadow-sm hover:shadow-primary/20 transition-all duration-300">
-                  <Link
-                    to={isInstructor ? "/instructor/dashboard" : "/dashboard"}
-                    className="flex items-center gap-2"
-                  >
-                    <LayoutDashboard className="size-3.5" />
-                    <span>Dashboard</span>
-                  </Link>
-                </Button>
-              )}
+              <Button
+                asChild
+                className="hidden md:inline-flex rounded-full px-6 shadow-sm hover:shadow-primary/20 transition-all duration-300"
+              >
+                <Link to={dashboardTo} className="flex items-center gap-2">
+                  {isAdmin ? <ShieldCheck className="size-3.5" /> : <LayoutDashboard className="size-3.5" />}
+                  <span>{isAdmin ? "Admin" : "Dashboard"}</span>
+                </Link>
+              </Button>
 
               <Button
                 variant="ghost"
                 size="icon-sm"
                 disabled={logout.isPending}
                 onClick={() => logout.mutate()}
-                className="rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
+                className="hidden md:inline-flex rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
                 title={logout.isPending ? "Logging out..." : "Log out"}
               >
                 <LogOut className={cn("size-4", logout.isPending && "animate-pulse")} />
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <Button asChild className="rounded-full px-6" variant="ghost">
                 <Link to="/login">Sign in</Link>
               </Button>
@@ -119,6 +127,120 @@ export function Header() {
               </div>
             </div>
           )}
+
+          {/* Mobile hamburger */}
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="md:hidden rounded-xl"
+                aria-label="Open menu"
+              >
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+
+            <SheetContent side="right" className="w-72 p-0 flex flex-col">
+              <SheetHeader className="px-6 pt-6 pb-4">
+                <SheetTitle asChild>
+                  <Link
+                    to="/"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2.5"
+                  >
+                    <img src="/logo.svg" alt="" className="size-9" />
+                    <span className="text-sm font-bold leading-none tracking-tight">
+                      <span className="block text-foreground">Book Your</span>
+                      <span className="block text-primary font-doodle italic">Yoga Teacher</span>
+                    </span>
+                  </Link>
+                </SheetTitle>
+              </SheetHeader>
+
+              <Separator />
+
+              {/* Nav links */}
+              <nav className="flex flex-col gap-1 px-3 py-4">
+                {NAV_LINKS.map(({ to, label, icon: Icon }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-200"
+                    activeProps={{ className: "text-foreground bg-primary/8 hover:bg-primary/12" }}
+                    activeOptions={to === "/" ? { exact: true } : undefined}
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    {label}
+                  </Link>
+                ))}
+              </nav>
+
+              <Separator />
+
+              {/* Auth section */}
+              <div className="px-4 py-4 mt-auto space-y-3">
+                {isAuthenticated ? (
+                  <>
+                    {/* User chip */}
+                    <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-muted/60 border border-border/50">
+                      <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <User className="size-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate">{user?.name}</p>
+                        {(isInstructor || isAdmin) && (
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                            {isAdmin ? "Admin" : "Instructor"}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <Button
+                      asChild
+                      className="w-full rounded-xl gap-2"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <Link to={dashboardTo}>
+                        {isAdmin ? <ShieldCheck className="size-4" /> : <LayoutDashboard className="size-4" />}
+                        {isAdmin ? "Admin panel" : "Dashboard"}
+                      </Link>
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-xl gap-2 text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
+                      disabled={logout.isPending}
+                      onClick={() => { logout.mutate(); setMobileOpen(false); }}
+                    >
+                      <LogOut className={cn("size-4", logout.isPending && "animate-pulse")} />
+                      {logout.isPending ? "Logging out…" : "Log out"}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="w-full rounded-xl"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <Link to="/login">Sign in</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      className="w-full rounded-xl font-semibold shadow-lg shadow-primary/20"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <Link to="/login">Get started free</Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

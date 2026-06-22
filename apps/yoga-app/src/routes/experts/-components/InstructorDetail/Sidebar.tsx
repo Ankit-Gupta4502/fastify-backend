@@ -54,7 +54,7 @@ export function Sidebar() {
         <p className="text-xs text-muted-foreground leading-relaxed">
           {instructor.currentRoomId
             ? "This instructor is hosting a live session right now."
-            : "Book a private or group session with this instructor."}
+            : "Book a private session with this instructor."}
         </p>
       </SideCard>
 

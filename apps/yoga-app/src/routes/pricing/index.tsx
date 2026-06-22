@@ -7,9 +7,7 @@ import { StarDoodle, CircleDoodle, PlusDoodle } from "@/components/shared/doodle
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { usePlansWithPricing, useMyPlan } from "@/hooks/use-plans";
-import { useCheckout, useCustomCheckout } from "@/hooks/use-checkout";
-import { PLAN_COPY } from "@/lib/plan-copy";
-import type { PlanRecord } from "@yoga-app/shared";
+import { useCustomCheckout } from "@/hooks/use-checkout";
 
 import { MIN_SESSIONS, specializedPlanConfig } from "./-components/pricing-config";
 import { PricingHero } from "./-components/PricingHero";
@@ -27,7 +25,6 @@ function PricingPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const plans = usePlansWithPricing();
   const myPlan = useMyPlan(isAuthenticated);
-  const checkout = useCheckout();
   const customCheckout = useCustomCheckout();
 
   const [error, setError] = useState<string | null>(null);
@@ -38,16 +35,13 @@ function PricingPage() {
   const [therapeuticSessions, setTherapeuticSessions] = useState(MIN_SESSIONS);
 
   const allPlans = plans.data?.data ?? [];
-  const groupPlan = allPlans.find((p) => p.name === "group_live") ?? null;
   const privatePlan = allPlans.find((p) => p.name === "private") ?? null;
   const prenatalPlan = allPlans.find((p) => p.name === "prenatal_postnatal") ?? null;
   const therapeuticPlan = allPlans.find((p) => p.name === "therapeutic_yoga") ?? null;
 
   const activeSub = myPlan.data?.data ?? null;
-  const activePlan = activeSub?.plan ?? null;
-  const activePlanName = activePlan?.name ?? null;
+  const activePlanName = activeSub?.plan?.name ?? null;
   const activeSessions = activeSub?.sessionsTotal ?? null;
-  const isGroupPlanActive = !!groupPlan && activePlan?.id === groupPlan.id;
   const isPrivatePlanActive = activePlanName === "private";
   const isPrenatalPlanActive = activePlanName === "prenatal_postnatal";
   const isTherapeuticPlanActive = activePlanName === "therapeutic_yoga";
@@ -58,16 +52,6 @@ function PricingPage() {
     if (isPrenatalPlanActive) setPrenatalSessions(activeSessions);
     if (isTherapeuticPlanActive) setTherapeuticSessions(activeSessions);
   }, [activeSessions, isPrivatePlanActive, isPrenatalPlanActive, isTherapeuticPlanActive]);
-
-  const handleGroupSubscribe = (plan: PlanRecord) => {
-    setError(null);
-    setSuccess(null);
-    setPendingCard("group");
-    checkout.mutate(plan.id, {
-      onSuccess: () => { setPendingCard(null); setSuccess(`You're now on ${PLAN_COPY[plan.name]?.title ?? plan.name}!`); },
-      onError: (err) => { setPendingCard(null); setError(err instanceof Error ? err.message : "Payment failed"); },
-    });
-  };
 
   const handleSpecializedSubscribe = (planName: "private" | "prenatal_postnatal" | "therapeutic_yoga", sessions: number) => {
     setError(null);
@@ -117,12 +101,10 @@ function PricingPage() {
         <PlansGrid
           isLoading={authLoading || plans.isLoading}
           isAuthenticated={isAuthenticated}
-          groupPlan={groupPlan}
           privatePlan={privatePlan}
           prenatalPlan={prenatalPlan}
           therapeuticPlan={therapeuticPlan}
           pendingCard={pendingCard}
-          isGroupPlanActive={isGroupPlanActive}
           isPrivatePlanActive={isPrivatePlanActive}
           isPrenatalPlanActive={isPrenatalPlanActive}
           isTherapeuticPlanActive={isTherapeuticPlanActive}
@@ -133,7 +115,6 @@ function PricingPage() {
           onSessionCountChange={setSessionCount}
           onPrenatalSessionsChange={setPrenatalSessions}
           onTherapeuticSessionsChange={setTherapeuticSessions}
-          onGroupSubscribe={handleGroupSubscribe}
           onPrivateSubscribe={handlePrivateSubscribe}
           onSpecializedSubscribe={handleSpecializedSubscribe}
         />

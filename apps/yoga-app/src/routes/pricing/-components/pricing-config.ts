@@ -1,6 +1,6 @@
 import {
   ShieldCheck, RefreshCcw, Sparkles, Zap, CreditCard, BadgeCheck, HeartHandshake,
-  Users, Lock, Baby, HeartPulse,
+  Lock, Baby, HeartPulse,
 } from "lucide-react";
 import {
   PRICE_PER_SESSION_CENTS,
@@ -27,12 +27,6 @@ export const planMeta: Record<string, {
   iconBg: string;
   shimmer: string;
 }> = {
-  group_live: {
-    icon: Users,
-    gradient: "from-sky-500/8 via-blue-400/4 to-transparent",
-    iconBg: "bg-sky-500/10 text-sky-500",
-    shimmer: "from-transparent via-sky-400/40 to-transparent",
-  },
   private: {
     icon: Lock,
     gradient: "from-primary/12 via-primary/5 to-transparent",
@@ -91,7 +85,7 @@ export const faqs = [
   {
     icon: Sparkles,
     q: "Is there a free trial?",
-    a: "Every new account gets a 14-day free trial of Group Live features. No credit card required to start.",
+    a: "Every new account gets a 14-day free trial. No credit card required to start.",
   },
   {
     icon: Zap,
