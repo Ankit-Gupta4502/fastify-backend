@@ -1,6 +1,6 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNull, lt, or, sql } from "drizzle-orm";
 import type { AppDatabase } from "../types/database.types";
-import { plans, roomUsers, user } from "../schema/schema";
+import { plans, user, userSubscriptions } from "../schema/schema";
 import { PLAN_NAME } from "../constants/sessions";
 import { EmailService } from "./EmailService";
 import { formatForUser } from "./timezone.service";
@@ -16,6 +16,8 @@ export async function notifyEligibleGroupUsers(
     instructorName: string;
   },
 ): Promise<void> {
+  // Find users with an active group_live subscription who still have weekly quota
+  // and haven't already booked this room.
   const eligibleUsers = await db
     .select({
       id: user.id,
@@ -24,9 +26,11 @@ export async function notifyEligibleGroupUsers(
       timezone: user.timezone,
     })
     .from(user)
-    .innerJoin(plans, eq(user.planId, plans.id))
+    .innerJoin(userSubscriptions, eq(userSubscriptions.userId, user.id))
+    .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
     .where(
       and(
+        eq(userSubscriptions.status, "active"),
         eq(plans.name, PLAN_NAME.GROUP_LIVE),
         // quota remaining
         sql`${user.sessionsUsedThisWeek} < ${plans.sessionsPerWeek}`,

@@ -1,10 +1,10 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { and, eq, ne, notLike } from "drizzle-orm";
+import { and, desc, eq, isNull, lt, or } from "drizzle-orm";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { requireRole } from "../../middleware/role.middleware";
 import { USER_ROLES } from "../../constants/roles";
 import { drizzle } from "../../db";
-import { plans, user } from "../../schema/schema";
+import { plans, user, userSubscriptions } from "../../schema/schema";
 import { errorResponse, successResponse } from "../../utils";
 
 export class PlansController {
@@ -30,13 +30,13 @@ export class PlansController {
           this.list,
         );
 
-        // User-only — includes priceCents for the billing page
+        // Authenticated — includes priceCents for the billing page
         router.get(
           "/pricing",
           {
             preHandler: [],
             schema: {
-              description: "List plans with pricing (user role only)",
+              description: "List plans with pricing",
               tags: ["Plans"] as string[],
               security: [{ cookieAuth: [] }],
             },
@@ -52,7 +52,7 @@ export class PlansController {
               requireRole(USER_ROLES.USER),
             ],
             schema: {
-              description: "Get current user's active plan (user role only)",
+              description: "Get current user's active subscription and plan",
               tags: ["Plans"] as string[],
               security: [{ cookieAuth: [] }],
             },
@@ -64,11 +64,9 @@ export class PlansController {
     );
   }
 
-  // Only group_live is publicly listed — private/custom_private_* are handled by the custom checkout flow
-  private readonly publicPlanFilter = and(
-    ne(plans.name, "private"),
-    notLike(plans.name, "custom_private_%"),
-  );
+  // Exclude session-based plan templates from the public list — they are only
+  // available via the custom-order flow.
+  private readonly sessionBasedPlanNames = ["private", "prenatal_postnatal", "therapeutic_yoga"];
 
   private list = async (_req: FastifyRequest, reply: FastifyReply) => {
     const rows = await drizzle
@@ -81,9 +79,9 @@ export class PlansController {
         allowsPrivate: plans.allowsPrivate,
         allowsTimeFlexibility: plans.allowsTimeFlexibility,
         maxRoomCapacity: plans.maxRoomCapacity,
+        category: plans.category,
       })
-      .from(plans)
-      .where(this.publicPlanFilter);
+      .from(plans);
 
     const { statusCode, payload } = successResponse({
       message: "Available plans",
@@ -98,15 +96,16 @@ export class PlansController {
         id: plans.id,
         name: plans.name,
         priceCents: plans.priceCents,
+        pricePerSessionCents: plans.pricePerSessionCents,
         billingInterval: plans.billingInterval,
         sessionsPerWeek: plans.sessionsPerWeek,
         sessionsPerMonth: plans.sessionsPerMonth,
         allowsPrivate: plans.allowsPrivate,
         allowsTimeFlexibility: plans.allowsTimeFlexibility,
         maxRoomCapacity: plans.maxRoomCapacity,
+        category: plans.category,
       })
-      .from(plans)
-      .where(this.publicPlanFilter);
+      .from(plans);
 
     const { statusCode, payload } = successResponse({
       message: "Plans with pricing",
@@ -118,33 +117,51 @@ export class PlansController {
   private myPlan = async (request: FastifyRequest, reply: FastifyReply) => {
     const me = request.user;
     if (!me) {
-      const { statusCode, payload } = errorResponse({
-        message: "Unauthorized",
-        statusCode: 401,
-      });
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
       return reply.status(statusCode).send(payload);
     }
 
+    // Active subscription = status is 'active' AND either:
+    //   - recurring plan (sessionsTotal IS NULL), or
+    //   - session-based plan with remaining sessions (sessionsUsed < sessionsTotal)
     const [row] = await drizzle
       .select({
+        subscriptionId: userSubscriptions.id,
+        sessionsTotal: userSubscriptions.sessionsTotal,
+        sessionsUsed: userSubscriptions.sessionsUsed,
+        pricePaidCents: userSubscriptions.pricePaidCents,
+        purchasedAt: userSubscriptions.purchasedAt,
+        expiresAt: userSubscriptions.expiresAt,
         plan: {
           id: plans.id,
           name: plans.name,
-          priceCents: plans.priceCents,
+          billingInterval: plans.billingInterval,
           sessionsPerWeek: plans.sessionsPerWeek,
           sessionsPerMonth: plans.sessionsPerMonth,
           allowsPrivate: plans.allowsPrivate,
           allowsTimeFlexibility: plans.allowsTimeFlexibility,
           maxRoomCapacity: plans.maxRoomCapacity,
+          category: plans.category,
         },
+        // Weekly quota (for recurring group_live plans)
         sessionsUsedThisWeek: user.sessionsUsedThisWeek,
         weekResetAt: user.weekResetAt,
-        sessionsUsedThisMonth: user.sessionsUsedThisMonth,
-        monthResetAt: user.monthResetAt,
       })
-      .from(user)
-      .leftJoin(plans, eq(user.planId, plans.id))
-      .where(eq(user.id, me.id));
+      .from(userSubscriptions)
+      .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
+      .innerJoin(user, eq(userSubscriptions.userId, user.id))
+      .where(
+        and(
+          eq(userSubscriptions.userId, me.id),
+          eq(userSubscriptions.status, "active"),
+          or(
+            isNull(userSubscriptions.sessionsTotal),
+            lt(userSubscriptions.sessionsUsed, userSubscriptions.sessionsTotal),
+          ),
+        ),
+      )
+      .orderBy(desc(userSubscriptions.purchasedAt))
+      .limit(1);
 
     const { statusCode, payload } = successResponse({
       message: "Current plan",

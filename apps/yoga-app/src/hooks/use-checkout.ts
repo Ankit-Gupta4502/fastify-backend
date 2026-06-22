@@ -12,11 +12,11 @@ export function useCustomCheckout() {
   const user = useAuthStore((s) => s.user);
 
   return useMutation({
-    mutationFn: async ({ sessionCount, planName }: { sessionCount: number; planName: string }) => {
+    mutationFn: async ({ sessionCount, planName }: { sessionCount: number; planName: "private" | "prenatal_postnatal" | "therapeutic_yoga" }) => {
       const order = await paymentsApi.createCustomOrder({ sessionCount, planName });
       if (!order.data) throw new Error("Order creation failed");
 
-      const { orderId, keyId, amount, currency, planId } = order.data;
+      const { orderId, keyId, amount, currency } = order.data;
 
       const checkout: RazorpayCheckoutResponse = await openRazorpayCheckout({
         key: keyId,
@@ -34,7 +34,6 @@ export function useCustomCheckout() {
       });
 
       const verification = await paymentsApi.verify({
-        planId,
         razorpayOrderId: checkout.razorpay_order_id,
         razorpayPaymentId: checkout.razorpay_payment_id,
         razorpaySignature: checkout.razorpay_signature,
@@ -81,7 +80,6 @@ export function useCheckout() {
       });
 
       const verification = await paymentsApi.verify({
-        planId,
         razorpayOrderId: checkout.razorpay_order_id,
         razorpayPaymentId: checkout.razorpay_payment_id,
         razorpaySignature: checkout.razorpay_signature,

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Check, ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { Check, ArrowRight, Loader2, Sparkles, BadgeCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn, centsToDisplay } from "@/lib/utils";
@@ -11,10 +11,11 @@ export interface PricingCardProps {
   plan: PlanRecord;
   isAuthenticated: boolean;
   isPending: boolean;
+  isActive?: boolean;
   onSubscribe: (plan: PlanRecord) => void;
 }
 
-export function PricingCard({ plan, isAuthenticated, isPending, onSubscribe }: PricingCardProps) {
+export function PricingCard({ plan, isAuthenticated, isPending, isActive, onSubscribe }: PricingCardProps) {
   const copy = PLAN_COPY[plan.name] ?? { title: plan.name.replace(/_/g, " "), tagline: "", perks: [] };
   const meta = planMeta[plan.name] ?? { icon: Sparkles, gradient: "from-primary/10 to-transparent", iconBg: "bg-primary/10 text-primary", shimmer: "from-transparent via-primary/40 to-transparent" };
   const isPremium = plan.name === "private";
@@ -34,7 +35,13 @@ export function PricingCard({ plan, isAuthenticated, isPending, onSubscribe }: P
         isPremium ? "opacity-100" : "opacity-0 group-hover:opacity-100"
       )} />
 
-      {meta.badge && (
+      {isActive && (
+        <div className="absolute top-5 right-5 z-10 flex items-center gap-1 bg-emerald-500 text-white text-[9px] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg shadow-emerald-500/25">
+          <BadgeCheck className="size-2.5" />
+          Current Plan
+        </div>
+      )}
+      {!isActive && meta.badge && (
         <div className="absolute top-5 right-5 z-10 flex items-center gap-1 bg-primary text-primary-foreground text-[9px] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg shadow-primary/20">
           <Sparkles className="size-2.5" />
           {meta.badge}
@@ -69,7 +76,7 @@ export function PricingCard({ plan, isAuthenticated, isPending, onSubscribe }: P
         {copy.perks.map((perk) => (
           <div key={perk} className="flex items-start gap-3">
             <div className={cn(
-              "size-[18px] rounded-full flex items-center justify-center shrink-0 mt-px",
+              "size-4.5 rounded-full flex items-center justify-center shrink-0 mt-px",
               isPremium ? "bg-primary/12" : "bg-primary/8"
             )}>
               <Check className="size-2.5 text-primary" />
@@ -89,13 +96,18 @@ export function PricingCard({ plan, isAuthenticated, isPending, onSubscribe }: P
                 : "border-[1.5px] border-border/70 bg-transparent text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary hover:shadow-lg hover:shadow-primary/15"
             )}
             variant={isPremium ? "default" : "outline"}
-            disabled={isPending}
+            disabled={isPending || isActive}
             onClick={() => onSubscribe(plan)}
           >
             {isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
                 Opening checkout…
+              </>
+            ) : isActive ? (
+              <>
+                <BadgeCheck className="size-4" />
+                Current Plan
               </>
             ) : (
               <>

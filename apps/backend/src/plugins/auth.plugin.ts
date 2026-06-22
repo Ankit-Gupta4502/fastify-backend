@@ -6,7 +6,7 @@ import { applyAuthResponseHeaders } from "../lib/auth-cookies";
 export default fp(async (fastify) => {
   fastify.route({
     method: ["GET", "POST"],
-    url: "/auth/*",
+    url: "/api/auth/*",
     async handler(request, reply) {
       request.log.info({ method: request.method, url: request.url }, "[auth-plugin] incoming request");
       console.log("PROTOCOL", request.protocol);
@@ -14,7 +14,7 @@ export default fp(async (fastify) => {
       try {
         // /api is added because in production /api is needed for redirection and nginx is stripping down /api then passing to backend and then data is being saved in db that's why it does not exit in better auth config
         const url = new URL(
-          `/api${request.url}`,
+          `${request.url}`,
           `${request.protocol}://${request.headers.host}`
         );
         request.log.debug({ url: url.toString() }, "[auth-plugin] constructed web URL");

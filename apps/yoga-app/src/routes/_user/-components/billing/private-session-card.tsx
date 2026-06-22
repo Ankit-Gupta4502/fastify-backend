@@ -9,13 +9,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn, centsToDisplay } from "@/lib/utils";
-
-const PRICE_PER_SESSION_CENTS = 2000;
-const PRICE_DISCOUNT_CENTS = 100;
-const MIN_SESSIONS = 4;
+import { PRICE_PER_SESSION_CENTS, MIN_SESSIONS, calcCustomPriceCents } from "@yoga-app/shared";
 
 function calcPrice(sessions: number) {
-  return sessions * PRICE_PER_SESSION_CENTS - PRICE_DISCOUNT_CENTS;
+  return calcCustomPriceCents(sessions);
 }
 
 const PERKS = [
@@ -119,7 +116,7 @@ export function PrivateSessionCard({
       <CardFooter className="pb-10 px-8">
         <Button
           className="w-full rounded-2xl py-6 font-bold shadow-lg transition-all bg-primary shadow-primary/20 hover:shadow-primary/30"
-          disabled={isPending}
+          disabled={isPending || (isActive && activeSessions === sessionCount)}
           onClick={() => onSubscribe(sessionCount)}
         >
           {isPending ? "Opening checkout..." : isActive && activeSessions === sessionCount ? "Current plan" : "Subscribe"}

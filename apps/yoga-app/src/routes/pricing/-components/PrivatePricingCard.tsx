@@ -1,15 +1,19 @@
 import { Link } from "@tanstack/react-router";
-import { Check, ArrowRight, Loader2, Sparkles, Lock, Minus, Plus } from "lucide-react";
+import { Check, ArrowRight, Loader2, Sparkles, Lock, Minus, Plus, BadgeCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { centsToDisplay } from "@/lib/utils";
-import { MIN_SESSIONS, PRICE_PER_SESSION_CENTS, calcPrivatePrice } from "./pricing-config";
+import { MIN_SESSIONS, PRICE_DISCOUNT_CENTS } from "./pricing-config";
 
 export interface PrivatePricingCardProps {
   sessionCount: number;
   onSessionCountChange: (n: number) => void;
+  /** pricePerSessionCents from the DB — falls back to shared constant if null (loading) */
+  pricePerSessionCents: number | null;
   isAuthenticated: boolean;
   isPending: boolean;
+  isActive?: boolean;
+  activeSessions?: number | null;
   onSubscribe: () => void;
 }
 
@@ -20,8 +24,10 @@ const privatePerks = [
   "Priority support",
 ];
 
-export function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthenticated, isPending, onSubscribe }: PrivatePricingCardProps) {
-  const priceCents = calcPrivatePrice(sessionCount);
+export function PrivatePricingCard({ sessionCount, onSessionCountChange, pricePerSessionCents, isAuthenticated, isPending, isActive, activeSessions, onSubscribe }: PrivatePricingCardProps) {
+  const ratePerSession = pricePerSessionCents ?? 2000; // fallback while loading
+  const priceCents = sessionCount * ratePerSession - PRICE_DISCOUNT_CENTS;
+  const basePriceCents = MIN_SESSIONS * ratePerSession - PRICE_DISCOUNT_CENTS;
 
   return (
     <div className="relative">
@@ -75,7 +81,7 @@ export function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthe
               <span className="text-muted-foreground text-sm font-medium pb-1">/ mo</span>
             </div>
             {sessionCount > MIN_SESSIONS
-              ? <p className="text-[11px] text-muted-foreground">{centsToDisplay(calcPrivatePrice(MIN_SESSIONS))} base · +{centsToDisplay(PRICE_PER_SESSION_CENTS)} per extra session</p>
+              ? <p className="text-[11px] text-muted-foreground">{centsToDisplay(basePriceCents)} base · +{centsToDisplay(ratePerSession)} per extra session</p>
               : <p className="text-[11px] text-muted-foreground">Billed monthly · Cancel any time</p>
             }
           </div>
@@ -100,11 +106,13 @@ export function PrivatePricingCard({ sessionCount, onSessionCountChange, isAuthe
             {isAuthenticated ? (
               <Button
                 className="relative w-full h-12 rounded-2xl font-bold gap-2 text-sm shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-[1.02] transition-all duration-300"
-                disabled={isPending}
+                disabled={isPending || (isActive && activeSessions === sessionCount)}
                 onClick={onSubscribe}
               >
                 {isPending ? (
                   <><Loader2 className="size-4 animate-spin" />Opening checkout…</>
+                ) : isActive && activeSessions === sessionCount ? (
+                  <><BadgeCheck className="size-4" />Current Plan</>
                 ) : (
                   <>Get Private 1:1<ArrowRight className="size-4 transition-transform group-hover/cta:translate-x-0.5" /></>
                 )}

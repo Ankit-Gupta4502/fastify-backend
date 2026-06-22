@@ -1,5 +1,12 @@
-import { Loader2, User } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Instructor {
   id: string;
@@ -33,33 +40,23 @@ export function InstructorPicker({
           No instructors are available. Please check back later.
         </p>
       ) : (
-        <div className="grid gap-2 max-h-48 overflow-y-auto pr-1">
-          {instructors.map((instructor) => (
-            <button
-              key={instructor.id}
-              type="button"
-              onClick={() => onSelect(instructor.id)}
-              className={[
-                "w-full text-left flex items-center gap-3 p-3 rounded-xl border transition-all",
-                selectedId === instructor.id
-                  ? "border-primary bg-primary/5 ring-1 ring-primary"
-                  : "border-border hover:border-primary/40 hover:bg-muted/50",
-              ].join(" ")}
-            >
-              <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                <User className="size-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm truncate">{instructor.name}</p>
+        <Select value={selectedId ?? ""} onValueChange={onSelect}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Choose an instructor…" />
+          </SelectTrigger>
+          <SelectContent>
+            {instructors.map((instructor) => (
+              <SelectItem key={instructor.id} value={instructor.id}>
+                <span className="font-medium">{instructor.name}</span>
                 {instructor.specialty.length > 0 && (
-                  <p className="text-xs text-muted-foreground truncate">
+                  <span className="ml-2 text-xs text-muted-foreground">
                     {instructor.specialty.slice(0, 2).join(" · ")}
-                  </p>
+                  </span>
                 )}
-              </div>
-            </button>
-          ))}
-        </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
     </div>
   );

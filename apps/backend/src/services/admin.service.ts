@@ -1,6 +1,6 @@
-import { asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, lt, or, sql } from "drizzle-orm";
 import type { AppDatabase } from "../types/database.types";
-import { user, plans, rooms, instructorDetails } from "../schema/schema";
+import { user, plans, rooms, instructorDetails, userSubscriptions } from "../schema/schema";
 import { auth } from "../lib/auth";
 import { USER_ROLES } from "../constants/roles";
 import { createHmsRoom } from "./hms.service";
@@ -8,23 +8,48 @@ import { ROOM_STATUS, ROOM_TYPE } from "../constants/sessions";
 import { notifyEligibleGroupUsers } from "./room-notification.service";
 
 export async function listUsers(db: AppDatabase) {
-  const rows = await db
+  // Fetch all users
+  const users = await db
     .select({
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
-      planName: plans.name,
       createdAt: user.createdAt,
     })
     .from(user)
-    .leftJoin(plans, eq(user.planId, plans.id))
     .orderBy(desc(user.createdAt));
 
-  return rows.map((r) => ({
-    ...r,
-    planName: r.planName ?? null,
-    createdAt: r.createdAt.toISOString(),
+  // Fetch each user's active plan name via their active subscription
+  const activeSubs = await db
+    .select({
+      userId: userSubscriptions.userId,
+      planName: plans.name,
+    })
+    .from(userSubscriptions)
+    .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
+    .where(
+      and(
+        eq(userSubscriptions.status, "active"),
+        or(
+          isNull(userSubscriptions.sessionsTotal),
+          lt(userSubscriptions.sessionsUsed, userSubscriptions.sessionsTotal),
+        ),
+      ),
+    );
+
+  // Build a map of userId → planName (latest active subscription wins)
+  const planNameByUser = new Map<string, string>();
+  for (const sub of activeSubs) {
+    if (!planNameByUser.has(sub.userId)) {
+      planNameByUser.set(sub.userId, sub.planName);
+    }
+  }
+
+  return users.map((u) => ({
+    ...u,
+    planName: planNameByUser.get(u.id) ?? null,
+    createdAt: u.createdAt.toISOString(),
   }));
 }
 

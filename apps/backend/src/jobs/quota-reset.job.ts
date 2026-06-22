@@ -1,12 +1,14 @@
 import cron from "node-cron";
-import { and, isNotNull, lt, sql } from "drizzle-orm";
+import { and, eq, isNull, lt, or, sql } from "drizzle-orm";
 import type { FastifyBaseLogger } from "fastify";
 import type { AppDatabase } from "../types/database.types";
-import { user, plans } from "../schema/schema";
+import { user, plans, userSubscriptions } from "../schema/schema";
 
 async function resetWeeklyQuota(db: AppDatabase, log: FastifyBaseLogger) {
   const currentWeekStart = sql`date_trunc('week', now())`;
 
+  // Reset sessionsUsedThisWeek for users who have an active weekly (group_live) subscription
+  // and whose counter hasn't been reset yet this week.
   const result = await db
     .update(user)
     .set({
@@ -15,12 +17,15 @@ async function resetWeeklyQuota(db: AppDatabase, log: FastifyBaseLogger) {
     })
     .where(
       and(
-        isNotNull(user.planId),
         lt(user.weekResetAt, currentWeekStart),
-        sql`${user.planId} IN (
-          SELECT id FROM plans
-          WHERE sessions_per_week IS NOT NULL
-            AND billing_interval = 'week'
+        sql`${user.id} IN (
+          SELECT us.user_id
+          FROM user_subscriptions us
+          JOIN plans p ON p.id = us.plan_id
+          WHERE us.status = 'active'
+            AND p.billing_interval = 'week'
+            AND p.sessions_per_week IS NOT NULL
+            AND (us.sessions_total IS NULL OR us.sessions_used < us.sessions_total)
         )`,
       ),
     );
@@ -31,6 +36,8 @@ async function resetWeeklyQuota(db: AppDatabase, log: FastifyBaseLogger) {
 async function resetMonthlyQuota(db: AppDatabase, log: FastifyBaseLogger) {
   const currentMonthStart = sql`date_trunc('month', now())`;
 
+  // Reset sessionsUsedThisMonth for users who have an active monthly subscription.
+  // (Currently unused for private/session-pool plans, but kept for any future recurring monthly plan.)
   const result = await db
     .update(user)
     .set({
@@ -39,12 +46,15 @@ async function resetMonthlyQuota(db: AppDatabase, log: FastifyBaseLogger) {
     })
     .where(
       and(
-        isNotNull(user.planId),
         lt(user.monthResetAt, currentMonthStart),
-        sql`${user.planId} IN (
-          SELECT id FROM plans
-          WHERE sessions_per_month IS NOT NULL
-            AND billing_interval = 'month'
+        sql`${user.id} IN (
+          SELECT us.user_id
+          FROM user_subscriptions us
+          JOIN plans p ON p.id = us.plan_id
+          WHERE us.status = 'active'
+            AND p.billing_interval = 'month'
+            AND p.sessions_per_month IS NOT NULL
+            AND us.sessions_total IS NULL
         )`,
       ),
     );

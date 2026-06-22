@@ -7,7 +7,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-import { user } from "./auth.schema";
+import { userSubscriptions } from "./user-subscription";
 
 export const plans = pgTable("plans", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -29,5 +29,5 @@ export const plans = pgTable("plans", {
 });
 
 export const plansRelations = relations(plans, ({ many }) => ({
-  subscribers: many(user),
+  subscriptions: many(userSubscriptions),
 }));

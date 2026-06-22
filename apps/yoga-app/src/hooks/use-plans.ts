@@ -17,11 +17,12 @@ export const planQueryOptions = {
       queryFn: plansApi.listWithPricing,
       staleTime: 5 * 60_000,
     }),
-  mine: () =>
+  mine: (enabled = true) =>
     queryOptions({
       queryKey: queryKeys.plans.mine(),
       queryFn: plansApi.mine,
       staleTime: 60_000,
+      enabled,
     }),
 };
 
@@ -33,6 +34,6 @@ export function usePlansWithPricing() {
   return useQuery(planQueryOptions.listWithPricing());
 }
 
-export function useMyPlan() {
-  return useQuery(planQueryOptions.mine());
+export function useMyPlan(enabled = true) {
+  return useQuery(planQueryOptions.mine(enabled));
 }

@@ -25,15 +25,16 @@ function BillingPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [sessionCount, setSessionCount] = useState(4);
 
-  // Only show standard fixed plans; private and specialized (session-based) have their own cards
+  // Only show standard fixed plans; all custom_* session plans have their own card
   const planList: PlanRecord[] = (plans.data?.data ?? []).filter(
-    (p) => p.category === "standard" && p.name !== "private" && !p.name.startsWith("custom_private_"),
+    (p) => p.category === "standard" && !p.name.startsWith("custom_"),
   );
 
   const activePlan = myPlan.data?.data?.plan ?? null;
   const activePlanId = activePlan?.id ?? null;
   const activeSessions = activePlan?.sessionsPerMonth ?? null;
-  const isPrivateActive = activePlan?.allowsPrivate ?? false;
+  // isPrivateActive is true only for plans explicitly named custom_private_N
+  const isPrivateActive = activePlan?.name?.startsWith("custom_private_") ?? false;
 
   const isPending = checkout.isPending || customCheckout.isPending;
 

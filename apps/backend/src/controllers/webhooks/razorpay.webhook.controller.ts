@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { and, eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { drizzle } from "../../db";
-import { plans, user } from "../../schema/schema";
+import { userSubscriptions } from "../../schema/schema";
 import { verifyWebhookSignature } from "../../services/razorpay.service";
 import { successResponse } from "../../utils";
 
@@ -36,8 +36,7 @@ export class RazorpayWebhookController {
   private register(app: FastifyInstance) {
     app.register(
       async (router) => {
-        // Override the JSON content-type parser for this scope only so we can
-        // capture the raw bytes needed for HMAC verification before parsing.
+        // Capture raw bytes for HMAC verification before JSON parsing.
         router.addContentTypeParser(
           "application/json",
           { parseAs: "buffer" },
@@ -100,16 +99,16 @@ export class RazorpayWebhookController {
     try {
       if (event.event === "payment.captured") {
         const payment = event.payload?.payment?.entity;
-        if (payment) {
-          await this.handlePaymentCaptured(request, payment);
+        if (payment?.status === "captured") {
+          await this.activateSubscription(request, payment.order_id, payment.id);
         }
       } else if (event.event === "order.paid") {
         const order = event.payload?.order?.entity;
         const payment = event.payload?.payment?.entity;
-        // notes are on the order; fall back to payment notes
-        const notes = order?.notes ?? payment?.notes;
-        if (notes) {
-          await this.activatePlan(request, notes);
+        const orderId = order?.id ?? payment?.order_id;
+        const paymentId = payment?.id;
+        if (orderId && paymentId) {
+          await this.activateSubscription(request, orderId, paymentId);
         }
       } else if (event.event === "payment.failed") {
         const payment = event.payload?.payment?.entity;
@@ -117,52 +116,70 @@ export class RazorpayWebhookController {
           { paymentId: payment?.id, orderId: payment?.order_id },
           "razorpay payment failed",
         );
+        if (payment?.order_id) {
+          await this.markSubscriptionFailed(request, payment.order_id);
+        }
       }
-      // All other events are acknowledged without action
     } catch (err) {
       request.log.error({ err }, "razorpay webhook: error processing event");
-      // Still return 200 — we've logged it; retrying won't help a logic error
     }
 
     return ok();
   };
 
-  private async handlePaymentCaptured(
+  private async activateSubscription(
     request: FastifyRequest,
-    payment: RazorpayPaymentEntity,
+    razorpayOrderId: string,
+    razorpayPaymentId: string,
   ) {
-    if (payment.status !== "captured") return;
-    const notes = payment.notes;
-    if (!notes) return;
-    await this.activatePlan(request, notes);
-  }
+    // Idempotency: skip if already activated by the verify endpoint or a prior webhook.
+    const [existing] = await drizzle
+      .select({ id: userSubscriptions.id, status: userSubscriptions.status })
+      .from(userSubscriptions)
+      .where(eq(userSubscriptions.razorpayOrderId, razorpayOrderId))
+      .limit(1);
 
-  private async activatePlan(
-    request: FastifyRequest,
-    notes: Record<string, string>,
-  ) {
-    const { userId, planId } = notes;
-    if (!userId || !planId) {
-      request.log.warn({ notes }, "razorpay webhook: notes missing userId/planId");
+    if (!existing) {
+      request.log.error({ razorpayOrderId }, "razorpay webhook: no subscription found for order");
       return;
     }
 
-    // Confirm the plan exists before writing
-    const [plan] = await drizzle
-      .select({ id: plans.id })
-      .from(plans)
-      .where(eq(plans.id, planId));
-
-    if (!plan) {
-      request.log.error({ planId }, "razorpay webhook: unknown planId in notes");
+    if (existing.status === "active") {
+      request.log.info({ razorpayOrderId }, "razorpay webhook: subscription already active");
       return;
     }
 
     await drizzle
-      .update(user)
-      .set({ planId })
-      .where(and(eq(user.id, userId), sql`${user.planId} IS DISTINCT FROM ${planId}`));
+      .update(userSubscriptions)
+      .set({ status: "active", razorpayPaymentId })
+      .where(eq(userSubscriptions.id, existing.id));
 
-    request.log.info({ userId, planId }, "razorpay webhook: plan activated");
+    request.log.info(
+      { subscriptionId: existing.id, razorpayOrderId },
+      "razorpay webhook: subscription activated",
+    );
+  }
+
+  private async markSubscriptionFailed(
+    request: FastifyRequest,
+    razorpayOrderId: string,
+  ) {
+    const [existing] = await drizzle
+      .select({ id: userSubscriptions.id, status: userSubscriptions.status })
+      .from(userSubscriptions)
+      .where(eq(userSubscriptions.razorpayOrderId, razorpayOrderId))
+      .limit(1);
+
+    if (!existing || existing.status !== "pending_payment") return;
+
+    await drizzle
+      .update(userSubscriptions)
+      .set({ status: "cancelled" })
+      .where(eq(userSubscriptions.id, existing.id));
+
+    request.log.info(
+      { subscriptionId: existing.id, razorpayOrderId },
+      "razorpay webhook: subscription cancelled due to payment failure",
+    );
   }
 }

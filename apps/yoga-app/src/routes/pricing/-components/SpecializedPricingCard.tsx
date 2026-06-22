@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { Check, ArrowRight, Loader2, Minus, Plus } from "lucide-react";
+import { Check, ArrowRight, Loader2, Minus, Plus, BadgeCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn, centsToDisplay } from "@/lib/utils";
-import { MIN_SESSIONS, PRICE_PER_SESSION_CENTS, calcSpecializedPrice } from "./pricing-config";
+import { MIN_SESSIONS } from "./pricing-config";
 import type { SpecializedPlanConfigEntry } from "./pricing-config";
 
 export interface SpecializedPricingCardProps {
@@ -11,8 +11,12 @@ export interface SpecializedPricingCardProps {
   config: SpecializedPlanConfigEntry;
   sessionCount: number;
   onSessionCountChange: (n: number) => void;
+  /** pricePerSessionCents from the DB — falls back to 2000 if null (loading) */
+  pricePerSessionCents: number | null;
   isAuthenticated: boolean;
   isPending: boolean;
+  isActive?: boolean;
+  activeSessions?: number | null;
   onSubscribe: () => void;
 }
 
@@ -20,15 +24,26 @@ export function SpecializedPricingCard({
   config,
   sessionCount,
   onSessionCountChange,
+  pricePerSessionCents,
   isAuthenticated,
   isPending,
+  isActive,
+  activeSessions,
   onSubscribe,
 }: SpecializedPricingCardProps) {
-  const priceCents = calcSpecializedPrice(sessionCount);
+  const ratePerSession = pricePerSessionCents ?? 2000; // fallback while loading
+  const priceCents = sessionCount * ratePerSession;
+  const basePriceCents = MIN_SESSIONS * ratePerSession;
   const PlanIcon = config.icon;
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-4xl border transition-all duration-500 hover:-translate-y-1.5 bg-card/70 border-border/50 backdrop-blur-sm shadow-xl hover:shadow-2xl hover:border-primary/20">
+      {isActive && (
+        <div className="absolute top-5 right-5 z-10 flex items-center gap-1 bg-emerald-500 text-white text-[9px] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg shadow-emerald-500/25">
+          <BadgeCheck className="size-2.5" />
+          {activeSessions ? `${activeSessions} sessions active` : "Current Plan"}
+        </div>
+      )}
       <div className={cn("absolute inset-x-0 top-0 h-48 bg-linear-to-b pointer-events-none", config.gradient)} />
       <div className={cn("absolute inset-x-0 top-0 h-px bg-linear-to-r pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity", config.shimmer)} />
 
@@ -73,7 +88,7 @@ export function SpecializedPricingCard({
             <span className="text-muted-foreground text-sm font-medium pb-1">/ mo</span>
           </div>
           {sessionCount > MIN_SESSIONS
-            ? <p className="text-[11px] text-muted-foreground">{centsToDisplay(calcSpecializedPrice(MIN_SESSIONS))} base · +{centsToDisplay(PRICE_PER_SESSION_CENTS)} per extra session</p>
+            ? <p className="text-[11px] text-muted-foreground">{centsToDisplay(basePriceCents)} base · +{centsToDisplay(ratePerSession)} per extra session</p>
             : <p className="text-[11px] text-muted-foreground">Billed monthly · Cancel any time</p>
           }
         </div>
@@ -97,11 +112,13 @@ export function SpecializedPricingCard({
           <Button
             className="w-full h-12 rounded-2xl font-bold gap-2 text-sm border-[1.5px] border-border/70 bg-transparent text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary hover:shadow-lg hover:shadow-primary/15 transition-all duration-300"
             variant="outline"
-            disabled={isPending}
+            disabled={isPending || (isActive && activeSessions === sessionCount)}
             onClick={onSubscribe}
           >
             {isPending ? (
               <><Loader2 className="size-4 animate-spin" />Opening checkout…</>
+            ) : isActive && activeSessions === sessionCount ? (
+              <><BadgeCheck className="size-4" />Current Plan</>
             ) : (
               <>Get {config.title}<ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" /></>
             )}

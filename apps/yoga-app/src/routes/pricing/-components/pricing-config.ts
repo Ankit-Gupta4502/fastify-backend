@@ -2,13 +2,18 @@ import {
   ShieldCheck, RefreshCcw, Sparkles, Zap, CreditCard, BadgeCheck, HeartHandshake,
   Users, Lock, Baby, HeartPulse,
 } from "lucide-react";
+import {
+  PRICE_PER_SESSION_CENTS,
+  PRICE_DISCOUNT_CENTS,
+  MIN_SESSIONS,
+  MAX_SESSIONS,
+  calcCustomPriceCents,
+} from "@yoga-app/shared";
 
-export const PRICE_PER_SESSION_CENTS = 2000;
-export const PRICE_DISCOUNT_CENTS = 100;
-export const MIN_SESSIONS = 4;
+export { PRICE_PER_SESSION_CENTS, PRICE_DISCOUNT_CENTS, MIN_SESSIONS, MAX_SESSIONS };
 
 export function calcPrivatePrice(sessions: number) {
-  return sessions * PRICE_PER_SESSION_CENTS - PRICE_DISCOUNT_CENTS;
+  return calcCustomPriceCents(sessions);
 }
 
 export function calcSpecializedPrice(sessions: number) {

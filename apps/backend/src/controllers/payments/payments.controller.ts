@@ -1,14 +1,15 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import {
+  calcCustomPriceCents,
   createOrderBodySchema,
   createCustomOrderBodySchema,
   verifyPaymentBodySchema,
 } from "@yoga-app/shared";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { drizzle } from "../../db";
-import { plans, user } from "../../schema/schema";
+import { plans, userSubscriptions } from "../../schema/schema";
 import {
   getRazorpay,
   getRazorpayKeyId,
@@ -32,7 +33,7 @@ export class PaymentsController {
           {
             preHandler: this.authMiddleware.handle,
             schema: {
-              description: "Create a Razorpay order for a plan",
+              description: "Create a Razorpay order for a standard plan",
               tags: ["Payments"] as string[],
               security: [{ cookieAuth: [] }],
             },
@@ -45,7 +46,7 @@ export class PaymentsController {
           {
             preHandler: this.authMiddleware.handle,
             schema: {
-              description: "Find or create a custom private plan and return a Razorpay order",
+              description: "Create a Razorpay order for a session-based plan (private / specialised)",
               tags: ["Payments"] as string[],
               security: [{ cookieAuth: [] }],
             },
@@ -58,7 +59,7 @@ export class PaymentsController {
           {
             preHandler: this.authMiddleware.handle,
             schema: {
-              description: "Verify Razorpay payment signature and activate plan",
+              description: "Verify Razorpay payment and activate subscription",
               tags: ["Payments"] as string[],
               security: [{ cookieAuth: [] }],
             },
@@ -70,13 +71,7 @@ export class PaymentsController {
     );
   }
 
-  private static readonly BASE_SESSIONS = 4;
-  private static readonly PRICE_PER_SESSION_CENTS = 2000; // $20
-  private static readonly PRICE_DISCOUNT_CENTS = 100;    // -$1
-
-  private static calcCustomPriceCents(sessionCount: number): number {
-    return sessionCount * PaymentsController.PRICE_PER_SESSION_CENTS - PaymentsController.PRICE_DISCOUNT_CENTS;
-  }
+  // ── Custom (session-based) order ─────────────────────────────────────────────
 
   private createCustomOrder = async (request: FastifyRequest, reply: FastifyReply) => {
     const invalid = validateWithZod(request, reply, {
@@ -90,33 +85,43 @@ export class PaymentsController {
       return reply.status(statusCode).send(payload);
     }
 
-    const { sessionCount } = request.body as z.infer<typeof createCustomOrderBodySchema>;
-    const planName = `custom_private_${sessionCount}`;
-    const priceCents = PaymentsController.calcCustomPriceCents(sessionCount);
+    const { sessionCount, planName } = request.body as z.infer<typeof createCustomOrderBodySchema>;
+    const priceCents = calcCustomPriceCents(sessionCount);
 
-    // Find-or-create the plan atomically via INSERT … ON CONFLICT DO UPDATE (no-op touch)
+    // Look up the fixed plan template — never create a new row
     const [plan] = await drizzle
-      .insert(plans)
-      .values({
-        name: planName,
-        priceCents,
-        billingInterval: "month",
-        sessionsPerMonth: sessionCount,
-        allowsPrivate: true,
-        allowsTimeFlexibility: true,
-      })
-      .onConflictDoUpdate({
-        target: plans.name,
-        set: { name: planName }, // no-op; just returns the existing row
-      })
-      .returning();
+      .select()
+      .from(plans)
+      .where(eq(plans.name, planName))
+      .limit(1);
+
+    if (!plan) {
+      const { statusCode, payload } = errorResponse({ message: "Plan not found", statusCode: 404 });
+      return reply.status(statusCode).send(payload);
+    }
 
     try {
       const order = await getRazorpay().orders.create({
-        amount: plan.priceCents,
+        amount: priceCents,
         currency: "USD",
-        receipt: `cplan-${plan.id.slice(0, 8)}-${Date.now()}`,
-        notes: { userId: me.id, planId: plan.id, planName: plan.name },
+        receipt: `sub-${plan.id.slice(0, 8)}-${me.id.slice(0, 8)}`,
+        notes: {
+          userId: me.id,
+          planId: plan.id,
+          planName: plan.name,
+          sessionCount: String(sessionCount),
+        },
+      });
+
+      // Create a pending_payment subscription row before payment completes.
+      await drizzle.insert(userSubscriptions).values({
+        userId: me.id,
+        planId: plan.id,
+        sessionsTotal: sessionCount,
+        sessionsUsed: 0,
+        pricePaidCents: priceCents,
+        status: "pending_payment",
+        razorpayOrderId: order.id,
       });
 
       const { statusCode, payload } = successResponse({
@@ -141,6 +146,8 @@ export class PaymentsController {
     }
   };
 
+  // ── Standard (recurring) order ───────────────────────────────────────────────
+
   private createOrder = async (request: FastifyRequest, reply: FastifyReply) => {
     const invalid = validateWithZod(request, reply, {
       body: createOrderBodySchema,
@@ -149,10 +156,7 @@ export class PaymentsController {
 
     const me = request.user;
     if (!me) {
-      const { statusCode, payload } = errorResponse({
-        message: "Unauthorized",
-        statusCode: 401,
-      });
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
       return reply.status(statusCode).send(payload);
     }
 
@@ -161,22 +165,35 @@ export class PaymentsController {
     const [plan] = await drizzle
       .select()
       .from(plans)
-      .where(eq(plans.id, body.planId));
+      .where(eq(plans.id, body.planId))
+      .limit(1);
 
     if (!plan) {
-      const { statusCode, payload } = errorResponse({
-        message: "Plan not found",
-        statusCode: 404,
-      });
+      const { statusCode, payload } = errorResponse({ message: "Plan not found", statusCode: 404 });
       return reply.status(statusCode).send(payload);
     }
 
     try {
       const order = await getRazorpay().orders.create({
-        amount: plan.priceCents, // stored in cents; Razorpay expects smallest unit (cents for USD)
+        amount: plan.priceCents,
         currency: "USD",
-        receipt: `plan-${plan.id.slice(0, 8)}-${Date.now()}`,
-        notes: { userId: me.id, planId: plan.id, planName: plan.name },
+        receipt: `sub-${plan.id.slice(0, 8)}-${me.id.slice(0, 8)}`,
+        notes: {
+          userId: me.id,
+          planId: plan.id,
+          planName: plan.name,
+        },
+      });
+
+      // Recurring plan: sessionsTotal = null (no pool)
+      await drizzle.insert(userSubscriptions).values({
+        userId: me.id,
+        planId: plan.id,
+        sessionsTotal: null,
+        sessionsUsed: 0,
+        pricePaidCents: plan.priceCents,
+        status: "pending_payment",
+        razorpayOrderId: order.id,
       });
 
       const { statusCode, payload } = successResponse({
@@ -201,6 +218,8 @@ export class PaymentsController {
     }
   };
 
+  // ── Verify & activate ────────────────────────────────────────────────────────
+
   private verify = async (request: FastifyRequest, reply: FastifyReply) => {
     const invalid = validateWithZod(request, reply, {
       body: verifyPaymentBodySchema,
@@ -209,10 +228,7 @@ export class PaymentsController {
 
     const me = request.user;
     if (!me) {
-      const { statusCode, payload } = errorResponse({
-        message: "Unauthorized",
-        statusCode: 401,
-      });
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
       return reply.status(statusCode).send(payload);
     }
 
@@ -233,41 +249,77 @@ export class PaymentsController {
       return reply.status(statusCode).send(payload);
     }
 
-    // Fetch the order from Razorpay to get the authoritative planId from notes.
-    // The HMAC only proves orderId+paymentId are genuine — not which plan was paid for —
-    // so we must not trust the client-submitted planId.
-    let trustedPlanId: string;
-    try {
-      const order = await getRazorpay().orders.fetch(body.razorpayOrderId);
-      const notesMap = order.notes as Record<string, string> | undefined;
-      const planIdFromNotes = notesMap?.planId;
+    // Idempotency: if this payment was already processed, return the existing subscription.
+    const [byPaymentId] = await drizzle
+      .select({ id: userSubscriptions.id })
+      .from(userSubscriptions)
+      .where(eq(userSubscriptions.razorpayPaymentId, body.razorpayPaymentId))
+      .limit(1);
 
-      if (!planIdFromNotes || planIdFromNotes !== body.planId) {
-        const { statusCode, payload } = errorResponse({
-          message: "Plan does not match the original order",
-          statusCode: 400,
-          error: "PLAN_MISMATCH",
-        });
-        return reply.status(statusCode).send(payload);
-      }
-      trustedPlanId = planIdFromNotes;
-    } catch (err) {
-      request.log.error({ err }, "razorpay order fetch failed during verify");
-      const { statusCode, payload } = errorResponse({
-        message: "Could not verify order details",
-        statusCode: 502,
+    if (byPaymentId) {
+      const { statusCode, payload } = successResponse({
+        message: "Payment already verified",
+        data: { success: true as const, subscriptionId: byPaymentId.id },
       });
       return reply.status(statusCode).send(payload);
     }
 
-    await drizzle
-      .update(user)
-      .set({ planId: trustedPlanId })
-      .where(eq(user.id, me.id));
+    // Find the pending subscription by order id.
+    const [sub] = await drizzle
+      .select()
+      .from(userSubscriptions)
+      .where(eq(userSubscriptions.razorpayOrderId, body.razorpayOrderId))
+      .limit(1);
+
+    if (!sub) {
+      const { statusCode, payload } = errorResponse({
+        message: "Order not found — create an order before verifying",
+        statusCode: 404,
+        error: "ORDER_NOT_FOUND",
+      });
+      return reply.status(statusCode).send(payload);
+    }
+
+    if (sub.userId !== me.id) {
+      const { statusCode, payload } = errorResponse({
+        message: "Order does not belong to this account",
+        statusCode: 403,
+        error: "ORDER_USER_MISMATCH",
+      });
+      return reply.status(statusCode).send(payload);
+    }
+
+    if (sub.status !== "pending_payment") {
+      // Already active (webhook beat us) or cancelled — return the subscription as-is.
+      const { statusCode, payload } = successResponse({
+        message: "Payment already processed",
+        data: { success: true as const, subscriptionId: sub.id },
+      });
+      return reply.status(statusCode).send(payload);
+    }
+
+    try {
+      await drizzle
+        .update(userSubscriptions)
+        .set({ status: "active", razorpayPaymentId: body.razorpayPaymentId })
+        .where(
+          and(
+            eq(userSubscriptions.id, sub.id),
+            eq(userSubscriptions.status, "pending_payment"),
+          ),
+        );
+    } catch (err) {
+      request.log.error({ err }, "failed to activate subscription after verified payment");
+      const { statusCode, payload } = errorResponse({
+        message: "Payment verified but subscription activation failed. Please contact support.",
+        statusCode: 500,
+      });
+      return reply.status(statusCode).send(payload);
+    }
 
     const { statusCode, payload } = successResponse({
       message: "Payment verified",
-      data: { success: true as const, planId: trustedPlanId },
+      data: { success: true as const, subscriptionId: sub.id },
     });
     return reply.status(statusCode).send(payload);
   };

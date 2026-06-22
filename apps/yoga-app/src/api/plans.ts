@@ -5,7 +5,14 @@ import { apiRequest } from "../lib/http";
 export type PlanFeatures = Omit<PlanRecord, "priceCents">;
 
 export interface MyPlanResponse {
-  plan: PlanRecord | null;
+  subscriptionId: string;
+  sessionsTotal: number | null;   // null = recurring (group_live)
+  sessionsUsed: number;
+  pricePaidCents: number;
+  purchasedAt: string;
+  expiresAt: string | null;
+  plan: PlanRecord;
+  // Weekly quota fields (populated for group_live recurring plans)
   sessionsUsedThisWeek: number;
   weekResetAt: string;
 }
@@ -17,6 +24,6 @@ export const plansApi = {
   // User-only — includes priceCents for the billing page.
   listWithPricing: () => apiRequest<PlanRecord[]>(API_ENDPOINTS.PLANS.PRICING),
 
-  // User-only — current subscription + weekly quota.
+  // User-only — current active subscription + plan details.
   mine: () => apiRequest<MyPlanResponse | null>(API_ENDPOINTS.PLANS.MINE),
 };

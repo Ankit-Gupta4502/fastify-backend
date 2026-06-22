@@ -1,4 +1,4 @@
-import { and, eq, gt, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import type { AppDatabase } from "../types/database.types";
 import {
   instructorDetails,
@@ -7,6 +7,7 @@ import {
   rooms,
   sessionQuotaLog,
   user,
+  userSubscriptions,
 } from "../schema/schema";
 import {
   BOOKING_STATUS,
@@ -26,6 +27,37 @@ export class SessionPoolError extends Error {
     this.code = code;
     this.statusCode = statusCode;
   }
+}
+
+// ─── Helper: fetch active subscription ───────────────────────────────────────
+
+async function getActiveSubscription(db: AppDatabase, userId: string) {
+  const [sub] = await db
+    .select({
+      id: userSubscriptions.id,
+      planId: userSubscriptions.planId,
+      sessionsTotal: userSubscriptions.sessionsTotal,
+      sessionsUsed: userSubscriptions.sessionsUsed,
+      allowsPrivate: plans.allowsPrivate,
+      billingInterval: plans.billingInterval,
+      sessionsPerWeek: plans.sessionsPerWeek,
+    })
+    .from(userSubscriptions)
+    .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
+    .where(
+      and(
+        eq(userSubscriptions.userId, userId),
+        eq(userSubscriptions.status, "active"),
+        or(
+          isNull(userSubscriptions.sessionsTotal),
+          lt(userSubscriptions.sessionsUsed, userSubscriptions.sessionsTotal),
+        ),
+      ),
+    )
+    .orderBy(desc(userSubscriptions.purchasedAt))
+    .limit(1);
+
+  return sub ?? null;
 }
 
 // ─── List upcoming group rooms ────────────────────────────────────────────────
@@ -80,9 +112,7 @@ export async function listUpcomingGroupRooms(
     .where(
       and(
         eq(rooms.type, ROOM_TYPE.GROUP),
-        // include idle, active, and full — full rooms still shown to enrolled users
         inArray(rooms.status, [ROOM_STATUS.IDLE, ROOM_STATUS.ACTIVE, ROOM_STATUS.FULL]),
-        // show until the session ends, not just until it starts
         gt(rooms.scheduledEnd, new Date()),
       ),
     )
@@ -115,7 +145,7 @@ export async function listUpcomingGroupRooms(
   });
 }
 
-// ─── Enrol (reserve spot) ─────────────────────────────────────────────────────
+// ─── Enrol (reserve spot in group room) ──────────────────────────────────────
 
 export type EnrolRoomResult = {
   roomId: string;
@@ -126,41 +156,33 @@ export async function enrollRoom(
   params: { userId: string; roomId: string },
 ): Promise<EnrolRoomResult> {
   return db.transaction(async (trx) => {
-    // 1. Quota check
-    const [quota] = await trx
-      .select({
-        billingInterval: plans.billingInterval,
-        usedWeek: user.sessionsUsedThisWeek,
-        limitWeek: plans.sessionsPerWeek,
-        usedMonth: user.sessionsUsedThisMonth,
-        limitMonth: plans.sessionsPerMonth,
-      })
-      .from(user)
-      .leftJoin(plans, eq(user.planId, plans.id))
-      .where(eq(user.id, params.userId));
+    // 1. Check for an active subscription with a group-eligible plan
+    const sub = await getActiveSubscription(trx as AppDatabase, params.userId);
 
-    if (!quota) {
-      throw new SessionPoolError("USER_NOT_FOUND", "User not found", 404);
-    }
-    // Bug 3: users with no active plan have null billingInterval (LEFT JOIN miss)
-    if (!quota.billingInterval) {
+    if (!sub) {
       throw new SessionPoolError("NO_ACTIVE_PLAN", "An active plan is required to book sessions", 403);
     }
 
-    const isMonthly = quota.billingInterval === "month";
-
-    // Bug 6: enrollRoom is group-rooms-only — monthly plans are for private sessions
-    if (isMonthly) {
+    // Group rooms require weekly (non-private) plans
+    if (sub.billingInterval === "month" || sub.allowsPrivate) {
       throw new SessionPoolError("PLAN_NOT_ALLOWED", "Your plan does not include group live sessions", 403);
     }
 
-    const used = quota.usedWeek ?? 0;
-    const limit = quota.limitWeek;
+    // 2. Weekly quota check (group plans use the user-level weekly counter)
+    const [quotaRow] = await trx
+      .select({
+        usedWeek: user.sessionsUsedThisWeek,
+      })
+      .from(user)
+      .where(eq(user.id, params.userId));
+
+    const used = quotaRow?.usedWeek ?? 0;
+    const limit = sub.sessionsPerWeek;
     if (limit !== null && used >= limit) {
       throw new SessionPoolError("QUOTA_EXCEEDED", "Weekly session quota exceeded", 429);
     }
 
-    // 2. Guard against double enrolment
+    // 3. Guard against double enrolment
     const [existing] = await trx
       .select({ id: roomUsers.id })
       .from(roomUsers)
@@ -177,7 +199,7 @@ export async function enrollRoom(
       throw new SessionPoolError("ALREADY_ENROLLED", "Already enrolled in this session", 409);
     }
 
-    // 3. Lock the room — reject if full, ended, or past scheduled end
+    // 4. Lock the room
     const locked = await trx.execute(sql`
       SELECT "id", "capacity", "current_occupancy"
       FROM "rooms"
@@ -200,7 +222,7 @@ export async function enrollRoom(
       );
     }
 
-    // 4. Reserve the spot — increment occupancy and flip to FULL if last slot taken
+    // 5. Reserve the spot
     await trx.execute(sql`
       UPDATE "rooms"
       SET
@@ -212,23 +234,22 @@ export async function enrollRoom(
       WHERE "id" = ${params.roomId}
     `);
 
-    // 5. Record the booking
+    // 6. Record the booking
     await trx.insert(roomUsers).values({
       roomId: params.roomId,
       userId: params.userId,
     });
 
-    // 6. Deduct from weekly quota (Bug 6 ensures only weekly plans reach here)
+    // 7. Deduct from weekly quota counter on user
     await trx
       .update(user)
       .set({ sessionsUsedThisWeek: sql`${user.sessionsUsedThisWeek} + 1` })
       .where(eq(user.id, params.userId));
 
-    // 7. Idempotent quota log — Bug 2: store billingInterval so leaveRoom
-    // can restore the correct counter even after a plan change.
+    // 8. Idempotent quota log (billingInterval frozen at enrolment for correct leave-room restore)
     await trx.execute(sql`
       INSERT INTO "session_quota_log" ("user_id", "room_id", "week_start", "billing_interval")
-      VALUES (${params.userId}, ${params.roomId}, date_trunc('week', now())::date, ${quota.billingInterval})
+      VALUES (${params.userId}, ${params.roomId}, date_trunc('week', now())::date, ${sub.billingInterval})
       ON CONFLICT ("user_id", "week_start", "room_id") DO NOTHING
     `);
 
@@ -236,7 +257,7 @@ export async function enrollRoom(
   });
 }
 
-// ─── Enter live room (requires prior enrolment + time window) ─────────────────
+// ─── Enter live room ──────────────────────────────────────────────────────────
 
 export type EnterLiveResult = {
   roomId: string;
@@ -248,7 +269,6 @@ export async function enterLiveRoom(
   params: { userId: string; roomId: string },
 ): Promise<EnterLiveResult> {
   return db.transaction(async (trx) => {
-    // 1. Fetch room details and enforce time window
     const [room] = await trx
       .select({
         status: rooms.status,
@@ -280,11 +300,9 @@ export async function enterLiveRoom(
       throw new SessionPoolError("SESSION_ENDED", "This session has ended", 410);
     }
 
-    // 2. Access check — instructors own their room; users must be enrolled
     const isRoomInstructor = room.instructorId === params.userId;
 
     if (!isRoomInstructor) {
-      // Accept active enrolment OR a dropped record (reconnect after disconnect/late join)
       const [booking] = await trx
         .select({ id: roomUsers.id, leftAt: roomUsers.leftAt })
         .from(roomUsers)
@@ -294,7 +312,7 @@ export async function enterLiveRoom(
             eq(roomUsers.userId, params.userId),
           ),
         )
-        .orderBy(sql`${roomUsers.leftAt} IS NULL DESC`)  // prefer the active record
+        .orderBy(sql`${roomUsers.leftAt} IS NULL DESC`)
         .limit(1);
 
       if (!booking) {
@@ -305,26 +323,21 @@ export async function enterLiveRoom(
         );
       }
 
-      // Reconnect path: session has started and user's record was marked dropped on disconnect
       if (booking.leftAt !== null) {
         if (now < room.scheduledStart.getTime()) {
-          // Session hasn't started yet — don't accept a stale dropped record
           throw new SessionPoolError(
             "NOT_ENROLLED",
             "You must enrol in this session before joining",
             403,
           );
         }
-        // Restore the booking so isEnrolled continues to show correctly
         await trx
           .update(roomUsers)
           .set({ leftAt: null, status: BOOKING_STATUS.ACTIVE })
           .where(eq(roomUsers.id, booking.id));
-        // Occupancy is NOT incremented — the spot was never freed on a mid-session disconnect
       }
     }
 
-    // 3. Flip status to active on first live entry
     if (room.status === ROOM_STATUS.IDLE) {
       await trx
         .update(rooms)
@@ -368,7 +381,6 @@ export async function leaveRoom(
       );
     }
 
-    // Fetch scheduledStart to decide whether to free the spot
     const [roomRow] = await trx
       .select({ scheduledStart: rooms.scheduledStart })
       .from(rooms)
@@ -380,11 +392,8 @@ export async function leaveRoom(
       .set({ leftAt, status: BOOKING_STATUS.DROPPED })
       .where(eq(roomUsers.id, active.id));
 
-    // Free the spot only if the session hasn't started yet (pre-session cancellation).
-    // Mid-session disconnects keep the slot reserved so the user can reconnect.
     const sessionStarted = roomRow && roomRow.scheduledStart.getTime() <= Date.now();
     if (!sessionStarted) {
-      // Decrement occupancy and transition FULL → ACTIVE if a spot just opened
       await trx.execute(sql`
         UPDATE "rooms"
         SET
@@ -396,9 +405,6 @@ export async function leaveRoom(
         WHERE "id" = ${params.roomId}
       `);
 
-      // Bug 2: read billingInterval from the log row written at enrolment time,
-      // not from the user's current plan. Atomically marks the row uncounted and
-      // returns the interval — single round-trip, no stale-plan risk.
       const [logRow] = await trx
         .update(sessionQuotaLog)
         .set({ counted: false })
@@ -412,14 +418,34 @@ export async function leaveRoom(
         .returning();
 
       if (logRow) {
-        await trx
-          .update(user)
-          .set(
-            logRow.billingInterval === "month"
-              ? { sessionsUsedThisMonth: sql`GREATEST(${user.sessionsUsedThisMonth} - 1, 0)` }
-              : { sessionsUsedThisWeek: sql`GREATEST(${user.sessionsUsedThisWeek} - 1, 0)` },
-          )
-          .where(eq(user.id, params.userId));
+        if (logRow.billingInterval === "month") {
+          // Private/session-pool plans: restore sessionsUsed on the subscription row.
+          // The user-level sessionsUsedThisMonth is NOT touched by bookPrivateSession,
+          // so decrementing it would push it negative. Find the subscription that was
+          // active when this session was booked and undo the deduction.
+          await trx.execute(sql`
+            UPDATE "user_subscriptions"
+            SET "sessions_used" = GREATEST("sessions_used" - 1, 0),
+                "status" = CASE
+                  WHEN "status" = 'expired' THEN 'active'
+                  ELSE "status"
+                END
+            WHERE "id" = (
+              SELECT us.id FROM "user_subscriptions" us
+              JOIN "plans" p ON p.id = us.plan_id
+              WHERE us.user_id = ${params.userId}
+                AND p.billing_interval = 'month'
+                AND us.status IN ('active', 'expired')
+              ORDER BY us.purchased_at DESC
+              LIMIT 1
+            )
+          `);
+        } else {
+          await trx
+            .update(user)
+            .set({ sessionsUsedThisWeek: sql`GREATEST(${user.sessionsUsedThisWeek} - 1, 0)` })
+            .where(eq(user.id, params.userId));
+        }
       }
     }
 
@@ -427,7 +453,7 @@ export async function leaveRoom(
   });
 }
 
-// ─── Book private session (premium plans only) ────────────────────────────────
+// ─── Book private session ─────────────────────────────────────────────────────
 
 export type BookPrivateParams = {
   userId: string;
@@ -450,28 +476,37 @@ export async function bookPrivateSession(
       );
     }
 
-    // 2. Verify user has a plan that allows private sessions and has quota remaining
-    const [userPlan] = await trx
-      .select({
-        allowsPrivate: plans.allowsPrivate,
-        billingInterval: plans.billingInterval,
-        usedWeek: user.sessionsUsedThisWeek,
-        limitWeek: plans.sessionsPerWeek,
-        usedMonth: user.sessionsUsedThisMonth,
-        limitMonth: plans.sessionsPerMonth,
-      })
-      .from(user)
-      .leftJoin(plans, eq(user.planId, plans.id))
-      .where(eq(user.id, params.userId));
+    // 2. Lock the active subscription row to prevent double-booking races.
+    // SELECT … FOR UPDATE ensures only one concurrent transaction can read
+    // and modify this row at a time.
+    const lockedSubRows = await trx.execute(sql`
+      SELECT us.id, us.sessions_total, us.sessions_used, p.allows_private, p.billing_interval
+      FROM "user_subscriptions" us
+      JOIN "plans" p ON p.id = us.plan_id
+      WHERE us.user_id = ${params.userId}
+        AND us.status = 'active'
+        AND us.sessions_total IS NOT NULL
+        AND us.sessions_used < us.sessions_total
+      ORDER BY us.purchased_at DESC
+      LIMIT 1
+      FOR UPDATE OF us
+    `);
+    const lockedRows = (lockedSubRows as unknown as { rows?: unknown[] }).rows ?? (lockedSubRows as unknown[]);
+    const subRow = (lockedRows as Record<string, unknown>[])[0] ?? null;
 
-    if (!userPlan) {
-      throw new SessionPoolError("USER_NOT_FOUND", "User not found", 404);
-    }
-    // Bug 3: users with no active plan have null billingInterval (LEFT JOIN miss)
-    if (!userPlan.billingInterval) {
+    if (!subRow) {
       throw new SessionPoolError("NO_ACTIVE_PLAN", "An active plan is required to book sessions", 403);
     }
-    if (!userPlan.allowsPrivate) {
+
+    const sub = {
+      id: subRow.id as string,
+      sessionsTotal: subRow.sessions_total as number,
+      sessionsUsed: subRow.sessions_used as number,
+      allowsPrivate: subRow.allows_private as boolean,
+      billingInterval: subRow.billing_interval as string,
+    };
+
+    if (!sub.allowsPrivate) {
       throw new SessionPoolError(
         "PLAN_NOT_ALLOWED",
         "Your plan does not include private 1:1 sessions. Please upgrade to a premium plan.",
@@ -479,13 +514,11 @@ export async function bookPrivateSession(
       );
     }
 
-    const pvtMonthly = userPlan.billingInterval === "month";
-    const pvtUsed = pvtMonthly ? (userPlan.usedMonth ?? 0) : (userPlan.usedWeek ?? 0);
-    const pvtLimit = pvtMonthly ? userPlan.limitMonth : userPlan.limitWeek;
-    if (pvtLimit !== null && pvtUsed >= pvtLimit) {
+    const remaining = sub.sessionsTotal - sub.sessionsUsed;
+    if (remaining <= 0) {
       throw new SessionPoolError(
         "QUOTA_EXCEEDED",
-        pvtMonthly ? "Monthly session quota exceeded" : "Weekly session quota exceeded",
+        "You have used all sessions in your current plan. Please purchase a new plan.",
         429,
       );
     }
@@ -543,25 +576,25 @@ export async function bookPrivateSession(
       userId: params.userId,
     });
 
-    // 7. Deduct from the right quota counter
+    // 7. Deduct from the subscription's session pool
+    const newUsed = sub.sessionsUsed + 1;
     await trx
-      .update(user)
-      .set(
-        pvtMonthly
-          ? { sessionsUsedThisMonth: sql`${user.sessionsUsedThisMonth} + 1` }
-          : { sessionsUsedThisWeek: sql`${user.sessionsUsedThisWeek} + 1` },
-      )
-      .where(eq(user.id, params.userId));
+      .update(userSubscriptions)
+      .set({
+        sessionsUsed: newUsed,
+        // Auto-expire when the last session is consumed
+        status: newUsed >= sub.sessionsTotal ? "expired" : "active",
+      })
+      .where(eq(userSubscriptions.id, sub.id));
 
-    // 8. Idempotent quota log — Bug 2+4: store billing_interval and correct period start
-    const pvtPeriodTrunc = pvtMonthly ? "month" : "week";
+    // 8. Quota log (billing_interval frozen for leave-room restore compatibility)
     await trx.execute(sql`
       INSERT INTO "session_quota_log" ("user_id", "room_id", "week_start", "billing_interval")
       VALUES (
         ${params.userId},
         ${created.id},
-        date_trunc(${pvtPeriodTrunc}, now())::date,
-        ${userPlan.billingInterval}
+        date_trunc('month', now())::date,
+        ${sub.billingInterval}
       )
       ON CONFLICT ("user_id", "week_start", "room_id") DO NOTHING
     `);
