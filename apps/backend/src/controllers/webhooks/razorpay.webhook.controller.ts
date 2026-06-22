@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { eq } from "drizzle-orm";
 import { drizzle } from "../../db";
-import { userSubscriptions } from "../../schema/schema";
+import { plans, userSubscriptions } from "../../schema/schema";
 import { verifyWebhookSignature } from "../../services/razorpay.service";
 import { successResponse } from "../../utils";
 
@@ -134,8 +134,15 @@ export class RazorpayWebhookController {
   ) {
     // Idempotency: skip if already activated by the verify endpoint or a prior webhook.
     const [existing] = await drizzle
-      .select({ id: userSubscriptions.id, status: userSubscriptions.status })
+      .select({
+        id: userSubscriptions.id,
+        status: userSubscriptions.status,
+        sessionsTotal: userSubscriptions.sessionsTotal,
+        purchasedAt: userSubscriptions.purchasedAt,
+        billingInterval: plans.billingInterval,
+      })
       .from(userSubscriptions)
+      .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
       .where(eq(userSubscriptions.razorpayOrderId, razorpayOrderId))
       .limit(1);
 
@@ -149,9 +156,29 @@ export class RazorpayWebhookController {
       return;
     }
 
+    if (existing.status !== "pending_payment") {
+      request.log.warn(
+        { razorpayOrderId, status: existing.status },
+        "razorpay webhook: cannot activate subscription in non-pending state",
+      );
+      return;
+    }
+
+    let expiresAt: Date | null = null;
+    if (existing.sessionsTotal === null) {
+      const now = new Date();
+      if (existing.billingInterval === "week") {
+        expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      } else {
+        const d = new Date(now);
+        d.setMonth(d.getMonth() + 1);
+        expiresAt = d;
+      }
+    }
+
     await drizzle
       .update(userSubscriptions)
-      .set({ status: "active", razorpayPaymentId })
+      .set({ status: "active", razorpayPaymentId, expiresAt })
       .where(eq(userSubscriptions.id, existing.id));
 
     request.log.info(

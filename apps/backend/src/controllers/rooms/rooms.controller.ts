@@ -184,7 +184,7 @@ export class RoomsController {
     const { id: roomId } = request.params as z.infer<typeof roomIdParamsSchema>;
 
     try {
-      const result = await enrollRoom(drizzle, { userId: me.id, roomId });
+      const result = await enrollRoom(drizzle, { userId: me.id, roomId, userRole: me.role });
 
       // Fire-and-forget confirmation email
       sendBookingConfirmationEmails({

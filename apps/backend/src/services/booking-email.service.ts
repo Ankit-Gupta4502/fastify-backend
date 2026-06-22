@@ -5,7 +5,7 @@ import { DEFAULT_USER_TIMEZONE } from "../constants/sessions";
 import { EmailService } from "./EmailService";
 import { formatForUser, formatForInstructor } from "./timezone.service";
 
-const APP_NAME = "Solara Yoga";
+const APP_NAME = "BookYourYogaTeacher";
 
 export interface BookingEmailParams {
   userId: string;

@@ -12,6 +12,7 @@ export function useCustomCheckout() {
   const user = useAuthStore((s) => s.user);
 
   return useMutation({
+    retry: 3,
     mutationFn: async ({ sessionCount, planName }: { sessionCount: number; planName: "private" | "prenatal_postnatal" | "therapeutic_yoga" }) => {
       const order = await paymentsApi.createCustomOrder({ sessionCount, planName });
       if (!order.data) throw new Error("Order creation failed");
@@ -57,6 +58,7 @@ export function useCheckout() {
   const user = useAuthStore((s) => s.user);
 
   return useMutation({
+    retry: 3,
     mutationFn: async (planId: string) => {
       const order = await paymentsApi.createOrder({ planId });
       if (!order.data) {

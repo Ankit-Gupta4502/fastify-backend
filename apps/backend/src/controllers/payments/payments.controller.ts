@@ -264,10 +264,18 @@ export class PaymentsController {
       return reply.status(statusCode).send(payload);
     }
 
-    // Find the pending subscription by order id.
+    // Find the pending subscription by order id, join plans for billing interval.
     const [sub] = await drizzle
-      .select()
+      .select({
+        id: userSubscriptions.id,
+        userId: userSubscriptions.userId,
+        status: userSubscriptions.status,
+        sessionsTotal: userSubscriptions.sessionsTotal,
+        purchasedAt: userSubscriptions.purchasedAt,
+        billingInterval: plans.billingInterval,
+      })
       .from(userSubscriptions)
+      .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
       .where(eq(userSubscriptions.razorpayOrderId, body.razorpayOrderId))
       .limit(1);
 
@@ -299,9 +307,23 @@ export class PaymentsController {
     }
 
     try {
+      // Compute expiry from payment time (now), not order-creation time.
+      // Session-pool plans expire by session count; recurring plans get a calendar expiry.
+      let expiresAt: Date | null = null;
+      if (sub.sessionsTotal === null) {
+        const now = new Date();
+        if (sub.billingInterval === "week") {
+          expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        } else {
+          const d = new Date(now);
+          d.setMonth(d.getMonth() + 1);
+          expiresAt = d;
+        }
+      }
+
       await drizzle
         .update(userSubscriptions)
-        .set({ status: "active", razorpayPaymentId: body.razorpayPaymentId })
+        .set({ status: "active", razorpayPaymentId: body.razorpayPaymentId, expiresAt })
         .where(
           and(
             eq(userSubscriptions.id, sub.id),

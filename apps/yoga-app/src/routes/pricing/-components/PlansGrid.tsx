@@ -60,7 +60,7 @@ export function PlansGrid({
   onSpecializedSubscribe,
 }: PlansGridProps) {
   return (
-    <div className="max-w-3xl mx-auto px-4 space-y-6">
+    <div className="   px-4 space-y-6">
       {isLoading ? (
         <div className="grid md:grid-cols-2 gap-8">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -69,10 +69,8 @@ export function PlansGrid({
         </div>
       ) : (
         <div className={cn(
-          "grid gap-8 items-start md:grid-cols-2",
-          !groupPlan && "[&>*:last-child]:col-span-2 [&>*:last-child]:mx-auto [&>*:last-child]:w-[calc(50%-1rem)]",
-        )}>
-          {groupPlan && (
+          "grid gap-8 items-start md:grid-cols-3")}>
+          {/* {groupPlan && (
             <PricingCard
               plan={groupPlan}
               isAuthenticated={isAuthenticated}
@@ -80,7 +78,7 @@ export function PlansGrid({
               isActive={isGroupPlanActive}
               onSubscribe={onGroupSubscribe}
             />
-          )}
+          )} */}
           <PrivatePricingCard
             sessionCount={sessionCount}
             onSessionCountChange={onSessionCountChange}

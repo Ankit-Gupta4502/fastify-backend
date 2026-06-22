@@ -153,33 +153,40 @@ export type EnrolRoomResult = {
 
 export async function enrollRoom(
   db: AppDatabase,
-  params: { userId: string; roomId: string },
+  params: { userId: string; roomId: string; userRole?: string },
 ): Promise<EnrolRoomResult> {
   return db.transaction(async (trx) => {
-    // 1. Check for an active subscription with a group-eligible plan
-    const sub = await getActiveSubscription(trx as AppDatabase, params.userId);
+    const isPrivilegedRole = params.userRole === "instructor" || params.userRole === "admin";
+    let subBillingInterval = "week";
 
-    if (!sub) {
-      throw new SessionPoolError("NO_ACTIVE_PLAN", "An active plan is required to book sessions", 403);
-    }
+    // 1. Subscription + quota check — skipped for instructors/admins attending as observers.
+    if (!isPrivilegedRole) {
+      const sub = await getActiveSubscription(trx as AppDatabase, params.userId);
 
-    // Group rooms require weekly (non-private) plans
-    if (sub.billingInterval === "month" || sub.allowsPrivate) {
-      throw new SessionPoolError("PLAN_NOT_ALLOWED", "Your plan does not include group live sessions", 403);
-    }
+      if (!sub) {
+        throw new SessionPoolError("NO_ACTIVE_PLAN", "An active plan is required to book sessions", 403);
+      }
 
-    // 2. Weekly quota check (group plans use the user-level weekly counter)
-    const [quotaRow] = await trx
-      .select({
-        usedWeek: user.sessionsUsedThisWeek,
-      })
-      .from(user)
-      .where(eq(user.id, params.userId));
+      // Group rooms require weekly (non-private) plans
+      if (sub.billingInterval === "month" || sub.allowsPrivate) {
+        throw new SessionPoolError("PLAN_NOT_ALLOWED", "Your plan does not include group live sessions", 403);
+      }
 
-    const used = quotaRow?.usedWeek ?? 0;
-    const limit = sub.sessionsPerWeek;
-    if (limit !== null && used >= limit) {
-      throw new SessionPoolError("QUOTA_EXCEEDED", "Weekly session quota exceeded", 429);
+      // 2. Weekly quota check (group plans use the user-level weekly counter)
+      const [quotaRow] = await trx
+        .select({
+          usedWeek: user.sessionsUsedThisWeek,
+        })
+        .from(user)
+        .where(eq(user.id, params.userId));
+
+      const used = quotaRow?.usedWeek ?? 0;
+      const limit = sub.sessionsPerWeek;
+      if (limit !== null && used >= limit) {
+        throw new SessionPoolError("QUOTA_EXCEEDED", "Weekly session quota exceeded", 429);
+      }
+
+      subBillingInterval = sub.billingInterval;
     }
 
     // 3. Guard against double enrolment
@@ -240,18 +247,19 @@ export async function enrollRoom(
       userId: params.userId,
     });
 
-    // 7. Deduct from weekly quota counter on user
-    await trx
-      .update(user)
-      .set({ sessionsUsedThisWeek: sql`${user.sessionsUsedThisWeek} + 1` })
-      .where(eq(user.id, params.userId));
+    // 7-8. Quota deduction and logging — skipped for instructors/admins (no subscription).
+    if (!isPrivilegedRole) {
+      await trx
+        .update(user)
+        .set({ sessionsUsedThisWeek: sql`${user.sessionsUsedThisWeek} + 1` })
+        .where(eq(user.id, params.userId));
 
-    // 8. Idempotent quota log (billingInterval frozen at enrolment for correct leave-room restore)
-    await trx.execute(sql`
-      INSERT INTO "session_quota_log" ("user_id", "room_id", "week_start", "billing_interval")
-      VALUES (${params.userId}, ${params.roomId}, date_trunc('week', now())::date, ${sub.billingInterval})
-      ON CONFLICT ("user_id", "week_start", "room_id") DO NOTHING
-    `);
+      await trx.execute(sql`
+        INSERT INTO "session_quota_log" ("user_id", "room_id", "week_start", "billing_interval")
+        VALUES (${params.userId}, ${params.roomId}, date_trunc('week', now())::date, ${subBillingInterval})
+        ON CONFLICT ("user_id", "week_start", "room_id") DO NOTHING
+      `);
+    }
 
     return { roomId: params.roomId };
   });
@@ -420,9 +428,9 @@ export async function leaveRoom(
       if (logRow) {
         if (logRow.billingInterval === "month") {
           // Private/session-pool plans: restore sessionsUsed on the subscription row.
-          // The user-level sessionsUsedThisMonth is NOT touched by bookPrivateSession,
-          // so decrementing it would push it negative. Find the subscription that was
-          // active when this session was booked and undo the deduction.
+          // Use the room's scheduledStart as a timestamp anchor so we restore to the
+          // subscription that was actually active when the booking was made, not the
+          // most recently purchased one (which may be a different plan bought later).
           await trx.execute(sql`
             UPDATE "user_subscriptions"
             SET "sessions_used" = GREATEST("sessions_used" - 1, 0),
@@ -433,9 +441,11 @@ export async function leaveRoom(
             WHERE "id" = (
               SELECT us.id FROM "user_subscriptions" us
               JOIN "plans" p ON p.id = us.plan_id
+              JOIN "rooms" r ON r.id = ${params.roomId}
               WHERE us.user_id = ${params.userId}
                 AND p.billing_interval = 'month'
                 AND us.status IN ('active', 'expired')
+                AND us.purchased_at <= r.scheduled_start
               ORDER BY us.purchased_at DESC
               LIMIT 1
             )
