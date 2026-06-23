@@ -14,7 +14,7 @@ export default fp(async (fastify) => {
       try {
         // /api is added because in production /api is needed for redirection and nginx is stripping down /api then passing to backend and then data is being saved in db that's why it does not exit in better auth config
         const url = new URL(
-          `${request.url}`,
+         process.env.NODE_ENV==="staging"?`${request.url}`:`/api${request.url}`,
           `${request.protocol}://${request.headers.host}`
         );
         request.log.debug({ url: url.toString() }, "[auth-plugin] constructed web URL");
