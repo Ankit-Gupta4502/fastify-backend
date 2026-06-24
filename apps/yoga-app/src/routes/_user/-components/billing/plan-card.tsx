@@ -24,22 +24,16 @@ interface PlanCardProps {
 
 export function PlanCard({ plan, isActive, isPending, onSubscribe, readOnly }: PlanCardProps) {
   const copy = PLAN_COPY[plan.name] ?? { title: plan.name, tagline: "", perks: [] };
-  const isPopular = plan.name === "private";
+
 
   return (
     <Card
       className={cn(
         "relative border-none shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-full rounded-4xl",
-        isPopular
-          ? "bg-card scale-105 z-10 ring-2 ring-primary/30"
-          : "bg-card/50 backdrop-blur-sm",
+       
       )}
     >
-      {isPopular && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
-          Most Popular
-        </div>
-      )}
+      
       {isActive && (
         <div className="absolute -top-4 right-6 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
           Current
@@ -71,9 +65,9 @@ export function PlanCard({ plan, isActive, isPending, onSubscribe, readOnly }: P
           <Button
             className={cn(
               "w-full rounded-2xl py-6 font-bold shadow-lg transition-all",
-              isPopular ? "bg-primary shadow-primary/20 hover:shadow-primary/30" : "",
+             
             )}
-            variant={isPopular ? "default" : "outline"}
+            variant={ "outline"}
             disabled={isActive || isPending}
             onClick={() => onSubscribe?.(plan)}
           >
