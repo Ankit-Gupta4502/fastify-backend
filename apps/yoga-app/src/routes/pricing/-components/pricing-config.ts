@@ -1,6 +1,6 @@
 import {
   ShieldCheck, RefreshCcw, Sparkles, Zap, CreditCard, BadgeCheck, HeartHandshake,
-  Lock, Baby, HeartPulse,
+  Users, Lock, Baby, HeartPulse,
 } from "lucide-react";
 import {
   PRICE_PER_SESSION_CENTS,
@@ -27,6 +27,13 @@ export const planMeta: Record<string, {
   iconBg: string;
   shimmer: string;
 }> = {
+  group_live: {
+    icon: Users,
+    badge: "Most Popular",
+    gradient: "from-sky-500/10 via-blue-400/5 to-transparent",
+    iconBg: "bg-sky-500/12 text-sky-500",
+    shimmer: "from-transparent via-sky-400/50 to-transparent",
+  },
   private: {
     icon: Lock,
     gradient: "from-primary/12 via-primary/5 to-transparent",

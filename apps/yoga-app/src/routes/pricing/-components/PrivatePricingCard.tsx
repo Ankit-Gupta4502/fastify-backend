@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Check, ArrowRight, Loader2, Sparkles, Lock, Minus, Plus, BadgeCheck } from "lucide-react";
+import { Check, ArrowRight, Loader2, Lock, Minus, Plus, BadgeCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { centsToDisplay } from "@/lib/utils";
@@ -20,7 +20,6 @@ export interface PrivatePricingCardProps {
 const privatePerks = [
   "Private 1:1 sessions with your instructor",
   "Time-of-day flexibility",
-  "Direct instructor messaging",
   "Priority support",
 ];
 
@@ -31,12 +30,7 @@ export function PrivatePricingCard({ sessionCount, onSessionCountChange, pricePe
 
   return (
     <div className="relative">
-      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-primary text-primary-foreground text-[9px] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg shadow-primary/25 whitespace-nowrap animate-doodle-badge">
-        <Sparkles className="size-2.5" />
-        Most Popular
-      </div>
-
-      <div className="group relative flex flex-col overflow-hidden rounded-4xl border transition-all duration-500 hover:-translate-y-1.5 bg-card border-primary/30 shadow-2xl shadow-primary/10 sketch-border-lg">
+<div className="group relative flex flex-col overflow-hidden rounded-4xl border transition-all duration-500 hover:-translate-y-1.5 bg-card border-primary/30 shadow-2xl shadow-primary/10 sketch-border-lg">
         <div className="absolute inset-x-0 top-0 h-48 bg-linear-to-b from-primary/12 via-primary/5 to-transparent pointer-events-none" />
         <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent pointer-events-none" />
 

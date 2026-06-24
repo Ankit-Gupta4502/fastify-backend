@@ -1,4 +1,14 @@
 export const PLAN_COPY: Record<string, { title: string; tagline: string; perks: string[] }> = {
+  group_live: {
+    title: "Group Live",
+    tagline: "Live group flows with elite instructors.",
+    perks: [
+      "4 live group sessions / week",
+      "Access to all group rooms",
+      "Local-time auto conversion",
+      "Cancel any time",
+    ],
+  },
   private: {
     title: "Private",
     tagline: "1:1 sessions with your chosen instructor.",
