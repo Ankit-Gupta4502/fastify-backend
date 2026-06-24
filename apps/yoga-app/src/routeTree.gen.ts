@@ -31,6 +31,7 @@ import { Route as InstructorDashboardIndexRouteImport } from './routes/instructo
 import { Route as ExpertsExpertIdIndexRouteImport } from './routes/experts/$expertId/index'
 import { Route as AdminWorkshopsIndexRouteImport } from './routes/admin/workshops/index'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
+import { Route as AdminSubscriptionsIndexRouteImport } from './routes/admin/subscriptions/index'
 import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
 import { Route as AdminReviewsIndexRouteImport } from './routes/admin/reviews/index'
 import { Route as AdminInstructorsIndexRouteImport } from './routes/admin/instructors/index'
@@ -149,6 +150,11 @@ const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
   path: '/users/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminSubscriptionsIndexRoute = AdminSubscriptionsIndexRouteImport.update({
+  id: '/subscriptions/',
+  path: '/subscriptions/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminRoomsIndexRoute = AdminRoomsIndexRouteImport.update({
   id: '/rooms/',
   path: '/rooms/',
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
+  '/admin/subscriptions/': typeof AdminSubscriptionsIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
   '/admin/workshops/': typeof AdminWorkshopsIndexRoute
   '/experts/$expertId/': typeof ExpertsExpertIdIndexRoute
@@ -236,6 +243,7 @@ export interface FileRoutesByTo {
   '/admin/instructors': typeof AdminInstructorsIndexRoute
   '/admin/reviews': typeof AdminReviewsIndexRoute
   '/admin/rooms': typeof AdminRoomsIndexRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsIndexRoute
   '/admin/users': typeof AdminUsersIndexRoute
   '/admin/workshops': typeof AdminWorkshopsIndexRoute
   '/experts/$expertId': typeof ExpertsExpertIdIndexRoute
@@ -268,6 +276,7 @@ export interface FileRoutesById {
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
+  '/admin/subscriptions/': typeof AdminSubscriptionsIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
   '/admin/workshops/': typeof AdminWorkshopsIndexRoute
   '/experts/$expertId/': typeof ExpertsExpertIdIndexRoute
@@ -300,6 +309,7 @@ export interface FileRouteTypes {
     | '/admin/instructors/'
     | '/admin/reviews/'
     | '/admin/rooms/'
+    | '/admin/subscriptions/'
     | '/admin/users/'
     | '/admin/workshops/'
     | '/experts/$expertId/'
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
     | '/admin/instructors'
     | '/admin/reviews'
     | '/admin/rooms'
+    | '/admin/subscriptions'
     | '/admin/users'
     | '/admin/workshops'
     | '/experts/$expertId'
@@ -360,6 +371,7 @@ export interface FileRouteTypes {
     | '/admin/instructors/'
     | '/admin/reviews/'
     | '/admin/rooms/'
+    | '/admin/subscriptions/'
     | '/admin/users/'
     | '/admin/workshops/'
     | '/experts/$expertId/'
@@ -543,6 +555,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/subscriptions/': {
+      id: '/admin/subscriptions/'
+      path: '/subscriptions'
+      fullPath: '/admin/subscriptions/'
+      preLoaderRoute: typeof AdminSubscriptionsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/rooms/': {
       id: '/admin/rooms/'
       path: '/rooms'
@@ -616,6 +635,7 @@ interface AdminRouteRouteChildren {
   AdminInstructorsIndexRoute: typeof AdminInstructorsIndexRoute
   AdminReviewsIndexRoute: typeof AdminReviewsIndexRoute
   AdminRoomsIndexRoute: typeof AdminRoomsIndexRoute
+  AdminSubscriptionsIndexRoute: typeof AdminSubscriptionsIndexRoute
   AdminUsersIndexRoute: typeof AdminUsersIndexRoute
   AdminWorkshopsIndexRoute: typeof AdminWorkshopsIndexRoute
 }
@@ -625,6 +645,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminInstructorsIndexRoute: AdminInstructorsIndexRoute,
   AdminReviewsIndexRoute: AdminReviewsIndexRoute,
   AdminRoomsIndexRoute: AdminRoomsIndexRoute,
+  AdminSubscriptionsIndexRoute: AdminSubscriptionsIndexRoute,
   AdminUsersIndexRoute: AdminUsersIndexRoute,
   AdminWorkshopsIndexRoute: AdminWorkshopsIndexRoute,
 }

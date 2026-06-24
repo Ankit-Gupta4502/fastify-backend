@@ -8,6 +8,7 @@ import {
   LogOut,
   ClipboardList,
   Star,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { useAuth } from "@/hooks/use-auth";
 
 const navItems = [
   { label: "Users", to: "/admin/users", icon: Users },
+  { label: "Subscriptions", to: "/admin/subscriptions", icon: CreditCard },
   { label: "Instructors", to: "/admin/instructors", icon: GraduationCap },
   { label: "Demo Requests", to: "/admin/demo-requests", icon: ClipboardList },
   { label: "Classes", to: "/admin/rooms", icon: CalendarDays },

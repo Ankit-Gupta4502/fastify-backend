@@ -17,11 +17,12 @@ import { cn, centsToDisplay } from "@/lib/utils";
 interface PlanCardProps {
   plan: PlanRecord;
   isActive: boolean;
-  isPending: boolean;
-  onSubscribe: (plan: PlanRecord) => void;
+  isPending?: boolean;
+  onSubscribe?: (plan: PlanRecord) => void;
+  readOnly?: boolean;
 }
 
-export function PlanCard({ plan, isActive, isPending, onSubscribe }: PlanCardProps) {
+export function PlanCard({ plan, isActive, isPending, onSubscribe, readOnly }: PlanCardProps) {
   const copy = PLAN_COPY[plan.name] ?? { title: plan.name, tagline: "", perks: [] };
   const isPopular = plan.name === "private";
 
@@ -65,23 +66,25 @@ export function PlanCard({ plan, isActive, isPending, onSubscribe }: PlanCardPro
         ))}
       </CardContent>
 
-      <CardFooter className="pb-10 px-8">
-        <Button
-          className={cn(
-            "w-full rounded-2xl py-6 font-bold shadow-lg transition-all",
-            isPopular ? "bg-primary shadow-primary/20 hover:shadow-primary/30" : "",
-          )}
-          variant={isPopular ? "default" : "outline"}
-          disabled={isActive || isPending}
-          onClick={() => onSubscribe(plan)}
-        >
-          {isActive
-            ? "Current plan"
-            : isPending
-              ? "Opening checkout..."
-              : `Subscribe to ${copy.title}`}
-        </Button>
-      </CardFooter>
+      {!readOnly && (
+        <CardFooter className="pb-10 px-8">
+          <Button
+            className={cn(
+              "w-full rounded-2xl py-6 font-bold shadow-lg transition-all",
+              isPopular ? "bg-primary shadow-primary/20 hover:shadow-primary/30" : "",
+            )}
+            variant={isPopular ? "default" : "outline"}
+            disabled={isActive || isPending}
+            onClick={() => onSubscribe?.(plan)}
+          >
+            {isActive
+              ? "Current plan"
+              : isPending
+                ? "Opening checkout..."
+                : `Subscribe to ${copy.title}`}
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }
