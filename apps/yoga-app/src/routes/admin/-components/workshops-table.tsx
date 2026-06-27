@@ -21,7 +21,7 @@ export function WorkshopsTable({ workshops, isLoading, onEdit }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border/60 bg-secondary/20">
-              {["Name", "Scheduled", "Attendees", "Meet link", "Status", ""].map((h) => (
+              {["Name", "Scheduled", "Price", "Attendees", "Meet link", "Status", ""].map((h) => (
                 <th
                   key={h}
                   className="px-4 py-3 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap"
@@ -36,7 +36,7 @@ export function WorkshopsTable({ workshops, isLoading, onEdit }: Props) {
               <TableSkeletonRows rows={3} cols={6} />
             ) : workshops.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-14 text-center text-muted-foreground text-sm">
+                <td colSpan={7} className="px-4 py-14 text-center text-muted-foreground text-sm">
                   No workshops yet.{" "}
                   <span className="text-foreground font-medium">Create one</span> to show it on the home page.
                 </td>

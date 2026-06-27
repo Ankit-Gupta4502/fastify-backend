@@ -35,6 +35,26 @@ export function WorkshopRow({ workshop: w, tz, isToggling, isDeleting, onToggle,
         )}
       </td>
 
+      {/* Price */}
+      <td className="px-4 py-3.5 whitespace-nowrap">
+        {w.priceInr != null || w.priceUsd != null ? (
+          <div className="flex flex-col gap-0.5 text-xs">
+            {w.priceInr != null && (
+              <span className="font-medium">
+                {w.priceInr === 0 ? "Free" : `₹${(w.priceInr / 100).toFixed(0)}`}
+              </span>
+            )}
+            {w.priceUsd != null && (
+              <span className="text-muted-foreground">
+                {w.priceUsd === 0 ? "Free" : `$${(w.priceUsd / 100).toFixed(2)}`}
+              </span>
+            )}
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )}
+      </td>
+
       {/* Attendees */}
       <td className="px-4 py-3.5 whitespace-nowrap">
         <span className="flex items-center gap-1.5 text-xs">

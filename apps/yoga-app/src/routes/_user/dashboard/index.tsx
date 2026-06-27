@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Calendar, Clock, Flame, Wallet, PartyPopper, ArrowRight, Hourglass, AlertCircle } from "lucide-react";
+import { Calendar, Clock, Flame, Wallet, PartyPopper, ArrowRight, Hourglass, AlertCircle, ClipboardList } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { StatCard } from "@/components/shared/StatCard";
 import { NextFlowCard } from "../-components/dashboard/NextFlowCard";
@@ -10,6 +10,7 @@ import { BookPrivateSessionDialog } from "../-components/dashboard/BookPrivateSe
 import { useUpcomingRooms, useEnrolRoom, useJoinRoom } from "@/hooks/use-rooms";
 import { useMyPlan } from "@/hooks/use-plans";
 import { useMyDemoRequests } from "@/hooks/use-demo";
+import { useMyPreferences } from "@/hooks/use-user-preferences";
 import { Button } from "@/components/ui/button";
 import type { DemoRequestStatus } from "@yoga-app/shared";
 export const Route = createFileRoute("/_user/dashboard/")({
@@ -49,10 +50,10 @@ const DEMO_BANNER_CONFIG: Record<string, {
     iconStyle: "bg-red-100 dark:bg-red-500/15 text-red-600 dark:text-red-400",
   },
   no_demo: {
-    icon: PartyPopper,
-    title: "Welcome! Book your free demo",
-    description: "You haven't booked a free class yet. Try one on us — no card required.",
-    ctaLabel: "Book free demo",
+    icon: ClipboardList,
+    title: "Complete your profile",
+    description: "Tell us your goals and schedule so we can recommend the right sessions for you.",
+    ctaLabel: "Set up profile",
     style: "border-primary/20 bg-primary/5 dark:bg-primary/8",
     iconStyle: "bg-primary/10 text-primary",
   },
@@ -69,7 +70,7 @@ function TrialStatusBanner({ status }: { status: DemoRequestStatus | null }) {
 
   const cfg = DEMO_BANNER_CONFIG[key];
   const Icon = cfg.icon;
-  const to = key === "no_demo" ? "/demo" : "/billing";
+  const to = key === "no_demo" ? "/onboarding" : "/billing";
 
   return (
     <div className={`flex items-center gap-4 rounded-2xl border px-5 py-4 ${cfg.style}`}>
@@ -112,7 +113,9 @@ function UserDashboard() {
 
   const latestDemo = myDemo.data?.data?.[0] ?? null;
   const demoStatus: DemoRequestStatus | null = latestDemo?.status ?? null;
-  const showTrialBanner = !plan && !myPlan.isLoading && !myDemo.isLoading;
+  const myPrefs = useMyPreferences();
+  const preferences = myPrefs.data?.data ?? null;
+  const showTrialBanner = !plan && !myPlan.isLoading && !myDemo.isLoading && !myPrefs.isLoading;
 
   const handleEnrol = (roomId: string) => {
     setActionError(null);
@@ -147,8 +150,32 @@ function UserDashboard() {
         </h1>
       </div>
 
-      {/* Trial / demo status banner */}
-      {showTrialBanner && <TrialStatusBanner status={demoStatus} />}
+      {/* Trial / demo status banner — only show if no preferences set */}
+      {showTrialBanner && !preferences && <TrialStatusBanner status={demoStatus} />}
+
+      {/* Preferences summary */}
+      {preferences && (
+        <div className="rounded-2xl border border-border/60 bg-card/60 px-5 py-4 flex flex-wrap items-center gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Your profile</p>
+            <div className="flex flex-wrap gap-2">
+              {preferences.purposes.map((p: string) => (
+                <span key={p} className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">{p}</span>
+              ))}
+              {preferences.preferredTimeOfDay && (
+                <span className="px-2.5 py-1 rounded-full bg-secondary text-muted-foreground text-xs font-medium">
+                  {preferences.preferredTimeOfDay} sessions
+                </span>
+              )}
+            </div>
+          </div>
+          <Button asChild size="sm" variant="outline" className="rounded-full shrink-0 gap-1.5 font-bold">
+            <Link to="/onboarding">
+              Edit <ArrowRight className="size-3.5" />
+            </Link>
+          </Button>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">

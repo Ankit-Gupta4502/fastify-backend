@@ -7,14 +7,13 @@ import { loginFormOptions, registerFormOptions, forgotPasswordFormOptions } from
 import { useAuth } from "@/hooks/use-auth";
 import { ApiRequestError } from "@/lib/http";
 import { authApi } from "@/api";
+import { getStoredUtm, clearUtm } from "@/lib/utm";
+import { userPreferencesApi } from "@/api/user-preferences";
 
-/** Reads and clears the demo-class intent flag, returning the correct redirect path. */
-function consumeDemoIntent(): "/" | "/demo" {
-  if (localStorage.getItem("demoClassIntent")) {
-    localStorage.removeItem("demoClassIntent");
-    return "/demo";
-  }
-  return "/";
+function fireAcquisition() {
+  const utm = getStoredUtm();
+  if (!utm) return;
+  userPreferencesApi.saveAcquisition(utm).then(() => clearUtm()).catch(() => {});
 }
 
 export type LoginMode = "login" | "register" | "forgot";
@@ -35,7 +34,7 @@ export function useLogin() {
     setFeedback(null);
     try {
       await login.mutateAsync(values);
-      navigate({ to: consumeDemoIntent(), replace: true });
+      navigate({ to: "/", replace: true });
     } catch (error) {
       setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Login failed");
     }
@@ -45,9 +44,9 @@ export function useLogin() {
     setFeedback(null);
     try {
       await registerUserMutation.mutateAsync(values);
+      fireAcquisition();
       setFeedback("Account created! Redirecting…");
-      const dest = consumeDemoIntent();
-      setTimeout(() => navigate({ to: dest, replace: true }), 1500);
+      setTimeout(() => navigate({ to: "/", replace: true }), 1500);
     } catch (error) {
       setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Registration failed");
     }
@@ -70,7 +69,7 @@ export function useLogin() {
     setIsGooglePending(true);
     const callbackURL = window.location.origin;
     try {
-      const response = await getGoogleUrl(callbackURL+"/demo");
+      const response = await getGoogleUrl(callbackURL);
       if (response.data?.url) window.location.assign(response.data.url);
     } catch (error) {
       setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Google sign-in failed");

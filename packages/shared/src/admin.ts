@@ -1,3 +1,20 @@
+export interface AdminUserPreferences {
+  gender: string;
+  phone: string | null;
+  purposes: string[];
+  otherPurpose: string | null;
+  preferredTimeOfDay: string | null;
+  timezone: string;
+}
+
+export interface AdminUserAcquisition {
+  utmSource: string | null;
+  utmMedium: string | null;
+  utmCampaign: string | null;
+  referrer: string | null;
+  landingPage: string | null;
+}
+
 export interface AdminUser {
   id: string;
   name: string;
@@ -5,6 +22,8 @@ export interface AdminUser {
   role: string;
   planName: string | null;
   createdAt: string;
+  preferences: AdminUserPreferences | null;
+  acquisition: AdminUserAcquisition | null;
 }
 
 export interface AdminInstructor {

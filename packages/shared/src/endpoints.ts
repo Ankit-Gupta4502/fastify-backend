@@ -10,6 +10,8 @@ export const API_ENDPOINTS = {
   },
   USER: {
     DETAIL: "/user/detail",
+    PREFERENCES: "/user/preferences",
+    ACQUISITION: "/user/acquisition",
   },
   ROOMS: {
     PUBLIC_PREVIEW: "/rooms/public/preview",

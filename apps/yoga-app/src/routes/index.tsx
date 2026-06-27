@@ -1,6 +1,9 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { PAGE_SEO } from "@/lib/seo";
-import { lazy, Suspense, useRef } from "react";
+import { lazy, Suspense, useEffect } from "react";
+import { useAuthStore } from "@/store/auth.store";
+import { getStoredUtm, clearUtm } from "@/lib/utm";
+import { userPreferencesApi } from "@/api/user-preferences";
 import { getQueryClient } from "@/lib/react-query/query-client.tsx";
 
 // ── Above-fold: imported directly (no lazy split) ─────────────────────────────
@@ -17,24 +20,11 @@ const InstructorSpotlight = lazy(() => import("@/components/Home/InstructorSpotl
 const Features           = lazy(() => import("@/components/Home/Features").then(m => ({ default: m.Features })));
 const Process            = lazy(() => import("@/components/Home/Process").then(m => ({ default: m.Process })));
 const Reviews            = lazy(() => import("@/components/Home/Reviews").then(m => ({ default: m.Reviews })));
-const StickyTrialBar     = lazy(() => import("@/components/Home/StickyTrialBar").then(m => ({ default: m.StickyTrialBar })));
 
 // ── Route ─────────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute("/")({
   head: () => PAGE_SEO.home,
-  // After Google OAuth the user lands here. If they originally clicked the
-  // "Get started" CTA we stored a flag — consume it and send them to /demo.
-  beforeLoad: ({ context }) => {
-    if (
-      context.user &&
-      typeof window !== "undefined" &&
-      localStorage.getItem("demoClassIntent")
-    ) {
-      localStorage.removeItem("demoClassIntent");
-      throw redirect({ to: "/demo" });
-    }
-  },
   // Parallel prefetch: kick off all public data fetches before the component
   // tree even renders. Vercel best practice: avoid request waterfalls by
   // co-locating data requirements with the route.
@@ -69,16 +59,20 @@ function SectionFallback({ height = "h-64" }: { height?: string }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 function Home() {
-  // heroRef is passed to StickyTrialBar so it can observe when the hero
-  // scrolls out of view — avoids any scroll event listeners.
-  const heroRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated } = useAuthStore();
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const utm = getStoredUtm();
+    if (!utm) return;
+    userPreferencesApi.saveAcquisition(utm).then(() => clearUtm()).catch(() => {});
+  }, [isAuthenticated]);
 
   return (
     <div className="pb-16">
       <WorkshopChips />
 
       {/* ── Above fold: no Suspense needed ── */}
-      <div ref={heroRef}>
+      <div>
         <Hero />
       </div>
 
@@ -114,10 +108,6 @@ function Home() {
         <Features />
       </Suspense>
 
-      {/* StickyTrialBar observes heroRef — no scroll listener, no layout jank */}
-      <Suspense fallback={null}>
-        <StickyTrialBar  />
-      </Suspense>
     </div>
   );
 }

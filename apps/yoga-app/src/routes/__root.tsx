@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import {
   HeadContent,
   Outlet,
@@ -9,6 +9,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { APP_NAME } from "@yoga-app/shared";
+import { captureUtm } from "@/lib/utm";
 import { PAGE_SEO, ROOT_GLOBAL_META } from "@/lib/seo";
 import Layout from "@/components/rootLayout/Layout";
 import { ReactQueryProvider } from "../lib/react-query/query-client";
@@ -67,6 +68,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 const SHELL_HIDDEN_PREFIXES = ["/_user", "/instructor", "/admin", "/session/"];
 
 function RootLayout() {
+  useEffect(() => { captureUtm(); }, []);
   const { matches } = useRouterState();
   const hideShell = matches.some((m) =>
     SHELL_HIDDEN_PREFIXES.some((prefix) => m.routeId.startsWith(prefix))

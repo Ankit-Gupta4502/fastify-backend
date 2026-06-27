@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OnboardingRouteRouteImport } from './routes/onboarding/route'
 import { Route as InstructorRouteRouteImport } from './routes/instructor/route'
 import { Route as DemoRouteRouteImport } from './routes/demo/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
@@ -18,6 +19,7 @@ import { Route as TermsIndexRouteImport } from './routes/terms/index'
 import { Route as ResetPasswordIndexRouteImport } from './routes/reset-password/index'
 import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
 import { Route as PricingIndexRouteImport } from './routes/pricing/index'
+import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as ExpertsIndexRouteImport } from './routes/experts/index'
 import { Route as DemoIndexRouteImport } from './routes/demo/index'
@@ -40,6 +42,11 @@ import { Route as UserRoomsIndexRouteImport } from './routes/_user/rooms/index'
 import { Route as UserDashboardIndexRouteImport } from './routes/_user/dashboard/index'
 import { Route as UserBillingIndexRouteImport } from './routes/_user/billing/index'
 
+const OnboardingRouteRoute = OnboardingRouteRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InstructorRouteRoute = InstructorRouteRouteImport.update({
   id: '/instructor',
   path: '/instructor',
@@ -83,6 +90,11 @@ const PricingIndexRoute = PricingIndexRouteImport.update({
   id: '/pricing/',
   path: '/pricing/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OnboardingRouteRoute,
 } as any)
 const LoginIndexRoute = LoginIndexRouteImport.update({
   id: '/login/',
@@ -196,12 +208,14 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/demo': typeof DemoRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login/': typeof AdminLoginIndexRoute
   '/contact/': typeof ContactIndexRoute
   '/demo/': typeof DemoIndexRoute
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
@@ -232,6 +246,7 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoIndexRoute
   '/experts': typeof ExpertsIndexRoute
   '/login': typeof LoginIndexRoute
+  '/onboarding': typeof OnboardingIndexRoute
   '/pricing': typeof PricingIndexRoute
   '/privacy': typeof PrivacyIndexRoute
   '/reset-password': typeof ResetPasswordIndexRoute
@@ -259,12 +274,14 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/demo': typeof DemoRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login/': typeof AdminLoginIndexRoute
   '/contact/': typeof ContactIndexRoute
   '/demo/': typeof DemoIndexRoute
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
@@ -292,12 +309,14 @@ export interface FileRouteTypes {
     | '/admin'
     | '/demo'
     | '/instructor'
+    | '/onboarding'
     | '/demo/success'
     | '/admin-login/'
     | '/contact/'
     | '/demo/'
     | '/experts/'
     | '/login/'
+    | '/onboarding/'
     | '/pricing/'
     | '/privacy/'
     | '/reset-password/'
@@ -328,6 +347,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/experts'
     | '/login'
+    | '/onboarding'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
@@ -354,12 +374,14 @@ export interface FileRouteTypes {
     | '/admin'
     | '/demo'
     | '/instructor'
+    | '/onboarding'
     | '/demo/success'
     | '/admin-login/'
     | '/contact/'
     | '/demo/'
     | '/experts/'
     | '/login/'
+    | '/onboarding/'
     | '/pricing/'
     | '/privacy/'
     | '/reset-password/'
@@ -387,6 +409,7 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   DemoRouteRoute: typeof DemoRouteRouteWithChildren
   InstructorRouteRoute: typeof InstructorRouteRouteWithChildren
+  OnboardingRouteRoute: typeof OnboardingRouteRouteWithChildren
   AdminLoginIndexRoute: typeof AdminLoginIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
   ExpertsIndexRoute: typeof ExpertsIndexRoute
@@ -401,6 +424,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/instructor': {
       id: '/instructor'
       path: '/instructor'
@@ -463,6 +493,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/pricing/'
       preLoaderRoute: typeof PricingIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/': {
+      id: '/onboarding/'
+      path: '/'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof OnboardingIndexRouteImport
+      parentRoute: typeof OnboardingRouteRoute
     }
     '/login/': {
       id: '/login/'
@@ -684,12 +721,25 @@ const InstructorRouteRouteWithChildren = InstructorRouteRoute._addFileChildren(
   InstructorRouteRouteChildren,
 )
 
+interface OnboardingRouteRouteChildren {
+  OnboardingIndexRoute: typeof OnboardingIndexRoute
+}
+
+const OnboardingRouteRouteChildren: OnboardingRouteRouteChildren = {
+  OnboardingIndexRoute: OnboardingIndexRoute,
+}
+
+const OnboardingRouteRouteWithChildren = OnboardingRouteRoute._addFileChildren(
+  OnboardingRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   UserRouteRoute: UserRouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   DemoRouteRoute: DemoRouteRouteWithChildren,
   InstructorRouteRoute: InstructorRouteRouteWithChildren,
+  OnboardingRouteRoute: OnboardingRouteRouteWithChildren,
   AdminLoginIndexRoute: AdminLoginIndexRoute,
   ContactIndexRoute: ContactIndexRoute,
   ExpertsIndexRoute: ExpertsIndexRoute,

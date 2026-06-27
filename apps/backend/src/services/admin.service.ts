@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, isNull, lt, or, sql } from "drizzle-orm";
 import type { AppDatabase } from "../types/database.types";
-import { user, plans, rooms, instructorDetails, userSubscriptions } from "../schema/schema";
+import { user, plans, rooms, instructorDetails, userSubscriptions, userPreferences, userAcquisition } from "../schema/schema";
 import { auth } from "../lib/auth";
 import { USER_ROLES } from "../constants/roles";
 import { createHmsRoom } from "./hms.service";
@@ -8,7 +8,6 @@ import { ROOM_STATUS, ROOM_TYPE } from "../constants/sessions";
 import { notifyEligibleGroupUsers } from "./room-notification.service";
 
 export async function listUsers(db: AppDatabase) {
-  // Fetch all users
   const users = await db
     .select({
       id: user.id,
@@ -20,36 +19,53 @@ export async function listUsers(db: AppDatabase) {
     .from(user)
     .orderBy(desc(user.createdAt));
 
-  // Fetch each user's active plan name via their active subscription
   const activeSubs = await db
-    .select({
-      userId: userSubscriptions.userId,
-      planName: plans.name,
-    })
+    .select({ userId: userSubscriptions.userId, planName: plans.name })
     .from(userSubscriptions)
     .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
     .where(
       and(
         eq(userSubscriptions.status, "active"),
-        or(
-          isNull(userSubscriptions.sessionsTotal),
-          lt(userSubscriptions.sessionsUsed, userSubscriptions.sessionsTotal),
-        ),
+        or(isNull(userSubscriptions.sessionsTotal), lt(userSubscriptions.sessionsUsed, userSubscriptions.sessionsTotal)),
       ),
     );
 
-  // Build a map of userId → planName (latest active subscription wins)
+  const prefs = await db
+    .select({
+      userId: userPreferences.userId,
+      gender: userPreferences.gender,
+      phone: userPreferences.phone,
+      purposes: userPreferences.purposes,
+      otherPurpose: userPreferences.otherPurpose,
+      preferredTimeOfDay: userPreferences.preferredTimeOfDay,
+      timezone: userPreferences.timezone,
+    })
+    .from(userPreferences);
+
+  const acquisitions = await db
+    .select({
+      userId: userAcquisition.userId,
+      utmSource: userAcquisition.utmSource,
+      utmMedium: userAcquisition.utmMedium,
+      utmCampaign: userAcquisition.utmCampaign,
+      referrer: userAcquisition.referrer,
+      landingPage: userAcquisition.landingPage,
+    })
+    .from(userAcquisition);
+
   const planNameByUser = new Map<string, string>();
   for (const sub of activeSubs) {
-    if (!planNameByUser.has(sub.userId)) {
-      planNameByUser.set(sub.userId, sub.planName);
-    }
+    if (!planNameByUser.has(sub.userId)) planNameByUser.set(sub.userId, sub.planName);
   }
+  const prefsByUser = new Map(prefs.map((p) => [p.userId, p]));
+  const acqByUser = new Map(acquisitions.map((a) => [a.userId, a]));
 
   return users.map((u) => ({
     ...u,
     planName: planNameByUser.get(u.id) ?? null,
     createdAt: u.createdAt.toISOString(),
+    preferences: prefsByUser.get(u.id) ?? null,
+    acquisition: acqByUser.get(u.id) ?? null,
   }));
 }
 

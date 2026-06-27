@@ -20,6 +20,10 @@ import { ApiRequestError } from "@/lib/http";
 
 export const Route = createFileRoute("/demo/")({
   head: () => PAGE_SEO.demo,
+  // Demo feature temporarily disabled — redirect to home
+  beforeLoad: ({ navigate }) => {
+    void navigate({ to: "/", replace: true });
+  },
   component: DemoOnboardingPage,
 });
 

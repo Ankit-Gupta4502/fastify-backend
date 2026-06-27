@@ -62,3 +62,6 @@ export {
   userSubscriptionRelations,
   subscriptionStatusEnum,
 } from "../models/user-subscription";
+
+export { userPreferences } from "../models/user-preferences";
+export { userAcquisition } from "../models/user-acquisition";

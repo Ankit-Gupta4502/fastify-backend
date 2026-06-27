@@ -94,18 +94,32 @@ export function WorkshopDialog({ initial, onClose }: Props) {
             />
           </Field>
 
-          <Field label="Price (paise — 0 = free)">
-            <Input
-              type="number"
-              min={0}
-              placeholder="0"
-              value={form.price ?? ""}
-              onChange={(e) =>
-                set("price", e.target.value === "" ? null : Number(e.target.value))
-              }
-              className="rounded-xl"
-            />
-          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Price INR (paise — 0 = free)">
+              <Input
+                type="number"
+                min={0}
+                placeholder="0"
+                value={form.priceInr ?? ""}
+                onChange={(e) =>
+                  set("priceInr", e.target.value === "" ? null : Number(e.target.value))
+                }
+                className="rounded-xl"
+              />
+            </Field>
+            <Field label="Price USD (cents — 0 = free)">
+              <Input
+                type="number"
+                min={0}
+                placeholder="0"
+                value={form.priceUsd ?? ""}
+                onChange={(e) =>
+                  set("priceUsd", e.target.value === "" ? null : Number(e.target.value))
+                }
+                className="rounded-xl"
+              />
+            </Field>
+          </div>
 
           {/* Active toggle */}
           <div className="flex items-center gap-3 pt-1">

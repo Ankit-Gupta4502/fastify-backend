@@ -71,6 +71,20 @@
       "when": 1782337298482,
       "tag": "0009_swift_mercury",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1782579208906,
+      "tag": "0010_flawless_korath",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1782580314306,
+      "tag": "0011_cute_roughhouse",
+      "breakpoints": true
     }
   ]
 }

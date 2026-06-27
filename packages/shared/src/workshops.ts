@@ -2,7 +2,8 @@ export interface Workshop {
   id: string;
   name: string;
   description: string;
-  price: number | null;
+  priceInr: number | null;
+  priceUsd: number | null;
   image: string | null;
   meetLink: string | null;
   scheduledAt: string | null;
@@ -23,7 +24,8 @@ export interface WorkshopJoinBody {
 export interface CreateWorkshopBody {
   name: string;
   description: string;
-  price?: number | null;
+  priceInr?: number | null;
+  priceUsd?: number | null;
   image?: string | null;
   meetLink?: string | null;
   scheduledAt?: string | null;
@@ -34,7 +36,8 @@ export interface CreateWorkshopBody {
 export interface UpdateWorkshopBody {
   name?: string;
   description?: string;
-  price?: number | null;
+  priceInr?: number | null;
+  priceUsd?: number | null;
   image?: string | null;
   meetLink?: string | null;
   scheduledAt?: string | null;

@@ -42,6 +42,10 @@ export const queryKeys = {
     list: () => [...queryKeys.workshops.all, "list"] as const,
     detail: (id: string) => [...queryKeys.workshops.all, "detail", id] as const,
   },
+  userPreferences: {
+    all: ["user-preferences"] as const,
+    mine: () => [...queryKeys.userPreferences.all, "mine"] as const,
+  },
   demo: {
     all: ["demo"] as const,
     myRequests: () => [...queryKeys.demo.all, "my-requests"] as const,
