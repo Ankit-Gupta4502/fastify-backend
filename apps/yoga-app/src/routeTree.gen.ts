@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as OnboardingRouteRouteImport } from './routes/onboarding/route'
 import { Route as InstructorRouteRouteImport } from './routes/instructor/route'
 import { Route as DemoRouteRouteImport } from './routes/demo/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
@@ -19,7 +18,6 @@ import { Route as TermsIndexRouteImport } from './routes/terms/index'
 import { Route as ResetPasswordIndexRouteImport } from './routes/reset-password/index'
 import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
 import { Route as PricingIndexRouteImport } from './routes/pricing/index'
-import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as ExpertsIndexRouteImport } from './routes/experts/index'
 import { Route as DemoIndexRouteImport } from './routes/demo/index'
@@ -39,14 +37,10 @@ import { Route as AdminReviewsIndexRouteImport } from './routes/admin/reviews/in
 import { Route as AdminInstructorsIndexRouteImport } from './routes/admin/instructors/index'
 import { Route as AdminDemoRequestsIndexRouteImport } from './routes/admin/demo-requests/index'
 import { Route as UserRoomsIndexRouteImport } from './routes/_user/rooms/index'
+import { Route as UserEditProfileIndexRouteImport } from './routes/_user/edit-profile/index'
 import { Route as UserDashboardIndexRouteImport } from './routes/_user/dashboard/index'
 import { Route as UserBillingIndexRouteImport } from './routes/_user/billing/index'
 
-const OnboardingRouteRoute = OnboardingRouteRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const InstructorRouteRoute = InstructorRouteRouteImport.update({
   id: '/instructor',
   path: '/instructor',
@@ -90,11 +84,6 @@ const PricingIndexRoute = PricingIndexRouteImport.update({
   id: '/pricing/',
   path: '/pricing/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => OnboardingRouteRoute,
 } as any)
 const LoginIndexRoute = LoginIndexRouteImport.update({
   id: '/login/',
@@ -192,6 +181,11 @@ const UserRoomsIndexRoute = UserRoomsIndexRouteImport.update({
   path: '/rooms/',
   getParentRoute: () => UserRouteRoute,
 } as any)
+const UserEditProfileIndexRoute = UserEditProfileIndexRouteImport.update({
+  id: '/edit-profile/',
+  path: '/edit-profile/',
+  getParentRoute: () => UserRouteRoute,
+} as any)
 const UserDashboardIndexRoute = UserDashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
@@ -208,20 +202,19 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/demo': typeof DemoRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
-  '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login/': typeof AdminLoginIndexRoute
   '/contact/': typeof ContactIndexRoute
   '/demo/': typeof DemoIndexRoute
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
-  '/onboarding/': typeof OnboardingIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/billing/': typeof UserBillingIndexRoute
   '/dashboard/': typeof UserDashboardIndexRoute
+  '/edit-profile/': typeof UserEditProfileIndexRoute
   '/rooms/': typeof UserRoomsIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
@@ -246,13 +239,13 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoIndexRoute
   '/experts': typeof ExpertsIndexRoute
   '/login': typeof LoginIndexRoute
-  '/onboarding': typeof OnboardingIndexRoute
   '/pricing': typeof PricingIndexRoute
   '/privacy': typeof PrivacyIndexRoute
   '/reset-password': typeof ResetPasswordIndexRoute
   '/terms': typeof TermsIndexRoute
   '/billing': typeof UserBillingIndexRoute
   '/dashboard': typeof UserDashboardIndexRoute
+  '/edit-profile': typeof UserEditProfileIndexRoute
   '/rooms': typeof UserRoomsIndexRoute
   '/admin/demo-requests': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors': typeof AdminInstructorsIndexRoute
@@ -274,20 +267,19 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/demo': typeof DemoRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
-  '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login/': typeof AdminLoginIndexRoute
   '/contact/': typeof ContactIndexRoute
   '/demo/': typeof DemoIndexRoute
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
-  '/onboarding/': typeof OnboardingIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/_user/billing/': typeof UserBillingIndexRoute
   '/_user/dashboard/': typeof UserDashboardIndexRoute
+  '/_user/edit-profile/': typeof UserEditProfileIndexRoute
   '/_user/rooms/': typeof UserRoomsIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
@@ -309,20 +301,19 @@ export interface FileRouteTypes {
     | '/admin'
     | '/demo'
     | '/instructor'
-    | '/onboarding'
     | '/demo/success'
     | '/admin-login/'
     | '/contact/'
     | '/demo/'
     | '/experts/'
     | '/login/'
-    | '/onboarding/'
     | '/pricing/'
     | '/privacy/'
     | '/reset-password/'
     | '/terms/'
     | '/billing/'
     | '/dashboard/'
+    | '/edit-profile/'
     | '/rooms/'
     | '/admin/demo-requests/'
     | '/admin/instructors/'
@@ -347,13 +338,13 @@ export interface FileRouteTypes {
     | '/demo'
     | '/experts'
     | '/login'
-    | '/onboarding'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
     | '/terms'
     | '/billing'
     | '/dashboard'
+    | '/edit-profile'
     | '/rooms'
     | '/admin/demo-requests'
     | '/admin/instructors'
@@ -374,20 +365,19 @@ export interface FileRouteTypes {
     | '/admin'
     | '/demo'
     | '/instructor'
-    | '/onboarding'
     | '/demo/success'
     | '/admin-login/'
     | '/contact/'
     | '/demo/'
     | '/experts/'
     | '/login/'
-    | '/onboarding/'
     | '/pricing/'
     | '/privacy/'
     | '/reset-password/'
     | '/terms/'
     | '/_user/billing/'
     | '/_user/dashboard/'
+    | '/_user/edit-profile/'
     | '/_user/rooms/'
     | '/admin/demo-requests/'
     | '/admin/instructors/'
@@ -409,7 +399,6 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   DemoRouteRoute: typeof DemoRouteRouteWithChildren
   InstructorRouteRoute: typeof InstructorRouteRouteWithChildren
-  OnboardingRouteRoute: typeof OnboardingRouteRouteWithChildren
   AdminLoginIndexRoute: typeof AdminLoginIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
   ExpertsIndexRoute: typeof ExpertsIndexRoute
@@ -424,13 +413,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/instructor': {
       id: '/instructor'
       path: '/instructor'
@@ -493,13 +475,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/pricing/'
       preLoaderRoute: typeof PricingIndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/onboarding/': {
-      id: '/onboarding/'
-      path: '/'
-      fullPath: '/onboarding/'
-      preLoaderRoute: typeof OnboardingIndexRouteImport
-      parentRoute: typeof OnboardingRouteRoute
     }
     '/login/': {
       id: '/login/'
@@ -634,6 +609,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserRoomsIndexRouteImport
       parentRoute: typeof UserRouteRoute
     }
+    '/_user/edit-profile/': {
+      id: '/_user/edit-profile/'
+      path: '/edit-profile'
+      fullPath: '/edit-profile/'
+      preLoaderRoute: typeof UserEditProfileIndexRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
     '/_user/dashboard/': {
       id: '/_user/dashboard/'
       path: '/dashboard'
@@ -654,12 +636,14 @@ declare module '@tanstack/react-router' {
 interface UserRouteRouteChildren {
   UserBillingIndexRoute: typeof UserBillingIndexRoute
   UserDashboardIndexRoute: typeof UserDashboardIndexRoute
+  UserEditProfileIndexRoute: typeof UserEditProfileIndexRoute
   UserRoomsIndexRoute: typeof UserRoomsIndexRoute
 }
 
 const UserRouteRouteChildren: UserRouteRouteChildren = {
   UserBillingIndexRoute: UserBillingIndexRoute,
   UserDashboardIndexRoute: UserDashboardIndexRoute,
+  UserEditProfileIndexRoute: UserEditProfileIndexRoute,
   UserRoomsIndexRoute: UserRoomsIndexRoute,
 }
 
@@ -721,25 +705,12 @@ const InstructorRouteRouteWithChildren = InstructorRouteRoute._addFileChildren(
   InstructorRouteRouteChildren,
 )
 
-interface OnboardingRouteRouteChildren {
-  OnboardingIndexRoute: typeof OnboardingIndexRoute
-}
-
-const OnboardingRouteRouteChildren: OnboardingRouteRouteChildren = {
-  OnboardingIndexRoute: OnboardingIndexRoute,
-}
-
-const OnboardingRouteRouteWithChildren = OnboardingRouteRoute._addFileChildren(
-  OnboardingRouteRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   UserRouteRoute: UserRouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   DemoRouteRoute: DemoRouteRouteWithChildren,
   InstructorRouteRoute: InstructorRouteRouteWithChildren,
-  OnboardingRouteRoute: OnboardingRouteRouteWithChildren,
   AdminLoginIndexRoute: AdminLoginIndexRoute,
   ContactIndexRoute: ContactIndexRoute,
   ExpertsIndexRoute: ExpertsIndexRoute,

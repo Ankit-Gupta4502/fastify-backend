@@ -13,7 +13,7 @@ import type {
   SaveUserPreferencesBody,
 } from "@yoga-app/shared";
 
-export const Route = createFileRoute("/onboarding/")({
+export const Route = createFileRoute("/_user/edit-profile/")({
   component: OnboardingPage,
 });
 
@@ -53,6 +53,8 @@ const INITIAL_FORM: FormState = {
   preferredTimeOfDay: "",
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 };
+
+
 
 export function OnboardingPage() {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Calendar, Clock, Flame, Wallet, PartyPopper, ArrowRight, Hourglass, AlertCircle, ClipboardList } from "lucide-react";
+import { Calendar, Clock, Flame, Wallet,  ArrowRight, } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { StatCard } from "@/components/shared/StatCard";
 import { NextFlowCard } from "../-components/dashboard/NextFlowCard";
@@ -9,94 +9,21 @@ import { UpcomingSessionList } from "../-components/dashboard/UpcomingSessionLis
 import { BookPrivateSessionDialog } from "../-components/dashboard/BookPrivateSessionDialog";
 import { useUpcomingRooms, useEnrolRoom, useJoinRoom } from "@/hooks/use-rooms";
 import { useMyPlan } from "@/hooks/use-plans";
-import { useMyDemoRequests } from "@/hooks/use-demo";
 import { useMyPreferences } from "@/hooks/use-user-preferences";
 import { Button } from "@/components/ui/button";
-import type { DemoRequestStatus } from "@yoga-app/shared";
 export const Route = createFileRoute("/_user/dashboard/")({
   component: UserDashboard,
 });
 
-const DEMO_BANNER_CONFIG: Record<string, {
-  icon: React.ElementType;
-  title: string;
-  description: string;
-  ctaLabel: string;
-  style: string;
-  iconStyle: string;
-}> = {
-  completed: {
-    icon: PartyPopper,
-    title: "Free demo complete!",
-    description: "You've finished your free class. Choose a plan to keep your practice going.",
-    ctaLabel: "View plans",
-    style: "border-emerald-200 bg-emerald-50 dark:bg-emerald-500/8 dark:border-emerald-500/20",
-    iconStyle: "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  },
-  pending: {
-    icon: Hourglass,
-    title: "Demo class pending review",
-    description: "Your free demo request is being reviewed. We'll notify you once it's confirmed.",
-    ctaLabel: "View plans",
-    style: "border-amber-200 bg-amber-50 dark:bg-amber-500/8 dark:border-amber-500/20",
-    iconStyle: "bg-amber-100 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  },
-  rejected: {
-    icon: AlertCircle,
-    title: "Demo request not approved",
-    description: "Your demo request wasn't approved. You can still pick a plan and get started right away.",
-    ctaLabel: "Choose a plan",
-    style: "border-red-200 bg-red-50 dark:bg-red-500/8 dark:border-red-500/20",
-    iconStyle: "bg-red-100 dark:bg-red-500/15 text-red-600 dark:text-red-400",
-  },
-  no_demo: {
-    icon: ClipboardList,
-    title: "Complete your profile",
-    description: "Tell us your goals and schedule so we can recommend the right sessions for you.",
-    ctaLabel: "Set up profile",
-    style: "border-primary/20 bg-primary/5 dark:bg-primary/8",
-    iconStyle: "bg-primary/10 text-primary",
-  },
-};
 
-function TrialStatusBanner({ status }: { status: DemoRequestStatus | null }) {
-  const key = status === "completed" ? "completed"
-    : status === "pending" || status === "needs_information" ? "pending"
-    : status === "rejected" ? "rejected"
-    : status === "approved" || status === "instructor_assigned" || status === "meeting_scheduled" ? null
-    : "no_demo";
 
-  if (!key) return null;
 
-  const cfg = DEMO_BANNER_CONFIG[key];
-  const Icon = cfg.icon;
-  const to = key === "no_demo" ? "/onboarding" : "/billing";
-
-  return (
-    <div className={`flex items-center gap-4 rounded-2xl border px-5 py-4 ${cfg.style}`}>
-      <div className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${cfg.iconStyle}`}>
-        <Icon className="size-5" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-bold text-sm">{cfg.title}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{cfg.description}</p>
-      </div>
-      <Button asChild size="sm" variant="outline" className="rounded-full shrink-0 gap-1.5 font-bold">
-        <Link to={to}>
-          {cfg.ctaLabel}
-          <ArrowRight className="size-3.5" />
-        </Link>
-      </Button>
-    </div>
-  );
-}
 
 function UserDashboard() {
   const { user } = useAuthStore();
   const router = useRouter();
   const upcoming = useUpcomingRooms();
   const myPlan = useMyPlan();
-  const myDemo = useMyDemoRequests();
   const enrol = useEnrolRoom();
   const join = useJoinRoom();
 
@@ -111,11 +38,8 @@ function UserDashboard() {
   const limit = plan?.sessionsPerWeek ?? null;
   const remaining = limit !== null ? Math.max(limit - used, 0) : null;
 
-  const latestDemo = myDemo.data?.data?.[0] ?? null;
-  const demoStatus: DemoRequestStatus | null = latestDemo?.status ?? null;
   const myPrefs = useMyPreferences();
   const preferences = myPrefs.data?.data ?? null;
-  const showTrialBanner = !plan && !myPlan.isLoading && !myDemo.isLoading && !myPrefs.isLoading;
 
   const handleEnrol = (roomId: string) => {
     setActionError(null);
@@ -151,18 +75,17 @@ function UserDashboard() {
       </div>
 
       {/* Trial / demo status banner — only show if no preferences set */}
-      {showTrialBanner && !preferences && <TrialStatusBanner status={demoStatus} />}
-
+     
       {/* Preferences summary */}
-      {preferences && (
+      
         <div className="rounded-2xl border border-border/60 bg-card/60 px-5 py-4 flex flex-wrap items-center gap-4">
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Your profile</p>
             <div className="flex flex-wrap gap-2">
-              {preferences.purposes.map((p: string) => (
+              {preferences?.purposes.map((p: string) => (
                 <span key={p} className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">{p}</span>
               ))}
-              {preferences.preferredTimeOfDay && (
+              {preferences?.preferredTimeOfDay && (
                 <span className="px-2.5 py-1 rounded-full bg-secondary text-muted-foreground text-xs font-medium">
                   {preferences.preferredTimeOfDay} sessions
                 </span>
@@ -170,12 +93,12 @@ function UserDashboard() {
             </div>
           </div>
           <Button asChild size="sm" variant="outline" className="rounded-full shrink-0 gap-1.5 font-bold">
-            <Link to="/onboarding">
+            <Link  to="/edit-profile">
               Edit <ArrowRight className="size-3.5" />
             </Link>
           </Button>
         </div>
-      )}
+      
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
