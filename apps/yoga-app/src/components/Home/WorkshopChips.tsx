@@ -57,7 +57,7 @@ export function WorkshopChips() {
                     </span>
                   </>
                 )}
-                {(w.price === null || w.price === 0) && (
+                {(!w.priceInr || w.priceInr === 0) && (!w.priceUsd || w.priceUsd === 0) && (
                   <span className="ml-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold px-1.5 py-0.5 leading-none">
                     FREE
                   </span>

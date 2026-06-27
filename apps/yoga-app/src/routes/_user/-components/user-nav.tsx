@@ -6,8 +6,8 @@ import { useAuth } from "@/hooks/use-auth";
 
 const navItems = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
-  { label: "Sessions", to: "/rooms", icon: CalendarDays },
-  { label: "Billing", to: "/billing", icon: Wallet },
+  { label: "Sessions",  to: "/rooms",     icon: CalendarDays },
+  { label: "Billing",   to: "/billing",   icon: Wallet },
 ] as const;
 
 export function UserNav() {

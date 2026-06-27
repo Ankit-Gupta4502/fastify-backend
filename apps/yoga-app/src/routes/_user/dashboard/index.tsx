@@ -1,16 +1,16 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Calendar, Clock, Flame, Wallet,  ArrowRight, } from "lucide-react";
+import { Calendar, Clock, Flame, Wallet } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { StatCard } from "@/components/shared/StatCard";
 import { NextFlowCard } from "../-components/dashboard/NextFlowCard";
 import { PlanCard } from "../-components/dashboard/PlanCard";
+import { ProfileCard } from "../-components/dashboard/ProfileCard";
 import { UpcomingSessionList } from "../-components/dashboard/UpcomingSessionList";
 import { BookPrivateSessionDialog } from "../-components/dashboard/BookPrivateSessionDialog";
 import { useUpcomingRooms, useEnrolRoom, useJoinRoom } from "@/hooks/use-rooms";
 import { useMyPlan } from "@/hooks/use-plans";
 import { useMyPreferences } from "@/hooks/use-user-preferences";
-import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/_user/dashboard/")({
   component: UserDashboard,
 });
@@ -74,31 +74,8 @@ function UserDashboard() {
         </h1>
       </div>
 
-      {/* Trial / demo status banner — only show if no preferences set */}
-     
-      {/* Preferences summary */}
-      
-        <div className="rounded-2xl border border-border/60 bg-card/60 px-5 py-4 flex flex-wrap items-center gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Your profile</p>
-            <div className="flex flex-wrap gap-2">
-              {preferences?.purposes.map((p: string) => (
-                <span key={p} className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">{p}</span>
-              ))}
-              {preferences?.preferredTimeOfDay && (
-                <span className="px-2.5 py-1 rounded-full bg-secondary text-muted-foreground text-xs font-medium">
-                  {preferences.preferredTimeOfDay} sessions
-                </span>
-              )}
-            </div>
-          </div>
-          <Button asChild size="sm" variant="outline" className="rounded-full shrink-0 gap-1.5 font-bold">
-            <Link  to="/edit-profile">
-              Edit <ArrowRight className="size-3.5" />
-            </Link>
-          </Button>
-        </div>
-      
+      <ProfileCard preferences={preferences} isLoading={myPrefs.isLoading} />
+
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">

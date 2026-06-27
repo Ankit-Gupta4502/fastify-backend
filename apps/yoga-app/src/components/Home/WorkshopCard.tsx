@@ -68,12 +68,15 @@ export function WorkshopCard({ workshop }: { workshop: Workshop }) {
               Google Meet
             </span>
           )}
-          {workshop.price != null && workshop.price > 0 && (
+          {workshop.priceInr != null && workshop.priceInr > 0 ? (
             <span className="ml-auto font-bold text-foreground">
-              ₹{(workshop.price / 100).toFixed(0)}
+              ₹{(workshop.priceInr / 100).toFixed(0)}
             </span>
-          )}
-          {(workshop.price === null || workshop.price === 0) && (
+          ) : workshop.priceUsd != null && workshop.priceUsd > 0 ? (
+            <span className="ml-auto font-bold text-foreground">
+              ${(workshop.priceUsd / 100).toFixed(0)}
+            </span>
+          ) : (
             <span className="ml-auto font-bold text-emerald-600">Free</span>
           )}
         </div>

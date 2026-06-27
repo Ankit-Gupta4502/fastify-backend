@@ -65,10 +65,12 @@ export function WorkshopJoinDialog({ workshop: w, onClose }: Props) {
                   Google Meet
                 </span>
               )}
-              {(w.price === null || w.price === 0) ? (
-                <span className="rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold px-2 py-0.5">FREE</span>
+              {w.priceInr != null && w.priceInr > 0 ? (
+                <span className="font-bold text-foreground">₹{(w.priceInr / 100).toFixed(0)}</span>
+              ) : w.priceUsd != null && w.priceUsd > 0 ? (
+                <span className="font-bold text-foreground">${(w.priceUsd / 100).toFixed(0)}</span>
               ) : (
-                <span className="font-bold text-foreground">₹{(w.price / 100).toFixed(0)}</span>
+                <span className="rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold px-2 py-0.5">FREE</span>
               )}
             </div>
           </div>
