@@ -35,6 +35,7 @@ export function useCreateRoomForm(onClose: () => void) {
         scheduledStartUtc: startUtc.toISOString(),
         scheduledEndUtc: endUtc.toISOString(),
         capacity: form.capacity,
+        meetLink: form.meetLink.trim() || null,
       },
       {
         onSuccess: () => {

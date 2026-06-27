@@ -44,6 +44,7 @@ export const rooms = pgTable(
       withTimezone: true,
     }).notNull(),
     scheduledEnd: timestamp("scheduled_end", { withTimezone: true }).notNull(),
+    meetLink: text("meet_link"),
     hmsRoomId: text("hms_room_id").unique(),
     hmsRoomCode: text("hms_room_code"),
     createdAt: timestamp("created_at", { withTimezone: true })

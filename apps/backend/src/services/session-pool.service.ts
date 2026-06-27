@@ -72,6 +72,7 @@ export type UpcomingRoom = {
   scheduledStartUtc: Date;
   scheduledEndUtc: Date;
   isEnrolled: boolean;
+  meetLink: string | null;
   instructor: {
     id: string;
     name: string;
@@ -91,6 +92,7 @@ export async function listUpcomingGroupRooms(
       currentOccupancy: rooms.currentOccupancy,
       scheduledStartUtc: rooms.scheduledStart,
       scheduledEndUtc: rooms.scheduledEnd,
+      meetLink: rooms.meetLink,
       instructorId: user.id,
       instructorName: user.name,
       specialty: instructorDetails.specialty,
@@ -136,6 +138,7 @@ export async function listUpcomingGroupRooms(
       scheduledStart: formatForAudience(r.scheduledStartUtc, audience),
       isEnrolled: r.enrolledUserId !== null,
       canJoinLive,
+      meetLink: r.meetLink ?? null,
       instructor: {
         id: r.instructorId,
         name: r.instructorName,

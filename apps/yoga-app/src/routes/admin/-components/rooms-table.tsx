@@ -1,5 +1,6 @@
 import type { AdminRoom } from "@yoga-app/shared";
 import { cn } from "@/lib/utils";
+import { Video } from "lucide-react";
 import { TableSkeletonRows } from "@/components/shared/table-skeleton-rows";
 import { ErrorCard } from "@/components/shared/error-card";
 
@@ -33,12 +34,13 @@ export function RoomsTable({ rooms, isLoading, error }: RoomsTableProps) {
             <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Starts (UTC)</th>
             <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Ends (UTC)</th>
             <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Spots</th>
+            <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Meet</th>
             <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Status</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border/40">
           {isLoading ? (
-            <TableSkeletonRows rows={4} cols={5} />
+            <TableSkeletonRows rows={4} cols={6} />
           ) : (
             rooms.map((room) => (
               <tr key={room.id} className="hover:bg-secondary/20 transition-colors">
@@ -58,6 +60,21 @@ export function RoomsTable({ rooms, isLoading, error }: RoomsTableProps) {
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {room.currentOccupancy} / {room.capacity}
+                </td>
+                <td className="px-4 py-3">
+                  {room.meetLink ? (
+                    <a
+                      href={room.meetLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                    >
+                      <Video className="size-3.5" />
+                      Join
+                    </a>
+                  ) : (
+                    <span className="text-xs text-muted-foreground/50">—</span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <span

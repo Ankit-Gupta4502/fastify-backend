@@ -52,6 +52,7 @@ export interface AdminRoom {
   capacity: number;
   currentOccupancy: number;
   status: string;
+  meetLink: string | null;
 }
 
 export interface CreateGroupRoomBody {
@@ -59,6 +60,7 @@ export interface CreateGroupRoomBody {
   scheduledStartUtc: string;
   scheduledEndUtc: string;
   capacity: number;
+  meetLink?: string | null;
 }
 
 export interface CreateGroupRoomResult {

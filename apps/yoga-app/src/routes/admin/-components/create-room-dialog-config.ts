@@ -20,6 +20,7 @@ export interface FormState {
   endTime: string;
   capacity: number;
   tz: string;
+  meetLink: string;
 }
 
 export const DEFAULT_FORM: FormState = {
@@ -29,6 +30,7 @@ export const DEFAULT_FORM: FormState = {
   endTime: "08:00",
   capacity: 20,
   tz: "America/New_York",
+  meetLink: "",
 };
 
 export function formatInZone(utcDate: Date, tz: string) {

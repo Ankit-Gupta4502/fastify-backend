@@ -149,6 +149,7 @@ export async function listGroupRooms(db: AppDatabase) {
       capacity: rooms.capacity,
       currentOccupancy: rooms.currentOccupancy,
       status: rooms.status,
+      meetLink: rooms.meetLink,
     })
     .from(rooms)
     .innerJoin(user, eq(rooms.instructorId, user.id))
@@ -169,6 +170,7 @@ export async function createGroupRoom(
     scheduledStartUtc: Date;
     scheduledEndUtc: Date;
     capacity: number;
+    meetLink?: string | null;
   },
 ) {
   const [instructor] = await db
@@ -207,6 +209,7 @@ export async function createGroupRoom(
       capacity: params.capacity,
       scheduledStart: params.scheduledStartUtc,
       scheduledEnd: params.scheduledEndUtc,
+      meetLink: params.meetLink ?? null,
       hmsRoomId: hms.hmsRoomId,
       hmsRoomCode: hms.hmsRoomCode,
     })
@@ -217,6 +220,7 @@ export async function createGroupRoom(
     scheduledStart: params.scheduledStartUtc,
     instructorId: params.instructorId,
     instructorName: instructor?.name ?? "your instructor",
+    meetLink: params.meetLink ?? null,
   }).catch((err) => console.error("group room notification failed", err));
 
   return { roomId: inserted.id };

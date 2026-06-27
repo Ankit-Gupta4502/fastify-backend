@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Users } from "lucide-react";
+import { Users, Video } from "lucide-react";
 import type { UpcomingRoom } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -67,18 +67,30 @@ export function UpcomingSessionList({
                 </div>
 
                 {room.isEnrolled ? (
-                  <Button
-                    size="sm"
-                    disabled={!live || acting}
-                    onClick={() => onJoinLive(room.id)}
-                    className={cn(
-                      "rounded-full shrink-0",
-                      live ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "",
-                    )}
-                    variant={live ? "default" : "outline"}
-                  >
-                    {acting ? "Joining…" : live ? "Join Live" : "Enrolled ✓"}
-                  </Button>
+                  live && room.meetLink ? (
+                    <a
+                      href={room.meetLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
+                    >
+                      <Video className="size-3.5" />
+                      Join Meet
+                    </a>
+                  ) : (
+                    <Button
+                      size="sm"
+                      disabled={!live || acting}
+                      onClick={() => onJoinLive(room.id)}
+                      className={cn(
+                        "rounded-full shrink-0",
+                        live ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "",
+                      )}
+                      variant={live ? "default" : "outline"}
+                    >
+                      {acting ? "Joining…" : live ? "Join Live" : "Enrolled ✓"}
+                    </Button>
+                  )
                 ) : (
                   <Button
                     size="sm"

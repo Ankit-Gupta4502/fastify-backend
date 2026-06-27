@@ -85,6 +85,13 @@
       "when": 1782580314306,
       "tag": "0011_cute_roughhouse",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1782588325539,
+      "tag": "0012_early_nova",
+      "breakpoints": true
     }
   ]
 }

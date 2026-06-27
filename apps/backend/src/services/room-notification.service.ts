@@ -5,7 +5,7 @@ import { PLAN_NAME } from "../constants/sessions";
 import { EmailService } from "./EmailService";
 import { formatForUser } from "./timezone.service";
 
-const APP_NAME = "Solara Yoga";
+const APP_NAME = "BookYourYogaTeacher";
 
 export async function notifyEligibleGroupUsers(
   db: AppDatabase,
@@ -14,6 +14,7 @@ export async function notifyEligibleGroupUsers(
     scheduledStart: Date;
     instructorId: string;
     instructorName: string;
+    meetLink?: string | null;
   },
 ): Promise<void> {
   // Find users with an active group_live subscription who still have weekly quota
@@ -52,6 +53,7 @@ export async function notifyEligibleGroupUsers(
           userName: u.name,
           instructorName: roomDetails.instructorName,
           startTime: formatForUser(roomDetails.scheduledStart, u.timezone),
+          meetLink: roomDetails.meetLink ?? null,
           appName: APP_NAME,
         }),
       }),
@@ -63,6 +65,7 @@ function newGroupClassHtml(p: {
   userName: string;
   instructorName: string;
   startTime: string;
+  meetLink: string | null;
   appName: string;
 }): string {
   return `<!DOCTYPE html>
@@ -123,12 +126,37 @@ function newGroupClassHtml(p: {
                         Group Live Class
                       </td>
                     </tr>
+                    ${p.meetLink ? `
+                    <tr>
+                      <td style="padding:6px 0;font-size:13px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">
+                        Join via
+                      </td>
+                      <td style="padding:6px 0;font-size:14px;color:#333;font-weight:600;">
+                        <a href="${p.meetLink}" style="color:#5b8a52;text-decoration:none;font-weight:700;">
+                          Google Meet ↗
+                        </a>
+                      </td>
+                    </tr>` : ""}
                   </table>
                 </td>
               </tr>
             </table>
+            ${p.meetLink ? `
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+              <tr>
+                <td align="center">
+                  <a href="${p.meetLink}"
+                    style="display:inline-block;background:#5b8a52;color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:50px;">
+                    Join on Google Meet
+                  </a>
+                </td>
+              </tr>
+            </table>` : ""}
             <p style="margin:0;font-size:14px;color:#777;line-height:1.7;">
-              Head to your dashboard and click <strong>Join</strong> to reserve your spot before it fills up.
+              ${p.meetLink
+                ? "Click the button above to join the class, or head to your dashboard to manage your booking."
+                : "Head to your dashboard and click <strong>Join</strong> to reserve your spot before it fills up."
+              }
             </p>
           </td>
         </tr>

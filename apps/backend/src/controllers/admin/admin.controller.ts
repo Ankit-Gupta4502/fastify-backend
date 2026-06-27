@@ -39,6 +39,7 @@ const createGroupRoomBodySchema = z
     scheduledStartUtc: z.string().datetime(),
     scheduledEndUtc: z.string().datetime(),
     capacity: z.number().int().min(2).max(50).default(20),
+    meetLink: z.string().url().optional().nullable(),
   })
   .refine((v) => new Date(v.scheduledEndUtc) > new Date(v.scheduledStartUtc), {
     message: "scheduledEndUtc must be after scheduledStartUtc",
@@ -178,6 +179,7 @@ export class AdminController {
         scheduledStartUtc: new Date(body.scheduledStartUtc),
         scheduledEndUtc: new Date(body.scheduledEndUtc),
         capacity: body.capacity,
+        meetLink: body.meetLink ?? null,
       });
 
       const { statusCode, payload } = successResponse({

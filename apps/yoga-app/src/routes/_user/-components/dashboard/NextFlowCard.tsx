@@ -1,4 +1,4 @@
-import { Sparkles, TrendingUp } from "lucide-react";
+import { Sparkles, TrendingUp, Video } from "lucide-react";
 import type { UpcomingRoom } from "@yoga-app/shared";
 import {
   Card,
@@ -78,19 +78,31 @@ export function NextFlowCard({
             </div>
 
             {room.isEnrolled ? (
-              <Button
-                size="lg"
-                disabled={!room.canJoinLive || actingId === room.id}
-                onClick={() => onJoinLive(room.id)}
-                className={cn(
-                  "rounded-full px-8 font-bold shrink-0",
-                  room.canJoinLive
-                    ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20"
-                    : "shadow-none",
-                )}
-              >
-                {actingId === room.id ? "Joining…" : room.canJoinLive ? "Join Live" : "Enrolled ✓"}
-              </Button>
+              room.canJoinLive && room.meetLink ? (
+                <a
+                  href={room.meetLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full px-8 py-2.5 font-bold text-sm shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 transition-colors"
+                >
+                  <Video className="size-4" />
+                  Join on Meet
+                </a>
+              ) : (
+                <Button
+                  size="lg"
+                  disabled={!room.canJoinLive || actingId === room.id}
+                  onClick={() => onJoinLive(room.id)}
+                  className={cn(
+                    "rounded-full px-8 font-bold shrink-0",
+                    room.canJoinLive
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20"
+                      : "shadow-none",
+                  )}
+                >
+                  {actingId === room.id ? "Joining…" : room.canJoinLive ? "Join Live" : "Enrolled ✓"}
+                </Button>
+              )
             ) : (
               <Button
                 size="lg"

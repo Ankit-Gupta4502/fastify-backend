@@ -1,4 +1,5 @@
 import { toZonedTime, format as tzFormat } from "date-fns-tz";
+import { Video } from "lucide-react";
 import type { AdminInstructor } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -104,6 +105,20 @@ export function CreateRoomDialog({ open, onOpenChange, instructors }: CreateRoom
               />
             </Field>
           </div>
+
+          {/* Google Meet link */}
+          <Field label="Google Meet link (optional)">
+            <div className="relative">
+              <Video className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+              <input
+                type="url"
+                value={form.meetLink}
+                onChange={(e) => patch({ meetLink: e.target.value })}
+                placeholder="https://meet.google.com/xxx-yyyy-zzz"
+                className="input pl-9"
+              />
+            </div>
+          </Field>
 
           {/* Capacity */}
           <Field label={`Capacity: ${form.capacity} spots`}>

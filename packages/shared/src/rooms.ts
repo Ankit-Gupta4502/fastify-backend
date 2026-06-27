@@ -30,6 +30,7 @@ export interface UpcomingRoom {
   isEnrolled: boolean;
   /** Server-computed: true when the live-join window is open (15 min before start until end) */
   canJoinLive: boolean;
+  meetLink: string | null;
   instructor: {
     id: string;
     name: string;
