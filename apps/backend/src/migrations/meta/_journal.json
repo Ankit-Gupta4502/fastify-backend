@@ -71,6 +71,13 @@
       "when": 1782337298482,
       "tag": "0009_swift_mercury",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1782338887991,
+      "tag": "0010_inr_pricing",
+      "breakpoints": true
     }
   ]
 }

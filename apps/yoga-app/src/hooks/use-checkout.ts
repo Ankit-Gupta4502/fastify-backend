@@ -7,6 +7,17 @@ import {
 import { queryKeys } from "../lib/react-query/query-keys";
 import { useAuthStore } from "../store/auth.store";
 
+const INDIA_TIMEZONES = new Set(["Asia/Calcutta", "Asia/Kolkata"]);
+
+function getCountryCode(): string | undefined {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return INDIA_TIMEZONES.has(tz) ? "IN" : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function useCustomCheckout() {
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
@@ -14,10 +25,12 @@ export function useCustomCheckout() {
   return useMutation({
     retry: 1,
     mutationFn: async ({ sessionCount, planName }: { sessionCount: number; planName: "private" | "prenatal_postnatal" | "therapeutic_yoga" }) => {
-      const order = await paymentsApi.createCustomOrder({ sessionCount, planName });
+      const country = getCountryCode();
+      const order = await paymentsApi.createCustomOrder({ sessionCount, planName, country });
       if (!order.data) throw new Error("Order creation failed");
 
       const { orderId, keyId, amount, currency } = order.data;
+      const isIndia = currency === "INR";
 
       const checkout: RazorpayCheckoutResponse = await openRazorpayCheckout({
         key: keyId,
@@ -31,6 +44,7 @@ export function useCustomCheckout() {
           email: user?.email ?? undefined,
         },
         theme: { color: "#D97706" },
+        config: isIndia ? { display: { preferences: { show_default_blocks: true } } } : undefined,
         handler: () => {},
       });
 
@@ -60,11 +74,13 @@ export function useCheckout() {
   return useMutation({
     retry: 3,
     mutationFn: async (planId: string) => {
-      const order = await paymentsApi.createOrder({ planId });
+      const country = getCountryCode();
+      const order = await paymentsApi.createOrder({ planId, country });
       if (!order.data) {
         throw new Error("Order creation failed");
       }
       const { orderId, keyId, amount, currency, planName } = order.data;
+      const isIndia = currency === "INR";
 
       const checkout: RazorpayCheckoutResponse = await openRazorpayCheckout({
         key: keyId,
@@ -78,6 +94,7 @@ export function useCheckout() {
           email: user?.email ?? undefined,
         },
         theme: { color: "#D97706" },
+        config: isIndia ? { display: { preferences: { show_default_blocks: true } } } : undefined,
         handler: () => {},
       });
 
