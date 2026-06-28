@@ -27,6 +27,14 @@ export function useAdminUsers() {
   return useQuery(adminQueryOptions.users());
 }
 
+export function useAdminUserDetail(id: string) {
+  return useQuery({
+    queryKey: queryKeys.admin.userDetail(id),
+    queryFn: () => adminApi.getUserDetail(id),
+    staleTime: 30_000,
+  });
+}
+
 export function useAdminInstructors() {
   return useQuery(adminQueryOptions.instructors());
 }

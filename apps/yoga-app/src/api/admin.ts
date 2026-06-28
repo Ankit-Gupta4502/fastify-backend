@@ -1,6 +1,7 @@
 import type {
   AdminPrivateSessionRequest,
   AdminUser,
+  AdminUserDetail,
   AdminInstructor,
   AdminRoom,
   AssignPrivateSessionBody,
@@ -14,6 +15,9 @@ import { apiRequest } from "../lib/http";
 export const adminApi = {
   listUsers: () =>
     apiRequest<AdminUser[]>(API_ENDPOINTS.ADMIN.USERS),
+
+  getUserDetail: (id: string) =>
+    apiRequest<AdminUserDetail>(API_ENDPOINTS.ADMIN.USER_DETAIL(id)),
 
   listInstructors: () =>
     apiRequest<AdminInstructor[]>(API_ENDPOINTS.ADMIN.INSTRUCTORS),

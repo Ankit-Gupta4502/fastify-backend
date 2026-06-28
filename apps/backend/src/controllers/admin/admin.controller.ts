@@ -7,6 +7,7 @@ import { drizzle } from "../../db";
 import { errorResponse, successResponse, validateWithZod } from "../../utils";
 import {
   listUsers,
+  getUserDetail,
   listInstructors,
   listGroupRooms,
   createGroupRoom,
@@ -25,6 +26,7 @@ import {
   updatePriorityBodySchema,
   createInstructorBodySchema,
   instructorIdParamsSchema,
+  userIdParamsSchema,
   createGroupRoomBodySchema,
   privateRequestIdParamsSchema,
   privateRequestsQuerySchema,
@@ -49,6 +51,7 @@ export class AdminController {
     app.register(
       async (router) => {
         router.get("/users", { preHandler }, this.getUsers);
+        router.get("/users/:id", { preHandler }, this.getUserDetail);
         router.get("/instructors", { preHandler }, this.getInstructors);
         router.post("/instructors", { preHandler }, this.createInstructor);
         router.patch("/instructors/:id/approve", { preHandler }, this.approveInstructor);
@@ -66,6 +69,20 @@ export class AdminController {
   private getUsers = async (_req: FastifyRequest, reply: FastifyReply) => {
     const data = await listUsers(drizzle);
     const { statusCode, payload } = successResponse({ message: "Users", data });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private getUserDetail = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { params: userIdParamsSchema });
+    if (invalid) return invalid;
+
+    const { id } = request.params as z.infer<typeof userIdParamsSchema>;
+    const data = await getUserDetail(drizzle, id);
+    if (!data) {
+      const { statusCode, payload } = errorResponse({ message: "User not found", statusCode: 404 });
+      return reply.status(statusCode).send(payload);
+    }
+    const { statusCode, payload } = successResponse({ message: "User detail", data });
     return reply.status(statusCode).send(payload);
   };
 

@@ -333,8 +333,10 @@ export class RoomsController {
     try {
       const result = await createPrivateSessionRequest(drizzle, {
         userId: me.id,
-        requestedStartUtc: new Date(body.requestedStartUtc),
-        requestedEndUtc: new Date(body.requestedEndUtc),
+        slots: body.slots.map((s) => ({
+          startUtc: new Date(s.startUtc),
+          endUtc: new Date(s.endUtc),
+        })),
       });
       const { statusCode, payload } = successResponse({
         message: "Private session request submitted",

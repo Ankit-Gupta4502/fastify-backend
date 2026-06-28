@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMyPrivateRequests } from "@/hooks/use-rooms";
-import { BookPrivateSessionDialog } from "../-components/dashboard/BookPrivateSessionDialog";
+import { BookPrivateSessionDialog } from "../dashboard/-components/BookPrivateSessionDialog";
 import type { MyPrivateSessionRequest, PrivateSessionRequestStatus } from "@yoga-app/shared";
 
 export const Route = createFileRoute("/_user/private-sessions/")({

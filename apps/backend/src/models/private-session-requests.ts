@@ -1,12 +1,18 @@
-import { pgTable, uuid, timestamp, text } from "drizzle-orm/pg-core";
+import { jsonb, pgTable, uuid, timestamp, text } from "drizzle-orm/pg-core";
 import { user } from "./auth.schema";
 import { rooms } from "./rooms";
+
+export interface PreferredSlot {
+  startUtc: string;
+  endUtc: string;
+}
 
 export const privateSessionRequests = pgTable("private_session_requests", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id").notNull().references(() => user.id),
   requestedStart: timestamp("requested_start", { withTimezone: true }).notNull(),
   requestedEnd: timestamp("requested_end", { withTimezone: true }).notNull(),
+  preferredSlots: jsonb("preferred_slots").$type<PreferredSlot[]>().notNull().default([]),
   status: text("status").notNull().default("pending"), // pending | approved | rejected
   instructorId: uuid("instructor_id").references(() => user.id),
   roomId: uuid("room_id").references(() => rooms.id),

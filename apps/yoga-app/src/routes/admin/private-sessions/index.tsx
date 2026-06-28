@@ -115,10 +115,21 @@ function RequestRow({ req, instructors }: RequestRowProps) {
             {req.userName}
             <span className="text-xs font-normal text-muted-foreground truncate">{req.userEmail}</span>
           </p>
-          <p className="text-xs text-muted-foreground pl-6 flex items-center gap-2">
-            <Calendar className="size-3 shrink-0" />
-            {formatDateTime(req.requestedStart)} → {formatDateTime(req.requestedEnd)}
-          </p>
+          {req.preferredSlots && req.preferredSlots.length > 0 ? (
+            <div className="pl-6 space-y-0.5">
+              {req.preferredSlots.map((slot, i) => (
+                <p key={i} className="text-xs text-muted-foreground flex items-center gap-2">
+                  <Calendar className="size-3 shrink-0 opacity-60" />
+                  {formatDateTime(slot.startUtc)} → {formatDateTime(slot.endUtc)}
+                </p>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground pl-6 flex items-center gap-2">
+              <Calendar className="size-3 shrink-0" />
+              {formatDateTime(req.requestedStart)} → {formatDateTime(req.requestedEnd)}
+            </p>
+          )}
           {req.instructorName && (
             <p className="text-xs text-muted-foreground pl-6">
               Instructor: <span className="text-foreground font-medium">{req.instructorName}</span>

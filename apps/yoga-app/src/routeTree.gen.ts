@@ -42,6 +42,7 @@ import { Route as UserPrivateSessionsIndexRouteImport } from './routes/_user/pri
 import { Route as UserEditProfileIndexRouteImport } from './routes/_user/edit-profile/index'
 import { Route as UserDashboardIndexRouteImport } from './routes/_user/dashboard/index'
 import { Route as UserBillingIndexRouteImport } from './routes/_user/billing/index'
+import { Route as AdminUsersUserIdRouteImport } from './routes/admin/users/$userId'
 
 const InstructorRouteRoute = InstructorRouteRouteImport.update({
   id: '/instructor',
@@ -210,6 +211,11 @@ const UserBillingIndexRoute = UserBillingIndexRouteImport.update({
   path: '/billing/',
   getParentRoute: () => UserRouteRoute,
 } as any)
+const AdminUsersUserIdRoute = AdminUsersUserIdRouteImport.update({
+  id: '/users/$userId',
+  path: '/users/$userId',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/terms/': typeof TermsIndexRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/billing/': typeof UserBillingIndexRoute
   '/dashboard/': typeof UserDashboardIndexRoute
   '/edit-profile/': typeof UserEditProfileIndexRoute
@@ -259,6 +266,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyIndexRoute
   '/reset-password': typeof ResetPasswordIndexRoute
   '/terms': typeof TermsIndexRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/billing': typeof UserBillingIndexRoute
   '/dashboard': typeof UserDashboardIndexRoute
   '/edit-profile': typeof UserEditProfileIndexRoute
@@ -295,6 +303,7 @@ export interface FileRoutesById {
   '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/terms/': typeof TermsIndexRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/_user/billing/': typeof UserBillingIndexRoute
   '/_user/dashboard/': typeof UserDashboardIndexRoute
   '/_user/edit-profile/': typeof UserEditProfileIndexRoute
@@ -331,6 +340,7 @@ export interface FileRouteTypes {
     | '/privacy/'
     | '/reset-password/'
     | '/terms/'
+    | '/admin/users/$userId'
     | '/billing/'
     | '/dashboard/'
     | '/edit-profile/'
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/terms'
+    | '/admin/users/$userId'
     | '/billing'
     | '/dashboard'
     | '/edit-profile'
@@ -399,6 +410,7 @@ export interface FileRouteTypes {
     | '/privacy/'
     | '/reset-password/'
     | '/terms/'
+    | '/admin/users/$userId'
     | '/_user/billing/'
     | '/_user/dashboard/'
     | '/_user/edit-profile/'
@@ -670,6 +682,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserBillingIndexRouteImport
       parentRoute: typeof UserRouteRoute
     }
+    '/admin/users/$userId': {
+      id: '/admin/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/admin/users/$userId'
+      preLoaderRoute: typeof AdminUsersUserIdRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
   }
 }
 
@@ -694,6 +713,7 @@ const UserRouteRouteWithChildren = UserRouteRoute._addFileChildren(
 )
 
 interface AdminRouteRouteChildren {
+  AdminUsersUserIdRoute: typeof AdminUsersUserIdRoute
   AdminDemoRequestsIndexRoute: typeof AdminDemoRequestsIndexRoute
   AdminInstructorsIndexRoute: typeof AdminInstructorsIndexRoute
   AdminPrivateSessionsIndexRoute: typeof AdminPrivateSessionsIndexRoute
@@ -705,6 +725,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminUsersUserIdRoute: AdminUsersUserIdRoute,
   AdminDemoRequestsIndexRoute: AdminDemoRequestsIndexRoute,
   AdminInstructorsIndexRoute: AdminInstructorsIndexRoute,
   AdminPrivateSessionsIndexRoute: AdminPrivateSessionsIndexRoute,

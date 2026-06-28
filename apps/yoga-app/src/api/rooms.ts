@@ -44,7 +44,7 @@ export const roomsApi = {
       data: payload,
     }),
 
-  requestPrivate: (payload: { requestedStartUtc: string; requestedEndUtc: string }) =>
+  requestPrivate: (payload: { slots: Array<{ startUtc: string; endUtc: string }> }) =>
     apiRequest<RequestPrivateSessionResult>(API_ENDPOINTS.ROOMS.REQUEST_PRIVATE, {
       method: "POST",
       data: payload,

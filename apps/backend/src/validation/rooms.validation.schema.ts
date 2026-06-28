@@ -15,19 +15,24 @@ export const privateBookingBodySchema = z
     path: ["endUtc"],
   });
 
-export const requestPrivateBodySchema = z
+const preferredSlotSchema = z
   .object({
-    requestedStartUtc: z.iso.datetime({ offset: true }),
-    requestedEndUtc: z.iso.datetime({ offset: true }),
+    startUtc: z.iso.datetime({ offset: true }),
+    endUtc: z.iso.datetime({ offset: true }),
   })
-  .refine((v) => new Date(v.requestedEndUtc) > new Date(v.requestedStartUtc), {
-    message: "requestedEndUtc must be after requestedStartUtc",
-    path: ["requestedEndUtc"],
+  .refine((v) => new Date(v.endUtc) > new Date(v.startUtc), {
+    message: "endUtc must be after startUtc",
+    path: ["endUtc"],
   });
+
+export const requestPrivateBodySchema = z.object({
+  slots: z.array(preferredSlotSchema).min(1, "At least one time slot is required").max(20, "Maximum 20 time slots allowed"),
+});
 
 export type RoomIdParams = z.infer<typeof roomIdParamsSchema>;
 export type PrivateBookingBody = z.infer<typeof privateBookingBodySchema>;
 export type RequestPrivateBody = z.infer<typeof requestPrivateBodySchema>;
+export type PreferredSlot = z.infer<typeof preferredSlotSchema>;
 
 export const roomsSwaggerSchemas = {
   listUpcomingGroup: {

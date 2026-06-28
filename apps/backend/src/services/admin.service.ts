@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import type { AppDatabase } from "../types/database.types";
-import { user, plans, rooms, instructorDetails, userSubscriptions, userPreferences, userAcquisition } from "../schema/schema";
+import { user, plans, rooms, roomUsers, instructorDetails, userSubscriptions, userPreferences, userAcquisition, privateSessionRequests } from "../schema/schema";
 import { auth } from "../lib/auth";
 import { USER_ROLES } from "../constants/roles";
 import { createHmsRoom } from "./hms.service";
@@ -232,4 +232,143 @@ export async function createGroupRoom(
   }).catch((err) => console.error("group room notification failed", err));
 
   return { roomId: inserted.id };
+}
+
+// ─── Admin: get single user detail ───────────────────────────────────────────
+
+export async function getUserDetail(db: AppDatabase, userId: string) {
+  const [u] = await db
+    .select({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt,
+    })
+    .from(user)
+    .where(eq(user.id, userId))
+    .limit(1);
+
+  if (!u) return null;
+
+  const [pref, acq] = await Promise.all([
+    db
+      .select()
+      .from(userPreferences)
+      .where(eq(userPreferences.userId, userId))
+      .limit(1),
+    db
+      .select()
+      .from(userAcquisition)
+      .where(eq(userAcquisition.userId, userId))
+      .limit(1),
+  ]);
+
+  const subscriptions = await db
+    .select({
+      id: userSubscriptions.id,
+      planId: userSubscriptions.planId,
+      planName: plans.name,
+      sessionsTotal: userSubscriptions.sessionsTotal,
+      sessionsUsed: userSubscriptions.sessionsUsed,
+      pricePaidCents: userSubscriptions.pricePaidCents,
+      status: userSubscriptions.status,
+      purchasedAt: userSubscriptions.purchasedAt,
+      expiresAt: userSubscriptions.expiresAt,
+    })
+    .from(userSubscriptions)
+    .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
+    .where(eq(userSubscriptions.userId, userId))
+    .orderBy(desc(userSubscriptions.purchasedAt));
+
+  const userRoomRows = await db
+    .select({
+      id: rooms.id,
+      type: rooms.type,
+      status: rooms.status,
+      scheduledStart: rooms.scheduledStart,
+      scheduledEnd: rooms.scheduledEnd,
+      instructorId: rooms.instructorId,
+      meetLink: rooms.meetLink,
+    })
+    .from(roomUsers)
+    .innerJoin(rooms, eq(rooms.id, roomUsers.roomId))
+    .where(eq(roomUsers.userId, userId))
+    .orderBy(desc(rooms.scheduledStart));
+
+  const instructorIds = [
+    ...new Set(userRoomRows.map((r) => r.instructorId).filter(Boolean) as string[]),
+  ];
+  const instructorRows = instructorIds.length
+    ? await db
+        .select({ id: user.id, name: user.name })
+        .from(user)
+        .where(inArray(user.id, instructorIds))
+    : [];
+  const instrMap = new Map(instructorRows.map((i) => [i.id, i.name]));
+
+  const privateRequests = await db
+    .select({
+      id: privateSessionRequests.id,
+      requestedStart: privateSessionRequests.requestedStart,
+      requestedEnd: privateSessionRequests.requestedEnd,
+      preferredSlots: privateSessionRequests.preferredSlots,
+      status: privateSessionRequests.status,
+      instructorId: privateSessionRequests.instructorId,
+      adminNote: privateSessionRequests.adminNote,
+      createdAt: privateSessionRequests.createdAt,
+    })
+    .from(privateSessionRequests)
+    .where(eq(privateSessionRequests.userId, userId))
+    .orderBy(desc(privateSessionRequests.createdAt));
+
+  const reqInstructorIds = [
+    ...new Set(privateRequests.map((r) => r.instructorId).filter(Boolean) as string[]),
+  ];
+  const reqInstructorRows = reqInstructorIds.length
+    ? await db
+        .select({ id: user.id, name: user.name })
+        .from(user)
+        .where(inArray(user.id, reqInstructorIds))
+    : [];
+  const reqInstrMap = new Map(reqInstructorRows.map((i) => [i.id, i.name]));
+
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    createdAt: u.createdAt.toISOString(),
+    preferences: pref[0] ?? null,
+    acquisition: acq[0] ?? null,
+    subscriptions: subscriptions.map((s) => ({
+      id: s.id,
+      planName: s.planName,
+      sessionsTotal: s.sessionsTotal,
+      sessionsUsed: s.sessionsUsed,
+      pricePaidCents: s.pricePaidCents,
+      status: s.status,
+      purchasedAt: s.purchasedAt.toISOString(),
+      expiresAt: s.expiresAt?.toISOString() ?? null,
+    })),
+    rooms: userRoomRows.map((r) => ({
+      id: r.id,
+      type: r.type,
+      status: r.status,
+      scheduledStart: r.scheduledStart.toISOString(),
+      scheduledEnd: r.scheduledEnd.toISOString(),
+      instructorName: r.instructorId ? (instrMap.get(r.instructorId) ?? null) : null,
+      meetLink: r.meetLink,
+    })),
+    privateRequests: privateRequests.map((r) => ({
+      id: r.id,
+      requestedStart: r.requestedStart.toISOString(),
+      requestedEnd: r.requestedEnd.toISOString(),
+      preferredSlots: r.preferredSlots ?? [],
+      status: r.status as "pending" | "approved" | "rejected",
+      instructorName: r.instructorId ? (reqInstrMap.get(r.instructorId) ?? null) : null,
+      adminNote: r.adminNote ?? null,
+      createdAt: r.createdAt.toISOString(),
+    })),
+  };
 }

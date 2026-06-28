@@ -19,26 +19,32 @@ const MIN_ADVANCE_MS = 2 * 60 * 60 * 1000;
 
 export async function createPrivateSessionRequest(
   db: AppDatabase,
-  params: { userId: string; requestedStartUtc: Date; requestedEndUtc: Date },
+  params: { userId: string; slots: Array<{ startUtc: Date; endUtc: Date }> },
 ): Promise<{ requestId: string }> {
-  if (params.requestedStartUtc.getTime() - Date.now() < MIN_ADVANCE_MS) {
-    throw new SessionPoolError(
-      "TOO_SOON",
-      "Sessions must be scheduled at least 2 hours in advance.",
-      422,
-    );
+  for (const slot of params.slots) {
+    if (slot.startUtc.getTime() - Date.now() < MIN_ADVANCE_MS) {
+      throw new SessionPoolError(
+        "TOO_SOON",
+        "All sessions must be scheduled at least 2 hours in advance.",
+        422,
+      );
+    }
+    if (slot.endUtc <= slot.startUtc) {
+      throw new SessionPoolError("INVALID_RANGE", "End time must be after start time.", 422);
+    }
   }
 
-  if (params.requestedEndUtc <= params.requestedStartUtc) {
-    throw new SessionPoolError("INVALID_RANGE", "End time must be after start time.", 422);
-  }
-
+  const firstSlot = params.slots[0];
   const [inserted] = await db
     .insert(privateSessionRequests)
     .values({
       userId: params.userId,
-      requestedStart: params.requestedStartUtc,
-      requestedEnd: params.requestedEndUtc,
+      requestedStart: firstSlot.startUtc,
+      requestedEnd: firstSlot.endUtc,
+      preferredSlots: params.slots.map((s) => ({
+        startUtc: s.startUtc.toISOString(),
+        endUtc: s.endUtc.toISOString(),
+      })),
     })
     .returning({ id: privateSessionRequests.id });
 
@@ -53,6 +59,7 @@ export async function listMyPrivateSessionRequests(db: AppDatabase, userId: stri
       id: privateSessionRequests.id,
       requestedStart: privateSessionRequests.requestedStart,
       requestedEnd: privateSessionRequests.requestedEnd,
+      preferredSlots: privateSessionRequests.preferredSlots,
       status: privateSessionRequests.status,
       instructorName: user.name,
       roomId: privateSessionRequests.roomId,
@@ -68,6 +75,7 @@ export async function listMyPrivateSessionRequests(db: AppDatabase, userId: stri
     ...r,
     requestedStart: r.requestedStart.toISOString(),
     requestedEnd: r.requestedEnd.toISOString(),
+    preferredSlots: r.preferredSlots ?? [],
     createdAt: r.createdAt.toISOString(),
     instructorName: r.instructorName ?? null,
   }));
@@ -85,6 +93,7 @@ export async function listAllPrivateSessionRequests(
       userId: privateSessionRequests.userId,
       requestedStart: privateSessionRequests.requestedStart,
       requestedEnd: privateSessionRequests.requestedEnd,
+      preferredSlots: privateSessionRequests.preferredSlots,
       status: privateSessionRequests.status,
       instructorId: privateSessionRequests.instructorId,
       roomId: privateSessionRequests.roomId,
@@ -124,6 +133,7 @@ export async function listAllPrivateSessionRequests(
     userEmail: userMap.get(r.userId)?.email ?? "",
     requestedStart: r.requestedStart.toISOString(),
     requestedEnd: r.requestedEnd.toISOString(),
+    preferredSlots: r.preferredSlots ?? [],
     status: r.status as "pending" | "approved" | "rejected",
     instructorId: r.instructorId ?? null,
     instructorName: r.instructorId ? (instrMap.get(r.instructorId)?.name ?? null) : null,
@@ -138,7 +148,7 @@ export async function listAllPrivateSessionRequests(
 export async function assignPrivateSessionRequest(
   db: AppDatabase,
   params: { requestId: string; instructorId: string; adminNote?: string | null },
-): Promise<{ roomId: string }> {
+): Promise<{ roomIds: string[] }> {
   return db.transaction(async (trx) => {
     const [req] = await trx
       .select()
@@ -157,6 +167,17 @@ export async function assignPrivateSessionRequest(
       );
     }
 
+    // All slots to create rooms for — fall back to the primary slot for legacy requests
+    const slots: Array<{ startUtc: Date; endUtc: Date }> =
+      req.preferredSlots && req.preferredSlots.length > 0
+        ? req.preferredSlots.map((s) => ({
+            startUtc: new Date(s.startUtc),
+            endUtc: new Date(s.endUtc),
+          }))
+        : [{ startUtc: req.requestedStart, endUtc: req.requestedEnd }];
+
+    const slotCount = slots.length;
+
     // Check instructor exists and is approved
     const [instructor] = await trx
       .select({ isApproved: instructorDetails.isApproved })
@@ -167,23 +188,29 @@ export async function assignPrivateSessionRequest(
       throw new SessionPoolError("INSTRUCTOR_NOT_FOUND", "Instructor not found or not approved", 404);
     }
 
-    // Check instructor availability
-    const conflict = await trx.execute(sql`
-      SELECT 1 FROM "rooms"
-      WHERE "instructor_id" = ${params.instructorId}
-        AND "status" <> ${ROOM_STATUS.ENDED}
-        AND tstzrange("scheduled_start", "scheduled_end") &&
-            tstzrange(${req.requestedStart.toISOString()}::timestamptz, ${req.requestedEnd.toISOString()}::timestamptz)
-      LIMIT 1
-    `);
-    const conflictRows =
-      (conflict as unknown as { rows?: unknown[] }).rows ??
-      (conflict as unknown as unknown[]);
-    if ((conflictRows as unknown[]).length > 0) {
-      throw new SessionPoolError("INSTRUCTOR_BUSY", "Instructor already has a session in this time window", 409);
+    // Check instructor has no conflicts across all slots
+    for (const slot of slots) {
+      const conflict = await trx.execute(sql`
+        SELECT 1 FROM "rooms"
+        WHERE "instructor_id" = ${params.instructorId}
+          AND "status" <> ${ROOM_STATUS.ENDED}
+          AND tstzrange("scheduled_start", "scheduled_end") &&
+              tstzrange(${slot.startUtc.toISOString()}::timestamptz, ${slot.endUtc.toISOString()}::timestamptz)
+        LIMIT 1
+      `);
+      const conflictRows =
+        (conflict as unknown as { rows?: unknown[] }).rows ??
+        (conflict as unknown as unknown[]);
+      if ((conflictRows as unknown[]).length > 0) {
+        throw new SessionPoolError(
+          "INSTRUCTOR_BUSY",
+          `Instructor already has a session during ${slot.startUtc.toISOString()}`,
+          409,
+        );
+      }
     }
 
-    // Fetch and lock user subscription
+    // Fetch and lock user subscription — must have enough sessions for all slots
     const lockedSubRows = await trx.execute(sql`
       SELECT us.id, us.sessions_total, us.sessions_used, p.allows_private, p.billing_interval
       FROM "user_subscriptions" us
@@ -222,28 +249,48 @@ export async function assignPrivateSessionRequest(
       );
     }
 
-    if (sub.sessionsTotal - sub.sessionsUsed <= 0) {
-      throw new SessionPoolError("QUOTA_EXCEEDED", "User has no remaining sessions in their plan", 429);
+    const remaining = sub.sessionsTotal - sub.sessionsUsed;
+    if (remaining < slotCount) {
+      throw new SessionPoolError(
+        "QUOTA_EXCEEDED",
+        `User needs ${slotCount} session${slotCount > 1 ? "s" : ""} but only has ${remaining} remaining`,
+        429,
+      );
     }
 
-    // Create the private room
-    const [created] = await trx
-      .insert(rooms)
-      .values({
-        type: ROOM_TYPE.PRIVATE,
-        status: ROOM_STATUS.IDLE,
-        instructorId: params.instructorId,
-        capacity: 2,
-        scheduledStart: req.requestedStart,
-        scheduledEnd: req.requestedEnd,
-      })
-      .returning();
+    // Create one private room per slot
+    const createdRoomIds: string[] = [];
+    for (const slot of slots) {
+      const [created] = await trx
+        .insert(rooms)
+        .values({
+          type: ROOM_TYPE.PRIVATE,
+          status: ROOM_STATUS.IDLE,
+          instructorId: params.instructorId,
+          capacity: 2,
+          scheduledStart: slot.startUtc,
+          scheduledEnd: slot.endUtc,
+        })
+        .returning();
 
-    // Record the user booking
-    await trx.insert(roomUsers).values({ roomId: created.id, userId: req.userId });
+      await trx.insert(roomUsers).values({ roomId: created.id, userId: req.userId });
 
-    // Deduct from subscription
-    const newUsed = sub.sessionsUsed + 1;
+      await trx.execute(sql`
+        INSERT INTO "session_quota_log" ("user_id", "room_id", "week_start", "billing_interval")
+        VALUES (
+          ${req.userId},
+          ${created.id},
+          date_trunc('month', now())::date,
+          ${sub.billingInterval}
+        )
+        ON CONFLICT ("user_id", "week_start", "room_id") DO NOTHING
+      `);
+
+      createdRoomIds.push(created.id);
+    }
+
+    // Deduct all sessions at once
+    const newUsed = sub.sessionsUsed + slotCount;
     await trx
       .update(userSubscriptions)
       .set({
@@ -252,31 +299,19 @@ export async function assignPrivateSessionRequest(
       })
       .where(eq(userSubscriptions.id, sub.id));
 
-    // Quota log
-    await trx.execute(sql`
-      INSERT INTO "session_quota_log" ("user_id", "room_id", "week_start", "billing_interval")
-      VALUES (
-        ${req.userId},
-        ${created.id},
-        date_trunc('month', now())::date,
-        ${sub.billingInterval}
-      )
-      ON CONFLICT ("user_id", "week_start", "room_id") DO NOTHING
-    `);
-
-    // Update request to approved
+    // Update request to approved — store first room id for backwards compat
     await trx
       .update(privateSessionRequests)
       .set({
         status: "approved",
         instructorId: params.instructorId,
-        roomId: created.id,
+        roomId: createdRoomIds[0],
         adminNote: params.adminNote ?? null,
         updatedAt: new Date(),
       })
       .where(eq(privateSessionRequests.id, params.requestId));
 
-    return { roomId: created.id };
+    return { roomIds: createdRoomIds };
   });
 }
 

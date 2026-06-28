@@ -34,6 +34,7 @@ export const queryKeys = {
   admin: {
     all: ["admin"] as const,
     users: () => [...queryKeys.admin.all, "users"] as const,
+    userDetail: (id: string) => [...queryKeys.admin.all, "users", id] as const,
     instructors: () => [...queryKeys.admin.all, "instructors"] as const,
     groupRooms: () => [...queryKeys.admin.all, "group-rooms"] as const,
     privateRequests: () => [...queryKeys.admin.all, "private-requests"] as const,

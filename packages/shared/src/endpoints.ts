@@ -48,6 +48,7 @@ export const API_ENDPOINTS = {
   },
   ADMIN: {
     USERS: "/admin/users",
+    USER_DETAIL: (id: string) => `/admin/users/${id}`,
     INSTRUCTORS: "/admin/instructors",
     APPROVE_INSTRUCTOR: (id: string) => `/admin/instructors/${id}/approve`,
     UPDATE_INSTRUCTOR_PRIORITY: (id: string) => `/admin/instructors/${id}/priority`,

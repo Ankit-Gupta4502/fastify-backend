@@ -18,6 +18,10 @@ export const instructorIdParamsSchema = z.object({
   id: z.string().uuid("Invalid instructor id"),
 });
 
+export const userIdParamsSchema = z.object({
+  id: z.string().uuid("Invalid user id"),
+});
+
 export const createGroupRoomBodySchema = z
   .object({
     instructorId: z.string().uuid(),
@@ -61,6 +65,7 @@ export type ApproveInstructorBody = z.infer<typeof approveInstructorBodySchema>;
 export type UpdatePriorityBody = z.infer<typeof updatePriorityBodySchema>;
 export type CreateInstructorBody = z.infer<typeof createInstructorBodySchema>;
 export type InstructorIdParams = z.infer<typeof instructorIdParamsSchema>;
+export type UserIdParams = z.infer<typeof userIdParamsSchema>;
 export type CreateGroupRoomBody = z.infer<typeof createGroupRoomBodySchema>;
 export type PrivateRequestIdParams = z.infer<typeof privateRequestIdParamsSchema>;
 export type PrivateRequestsQuery = z.infer<typeof privateRequestsQuerySchema>;

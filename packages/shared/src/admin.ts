@@ -76,6 +76,7 @@ export interface AdminPrivateSessionRequest {
   userEmail: string;
   requestedStart: string;
   requestedEnd: string;
+  preferredSlots: Array<{ startUtc: string; endUtc: string }>;
   status: PrivateSessionRequestStatus;
   instructorId: string | null;
   instructorName: string | null;
@@ -87,4 +88,42 @@ export interface AdminPrivateSessionRequest {
 export interface AssignPrivateSessionBody {
   instructorId: string;
   adminNote?: string | null;
+}
+
+export interface AdminUserSubscription {
+  id: string;
+  planName: string;
+  sessionsTotal: number | null;
+  sessionsUsed: number;
+  pricePaidCents: number;
+  status: string;
+  purchasedAt: string;
+  expiresAt: string | null;
+}
+
+export interface AdminUserRoom {
+  id: string;
+  type: string;
+  status: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+  instructorName: string | null;
+  meetLink: string | null;
+}
+
+export interface AdminUserPrivateRequest {
+  id: string;
+  requestedStart: string;
+  requestedEnd: string;
+  preferredSlots: Array<{ startUtc: string; endUtc: string }>;
+  status: "pending" | "approved" | "rejected";
+  instructorName: string | null;
+  adminNote: string | null;
+  createdAt: string;
+}
+
+export interface AdminUserDetail extends AdminUser {
+  subscriptions: AdminUserSubscription[];
+  rooms: AdminUserRoom[];
+  privateRequests: AdminUserPrivateRequest[];
 }
