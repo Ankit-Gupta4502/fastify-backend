@@ -138,7 +138,7 @@ export async function listUpcomingGroupRooms(
       scheduledStart: formatForAudience(r.scheduledStartUtc, audience),
       isEnrolled: r.enrolledUserId !== null,
       canJoinLive,
-      meetLink: r.meetLink ?? null,
+      meetLink: r.enrolledUserId !== null ? (r.meetLink ?? null) : null,
       instructor: {
         id: r.instructorId,
         name: r.instructorName,

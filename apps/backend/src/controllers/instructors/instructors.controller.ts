@@ -172,6 +172,7 @@ export class InstructorsController {
         currentOccupancy: rooms.currentOccupancy,
         scheduledStartUtc: rooms.scheduledStart,
         scheduledEndUtc: rooms.scheduledEnd,
+        meetLink: rooms.meetLink,
       })
       .from(rooms)
       .where(

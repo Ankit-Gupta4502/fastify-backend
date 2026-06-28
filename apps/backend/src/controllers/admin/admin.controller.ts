@@ -39,7 +39,9 @@ const createGroupRoomBodySchema = z
     scheduledStartUtc: z.string().datetime(),
     scheduledEndUtc: z.string().datetime(),
     capacity: z.number().int().min(2).max(50).default(20),
-    meetLink: z.string().url().optional().nullable(),
+    meetLink: z.string().url().refine((v) => v.startsWith("https://"), {
+      message: "meetLink must use https",
+    }).optional().nullable(),
   })
   .refine((v) => new Date(v.scheduledEndUtc) > new Date(v.scheduledStartUtc), {
     message: "scheduledEndUtc must be after scheduledStartUtc",

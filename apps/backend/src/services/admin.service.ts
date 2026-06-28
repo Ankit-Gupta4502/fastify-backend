@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull, lt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import type { AppDatabase } from "../types/database.types";
 import { user, plans, rooms, instructorDetails, userSubscriptions, userPreferences, userAcquisition } from "../schema/schema";
 import { auth } from "../lib/auth";
@@ -30,28 +30,36 @@ export async function listUsers(db: AppDatabase) {
       ),
     );
 
-  const prefs = await db
-    .select({
-      userId: userPreferences.userId,
-      gender: userPreferences.gender,
-      phone: userPreferences.phone,
-      purposes: userPreferences.purposes,
-      otherPurpose: userPreferences.otherPurpose,
-      preferredTimeOfDay: userPreferences.preferredTimeOfDay,
-      timezone: userPreferences.timezone,
-    })
-    .from(userPreferences);
+  const userIds = users.map((u) => u.id);
 
-  const acquisitions = await db
-    .select({
-      userId: userAcquisition.userId,
-      utmSource: userAcquisition.utmSource,
-      utmMedium: userAcquisition.utmMedium,
-      utmCampaign: userAcquisition.utmCampaign,
-      referrer: userAcquisition.referrer,
-      landingPage: userAcquisition.landingPage,
-    })
-    .from(userAcquisition);
+  const prefs = userIds.length
+    ? await db
+        .select({
+          userId: userPreferences.userId,
+          gender: userPreferences.gender,
+          phone: userPreferences.phone,
+          purposes: userPreferences.purposes,
+          otherPurpose: userPreferences.otherPurpose,
+          preferredTimeOfDay: userPreferences.preferredTimeOfDay,
+          timezone: userPreferences.timezone,
+        })
+        .from(userPreferences)
+        .where(inArray(userPreferences.userId, userIds))
+    : [];
+
+  const acquisitions = userIds.length
+    ? await db
+        .select({
+          userId: userAcquisition.userId,
+          utmSource: userAcquisition.utmSource,
+          utmMedium: userAcquisition.utmMedium,
+          utmCampaign: userAcquisition.utmCampaign,
+          referrer: userAcquisition.referrer,
+          landingPage: userAcquisition.landingPage,
+        })
+        .from(userAcquisition)
+        .where(inArray(userAcquisition.userId, userIds))
+    : [];
 
   const planNameByUser = new Map<string, string>();
   for (const sub of activeSubs) {

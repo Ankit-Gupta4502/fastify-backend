@@ -1,10 +1,8 @@
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { userSwaggerSchemas } from "../../validation/user.validation.schema";
-import { successResponse, errorResponse } from "../../utils";
-import db from "../../db";
+import { successResponse, errorResponse, validateWithZod } from "../../utils";
 import { z } from "zod";
-import { validateWithZod } from "../../utils";
 import { drizzle } from "../../db";
 import { userPreferences, userAcquisition } from "../../schema/schema";
 import { eq } from "drizzle-orm";

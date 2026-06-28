@@ -68,4 +68,5 @@ export interface InstructorScheduleRoom {
   scheduledEnd: string;
   /** Server-computed: true when the live-join window is open (15 min before start until end) */
   canJoinLive: boolean;
+  meetLink: string | null;
 }
