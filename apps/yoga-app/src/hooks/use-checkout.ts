@@ -7,16 +7,6 @@ import {
 import { queryKeys } from "../lib/react-query/query-keys";
 import { useAuthStore } from "../store/auth.store";
 
-const INDIA_TIMEZONES = new Set(["Asia/Calcutta", "Asia/Kolkata"]);
-
-function getCountryCode(): string | undefined {
-  try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return INDIA_TIMEZONES.has(tz) ? "IN" : undefined;
-  } catch {
-    return undefined;
-  }
-}
 
 export function useCustomCheckout() {
   const qc = useQueryClient();
@@ -25,8 +15,7 @@ export function useCustomCheckout() {
   return useMutation({
     retry: 1,
     mutationFn: async ({ sessionCount, planName }: { sessionCount: number; planName: "private" | "prenatal_postnatal" | "therapeutic_yoga" }) => {
-      const country = getCountryCode();
-      const order = await paymentsApi.createCustomOrder({ sessionCount, planName, country });
+      const order = await paymentsApi.createCustomOrder({ sessionCount, planName });
       if (!order.data) throw new Error("Order creation failed");
 
       const { orderId, keyId, amount, currency } = order.data;
@@ -74,8 +63,7 @@ export function useCheckout() {
   return useMutation({
     retry: 3,
     mutationFn: async (planId: string) => {
-      const country = getCountryCode();
-      const order = await paymentsApi.createOrder({ planId, country });
+      const order = await paymentsApi.createOrder({ planId });
       if (!order.data) {
         throw new Error("Order creation failed");
       }

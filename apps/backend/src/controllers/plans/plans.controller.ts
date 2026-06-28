@@ -5,7 +5,7 @@ import { requireRole } from "../../middleware/role.middleware";
 import { USER_ROLES } from "../../constants/roles";
 import { drizzle } from "../../db";
 import { plans, user, userSubscriptions } from "../../schema/schema";
-import { errorResponse, successResponse } from "../../utils";
+import { detectCountry, errorResponse, successResponse } from "../../utils";
 
 export class PlansController {
   constructor(
@@ -90,7 +90,9 @@ export class PlansController {
     return reply.status(statusCode).send(payload);
   };
 
-  private listWithPricing = async (_req: FastifyRequest, reply: FastifyReply) => {
+  private listWithPricing = async (req: FastifyRequest, reply: FastifyReply) => {
+    const country = detectCountry(req);
+
     const rows = await drizzle
       .select({
         id: plans.id,
@@ -111,7 +113,7 @@ export class PlansController {
 
     const { statusCode, payload } = successResponse({
       message: "Plans with pricing",
-      data: rows,
+      data: { plans: rows, country },
     });
     return reply.status(statusCode).send(payload);
   };

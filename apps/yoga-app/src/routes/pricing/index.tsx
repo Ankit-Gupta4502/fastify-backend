@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { usePlansWithPricing, useMyPlan } from "@/hooks/use-plans";
 import { useCheckout, useCustomCheckout } from "@/hooks/use-checkout";
-import { isIndiaUser } from "@/lib/utils";
 import { PLAN_COPY } from "@/lib/plan-copy";
 import type { PlanRecord } from "@yoga-app/shared";
 
@@ -28,7 +27,7 @@ function PricingPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const plans = usePlansWithPricing();
   const myPlan = useMyPlan(isAuthenticated);
-  const isIndia = isIndiaUser();
+  const isIndia = plans.data?.data?.country === "IN";
   const checkout = useCheckout();
   const customCheckout = useCustomCheckout();
 
@@ -39,7 +38,7 @@ function PricingPage() {
   const [prenatalSessions, setPrenatalSessions] = useState(MIN_SESSIONS);
   const [therapeuticSessions, setTherapeuticSessions] = useState(MIN_SESSIONS);
 
-  const allPlans = plans.data?.data ?? [];
+  const allPlans = plans.data?.data?.plans ?? [];
   const groupPlan = allPlans.find((p) => p.name === "group_live") ?? null;
   const privatePlan = allPlans.find((p) => p.name === "private") ?? null;
   const prenatalPlan = allPlans.find((p) => p.name === "prenatal_postnatal") ?? null;

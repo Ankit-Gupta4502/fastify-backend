@@ -2,6 +2,11 @@ export type PlanName = "group_live" | "private" | "prenatal_postnatal" | "therap
 export type PlanCategory = "standard" | "specialized";
 export type BillingInterval = "week" | "month";
 
+export interface PlansWithPricingResponse {
+  plans: PlanRecord[];
+  country: string | null;
+}
+
 export interface PlanRecord {
   id: string;
   name: PlanName;

@@ -12,12 +12,3 @@ export function centsToDisplay(cents: number): string {
 export function paiseToDisplay(paise: number): string {
   return `₹${Math.round(paise / 100).toLocaleString("en-IN")}`;
 }
-
-const INDIA_TIMEZONES = new Set(["Asia/Calcutta", "Asia/Kolkata"]);
-export function isIndiaUser(): boolean {
-  try {
-    return INDIA_TIMEZONES.has(Intl.DateTimeFormat().resolvedOptions().timeZone);
-  } catch {
-    return false;
-  }
-}
