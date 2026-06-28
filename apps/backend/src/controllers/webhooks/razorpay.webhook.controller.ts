@@ -5,10 +5,10 @@ import { plans, userSubscriptions } from "../../schema/schema";
 import { verifyWebhookSignature } from "../../services/razorpay.service";
 import { successResponse } from "../../utils";
 
-// Razorpay sends these in payment.captured and order.paid payloads
 interface RazorpayPaymentEntity {
   id: string;
-  order_id: string;
+  order_id: string | null;
+  subscription_id?: string | null;
   status: string;
   notes?: Record<string, string>;
 }
@@ -19,12 +19,21 @@ interface RazorpayOrderEntity {
   notes?: Record<string, string>;
 }
 
+interface RazorpaySubscriptionEntity {
+  id: string;
+  status: string;
+  paid_count?: number;
+  current_start?: number | null;
+  current_end?: number | null;
+}
+
 interface RazorpayWebhookEvent {
   entity: string;
   event: string;
   payload?: {
     payment?: { entity?: RazorpayPaymentEntity };
     order?: { entity?: RazorpayOrderEntity };
+    subscription?: { entity?: RazorpaySubscriptionEntity };
   };
 }
 
@@ -97,27 +106,86 @@ export class RazorpayWebhookController {
     request.log.info({ event: event.event }, "razorpay webhook received");
 
     try {
-      if (event.event === "payment.captured") {
-        const payment = event.payload?.payment?.entity;
-        if (payment?.status === "captured") {
-          await this.activateSubscription(request, payment.order_id, payment.id);
+      switch (event.event) {
+        // ── One-time order payments ──────────────────────────────────────────
+        case "payment.captured": {
+          const payment = event.payload?.payment?.entity;
+          if (!payment || payment.status !== "captured") break;
+          // Skip — subscription payments are handled by subscription.charged
+          if (payment.subscription_id) break;
+          if (payment.order_id) {
+            await this.activateByOrderId(request, payment.order_id, payment.id);
+          }
+          break;
         }
-      } else if (event.event === "order.paid") {
-        const order = event.payload?.order?.entity;
-        const payment = event.payload?.payment?.entity;
-        const orderId = order?.id ?? payment?.order_id;
-        const paymentId = payment?.id;
-        if (orderId && paymentId) {
-          await this.activateSubscription(request, orderId, paymentId);
+
+        case "order.paid": {
+          const order = event.payload?.order?.entity;
+          const payment = event.payload?.payment?.entity;
+          const orderId = order?.id ?? payment?.order_id;
+          const paymentId = payment?.id;
+          // Skip subscription payments
+          if (payment?.subscription_id) break;
+          if (orderId && paymentId) {
+            await this.activateByOrderId(request, orderId, paymentId);
+          }
+          break;
         }
-      } else if (event.event === "payment.failed") {
-        const payment = event.payload?.payment?.entity;
-        request.log.warn(
-          { paymentId: payment?.id, orderId: payment?.order_id },
-          "razorpay payment failed",
-        );
-        if (payment?.order_id) {
-          await this.markSubscriptionFailed(request, payment.order_id);
+
+        case "payment.failed": {
+          const payment = event.payload?.payment?.entity;
+          request.log.warn(
+            { paymentId: payment?.id, orderId: payment?.order_id },
+            "razorpay payment failed",
+          );
+          if (payment?.order_id && !payment.subscription_id) {
+            await this.markOrderFailed(request, payment.order_id);
+          }
+          break;
+        }
+
+        // ── Recurring subscription events ────────────────────────────────────
+        case "subscription.charged": {
+          const sub = event.payload?.subscription?.entity;
+          const payment = event.payload?.payment?.entity;
+          if (!sub || !payment) break;
+
+          const currentEnd = sub.current_end ? new Date(sub.current_end * 1000) : null;
+
+          if ((sub.paid_count ?? 0) > 1) {
+            // Renewal — extend the existing active subscription
+            await this.renewSubscription(request, sub.id, payment.id, currentEnd);
+          } else {
+            // Initial charge — activate the pending subscription
+            await this.activateBySubscriptionId(request, sub.id, payment.id, currentEnd);
+          }
+          break;
+        }
+
+        case "subscription.halted": {
+          // Auto-renewal payment failed after retries — access should lapse
+          const sub = event.payload?.subscription?.entity;
+          if (sub?.id) {
+            await this.expireSubscription(request, sub.id, "halted");
+          }
+          break;
+        }
+
+        case "subscription.cancelled": {
+          const sub = event.payload?.subscription?.entity;
+          if (sub?.id) {
+            await this.cancelSubscription(request, sub.id);
+          }
+          break;
+        }
+
+        case "subscription.completed": {
+          // All billing cycles exhausted
+          const sub = event.payload?.subscription?.entity;
+          if (sub?.id) {
+            await this.expireSubscription(request, sub.id, "completed");
+          }
+          break;
         }
       }
     } catch (err) {
@@ -127,18 +195,18 @@ export class RazorpayWebhookController {
     return ok();
   };
 
-  private async activateSubscription(
+  // ── One-time order helpers ───────────────────────────────────────────────────
+
+  private async activateByOrderId(
     request: FastifyRequest,
     razorpayOrderId: string,
     razorpayPaymentId: string,
   ) {
-    // Idempotency: skip if already activated by the verify endpoint or a prior webhook.
     const [existing] = await drizzle
       .select({
         id: userSubscriptions.id,
         status: userSubscriptions.status,
         sessionsTotal: userSubscriptions.sessionsTotal,
-        purchasedAt: userSubscriptions.purchasedAt,
         billingInterval: plans.billingInterval,
       })
       .from(userSubscriptions)
@@ -164,17 +232,7 @@ export class RazorpayWebhookController {
       return;
     }
 
-    let expiresAt: Date | null = null;
-    if (existing.sessionsTotal === null) {
-      const now = new Date();
-      if (existing.billingInterval === "week") {
-        expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      } else {
-        const d = new Date(now);
-        d.setMonth(d.getMonth() + 1);
-        expiresAt = d;
-      }
-    }
+    const expiresAt = computeExpiresAt(existing.sessionsTotal, existing.billingInterval, null);
 
     await drizzle
       .update(userSubscriptions)
@@ -187,10 +245,7 @@ export class RazorpayWebhookController {
     );
   }
 
-  private async markSubscriptionFailed(
-    request: FastifyRequest,
-    razorpayOrderId: string,
-  ) {
+  private async markOrderFailed(request: FastifyRequest, razorpayOrderId: string) {
     const [existing] = await drizzle
       .select({ id: userSubscriptions.id, status: userSubscriptions.status })
       .from(userSubscriptions)
@@ -209,4 +264,153 @@ export class RazorpayWebhookController {
       "razorpay webhook: subscription cancelled due to payment failure",
     );
   }
+
+  // ── Recurring subscription helpers ──────────────────────────────────────────
+
+  private async activateBySubscriptionId(
+    request: FastifyRequest,
+    razorpaySubscriptionId: string,
+    razorpayPaymentId: string,
+    currentEnd: Date | null,
+  ) {
+    const [existing] = await drizzle
+      .select({
+        id: userSubscriptions.id,
+        status: userSubscriptions.status,
+        sessionsTotal: userSubscriptions.sessionsTotal,
+        billingInterval: plans.billingInterval,
+      })
+      .from(userSubscriptions)
+      .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
+      .where(eq(userSubscriptions.razorpaySubscriptionId, razorpaySubscriptionId))
+      .limit(1);
+
+    if (!existing) {
+      request.log.error({ razorpaySubscriptionId }, "razorpay webhook: no subscription found");
+      return;
+    }
+
+    if (existing.status === "active") {
+      request.log.info({ razorpaySubscriptionId }, "razorpay webhook: subscription already active");
+      return;
+    }
+
+    if (existing.status !== "pending_payment") {
+      request.log.warn(
+        { razorpaySubscriptionId, status: existing.status },
+        "razorpay webhook: cannot activate subscription in non-pending state",
+      );
+      return;
+    }
+
+    const expiresAt = computeExpiresAt(existing.sessionsTotal, existing.billingInterval, currentEnd);
+
+    await drizzle
+      .update(userSubscriptions)
+      .set({ status: "active", razorpayPaymentId, expiresAt })
+      .where(eq(userSubscriptions.id, existing.id));
+
+    request.log.info(
+      { subscriptionId: existing.id, razorpaySubscriptionId },
+      "razorpay webhook: subscription activated",
+    );
+  }
+
+  private async renewSubscription(
+    request: FastifyRequest,
+    razorpaySubscriptionId: string,
+    razorpayPaymentId: string,
+    currentEnd: Date | null,
+  ) {
+    const [existing] = await drizzle
+      .select({
+        id: userSubscriptions.id,
+        status: userSubscriptions.status,
+        sessionsTotal: userSubscriptions.sessionsTotal,
+        billingInterval: plans.billingInterval,
+      })
+      .from(userSubscriptions)
+      .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
+      .where(eq(userSubscriptions.razorpaySubscriptionId, razorpaySubscriptionId))
+      .limit(1);
+
+    if (!existing) {
+      request.log.error({ razorpaySubscriptionId }, "razorpay webhook: no subscription found for renewal");
+      return;
+    }
+
+    const expiresAt = computeExpiresAt(existing.sessionsTotal, existing.billingInterval, currentEnd);
+
+    await drizzle
+      .update(userSubscriptions)
+      .set({ status: "active", razorpayPaymentId, expiresAt })
+      .where(eq(userSubscriptions.id, existing.id));
+
+    request.log.info(
+      { subscriptionId: existing.id, razorpaySubscriptionId, expiresAt },
+      "razorpay webhook: subscription renewed",
+    );
+  }
+
+  private async expireSubscription(
+    request: FastifyRequest,
+    razorpaySubscriptionId: string,
+    reason: string,
+  ) {
+    const [existing] = await drizzle
+      .select({ id: userSubscriptions.id, status: userSubscriptions.status })
+      .from(userSubscriptions)
+      .where(eq(userSubscriptions.razorpaySubscriptionId, razorpaySubscriptionId))
+      .limit(1);
+
+    if (!existing || existing.status === "expired" || existing.status === "cancelled") return;
+
+    await drizzle
+      .update(userSubscriptions)
+      .set({ status: "expired" })
+      .where(eq(userSubscriptions.id, existing.id));
+
+    request.log.info(
+      { subscriptionId: existing.id, razorpaySubscriptionId, reason },
+      "razorpay webhook: subscription expired",
+    );
+  }
+
+  private async cancelSubscription(request: FastifyRequest, razorpaySubscriptionId: string) {
+    const [existing] = await drizzle
+      .select({ id: userSubscriptions.id, status: userSubscriptions.status })
+      .from(userSubscriptions)
+      .where(eq(userSubscriptions.razorpaySubscriptionId, razorpaySubscriptionId))
+      .limit(1);
+
+    if (!existing || existing.status === "cancelled") return;
+
+    await drizzle
+      .update(userSubscriptions)
+      .set({ status: "cancelled" })
+      .where(eq(userSubscriptions.id, existing.id));
+
+    request.log.info(
+      { subscriptionId: existing.id, razorpaySubscriptionId },
+      "razorpay webhook: subscription cancelled",
+    );
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function computeExpiresAt(
+  sessionsTotal: number | null,
+  billingInterval: string,
+  currentEnd: Date | null,
+): Date | null {
+  if (sessionsTotal !== null) return null; // session-pool plans don't have a calendar expiry
+  if (currentEnd) return currentEnd;       // use authoritative Razorpay value when available
+  const now = new Date();
+  if (billingInterval === "week") {
+    return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  }
+  const d = new Date(now);
+  d.setMonth(d.getMonth() + 1);
+  return d;
 }

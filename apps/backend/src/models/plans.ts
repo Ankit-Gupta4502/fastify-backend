@@ -25,6 +25,9 @@ export const plans = pgTable("plans", {
   priceInrPaise: integer("price_inr_paise"),
   pricePerSessionInrPaise: integer("price_per_session_inr_paise"),
   category: text("category").notNull().default("standard"),
+  // Razorpay Plan IDs created lazily on first subscription — one per currency
+  razorpayPlanIdUsd: text("razorpay_plan_id_usd"),
+  razorpayPlanIdInr: text("razorpay_plan_id_inr"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

@@ -35,6 +35,17 @@ export function verifyPaymentSignature(params: {
   return expected === params.signature;
 }
 
+export function verifySubscriptionSignature(params: {
+  subscriptionId: string;
+  paymentId: string;
+  signature: string;
+}): boolean {
+  const expected = createHmac("sha256", requireEnv("RAZORPAY_KEY_SECRET"))
+    .update(`${params.paymentId}|${params.subscriptionId}`)
+    .digest("hex");
+  return expected === params.signature;
+}
+
 /**
  * Verifies a Razorpay webhook event signature.
  * Uses RAZORPAY_WEBHOOK_SECRET (set in Razorpay dashboard → Webhooks),

@@ -15,14 +15,9 @@ import {
   getRazorpay,
   getRazorpayKeyId,
   verifyPaymentSignature,
+  verifySubscriptionSignature,
 } from "../../services/razorpay.service";
 import { detectCountry, errorResponse, successResponse, validateWithZod } from "../../utils";
-
-/**
- * Resolve the request's country code (ISO 3166-1 alpha-2).
- * Priority: Cloudflare header → nginx header → client-supplied fallback.
- */
-
 
 export class PaymentsController {
   constructor(
@@ -40,7 +35,7 @@ export class PaymentsController {
           {
             preHandler: this.authMiddleware.handle,
             schema: {
-              description: "Create a Razorpay order for a standard plan",
+              description: "Create a Razorpay subscription for a recurring plan",
               tags: ["Payments"] as string[],
               security: [{ cookieAuth: [] }],
             },
@@ -78,7 +73,7 @@ export class PaymentsController {
     );
   }
 
-  // ── Custom (session-based) order ─────────────────────────────────────────────
+  // ── Custom (session-based, one-time) order ───────────────────────────────────
 
   private createCustomOrder = async (request: FastifyRequest, reply: FastifyReply) => {
     const invalid = validateWithZod(request, reply, {
@@ -96,7 +91,6 @@ export class PaymentsController {
     const country = detectCountry(request, clientCountry);
     const isIndia = country === "IN";
 
-    // Look up the fixed plan template — never create a new row
     const [plan] = await drizzle
       .select()
       .from(plans)
@@ -127,7 +121,6 @@ export class PaymentsController {
         },
       });
 
-      // Create a pending_payment subscription row before payment completes.
       await drizzle.insert(userSubscriptions).values({
         userId: me.id,
         planId: plan.id,
@@ -160,7 +153,7 @@ export class PaymentsController {
     }
   };
 
-  // ── Standard (recurring) order ───────────────────────────────────────────────
+  // ── Standard (recurring) order — uses Razorpay Subscriptions API ─────────────
 
   private createOrder = async (request: FastifyRequest, reply: FastifyReply) => {
     const invalid = validateWithZod(request, reply, {
@@ -191,20 +184,34 @@ export class PaymentsController {
 
     const amount = isIndia && plan.priceInrPaise != null ? plan.priceInrPaise : plan.priceCents;
     const currency = isIndia && plan.priceInrPaise != null ? "INR" : "USD";
+    const period = plan.billingInterval === "week" ? "weekly" as const : "monthly" as const;
 
     try {
-      const order = await getRazorpay().orders.create({
-        amount,
-        currency,
-        receipt: `sub-${plan.id.slice(0, 8)}-${me.id.slice(0, 8)}`,
-        notes: {
-          userId: me.id,
-          planId: plan.id,
-          planName: plan.name,
-        },
+      // Lazily create (and cache) the Razorpay Plan for this DB plan + currency.
+      // A Razorpay Plan is a reusable template; we only need one per (plan, currency) pair.
+      let rpPlanId = isIndia ? plan.razorpayPlanIdInr : plan.razorpayPlanIdUsd;
+      if (!rpPlanId) {
+        const rpPlan = await getRazorpay().plans.create({
+          item: { name: plan.name, amount, currency },
+          period,
+          interval: 1,
+          notes: { planId: plan.id },
+        });
+        rpPlanId = rpPlan.id;
+        await drizzle
+          .update(plans)
+          .set(isIndia ? { razorpayPlanIdInr: rpPlanId } : { razorpayPlanIdUsd: rpPlanId })
+          .where(eq(plans.id, plan.id));
+      }
+
+      // total_count 120 = effectively unlimited (10 years monthly / ~2.3 years weekly)
+      const rpSub = await getRazorpay().subscriptions.create({
+        plan_id: rpPlanId,
+        total_count: 120,
+        customer_notify: 1,
+        notes: { userId: me.id, planId: plan.id, planName: plan.name },
       });
 
-      // Recurring plan: sessionsTotal = null (no pool)
       await drizzle.insert(userSubscriptions).values({
         userId: me.id,
         planId: plan.id,
@@ -212,23 +219,21 @@ export class PaymentsController {
         sessionsUsed: 0,
         pricePaidCents: amount,
         status: "pending_payment",
-        razorpayOrderId: order.id,
+        razorpaySubscriptionId: rpSub.id,
       });
 
       const { statusCode, payload } = successResponse({
-        message: "Order created",
+        message: "Subscription created",
         data: {
-          orderId: order.id,
+          subscriptionId: rpSub.id,
           keyId: getRazorpayKeyId(),
-          amount: Number(order.amount),
-          currency: order.currency,
           planId: plan.id,
           planName: plan.name,
         },
       });
       return reply.status(statusCode).send(payload);
     } catch (err) {
-      request.log.error({ err }, "razorpay order create failed");
+      request.log.error({ err }, "razorpay subscription create failed");
       const { statusCode, payload } = errorResponse({
         message: "Could not create payment order",
         statusCode: 502,
@@ -253,13 +258,20 @@ export class PaymentsController {
 
     const body = request.body as z.infer<typeof verifyPaymentBodySchema>;
 
-    const ok = verifyPaymentSignature({
-      orderId: body.razorpayOrderId,
-      paymentId: body.razorpayPaymentId,
-      signature: body.razorpaySignature,
-    });
+    // Signature format differs: subscriptions use paymentId|subscriptionId, orders use orderId|paymentId
+    const signatureValid = body.razorpaySubscriptionId
+      ? verifySubscriptionSignature({
+          subscriptionId: body.razorpaySubscriptionId,
+          paymentId: body.razorpayPaymentId,
+          signature: body.razorpaySignature,
+        })
+      : verifyPaymentSignature({
+          orderId: body.razorpayOrderId!,
+          paymentId: body.razorpayPaymentId,
+          signature: body.razorpaySignature,
+        });
 
-    if (!ok) {
+    if (!signatureValid) {
       const { statusCode, payload } = errorResponse({
         message: "Invalid payment signature",
         statusCode: 400,
@@ -268,7 +280,7 @@ export class PaymentsController {
       return reply.status(statusCode).send(payload);
     }
 
-    // Idempotency: if this payment was already processed, return the existing subscription.
+    // Idempotency: already processed by webhook or a previous verify call.
     const [byPaymentId] = await drizzle
       .select({ id: userSubscriptions.id })
       .from(userSubscriptions)
@@ -283,19 +295,22 @@ export class PaymentsController {
       return reply.status(statusCode).send(payload);
     }
 
-    // Find the pending subscription by order id, join plans for billing interval.
+    // Find the pending subscription by whichever ID the frontend supplied.
     const [sub] = await drizzle
       .select({
         id: userSubscriptions.id,
         userId: userSubscriptions.userId,
         status: userSubscriptions.status,
         sessionsTotal: userSubscriptions.sessionsTotal,
-        purchasedAt: userSubscriptions.purchasedAt,
         billingInterval: plans.billingInterval,
       })
       .from(userSubscriptions)
       .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
-      .where(eq(userSubscriptions.razorpayOrderId, body.razorpayOrderId))
+      .where(
+        body.razorpaySubscriptionId
+          ? eq(userSubscriptions.razorpaySubscriptionId, body.razorpaySubscriptionId)
+          : eq(userSubscriptions.razorpayOrderId, body.razorpayOrderId!),
+      )
       .limit(1);
 
     if (!sub) {
@@ -317,7 +332,6 @@ export class PaymentsController {
     }
 
     if (sub.status !== "pending_payment") {
-      // Already active (webhook beat us) or cancelled — return the subscription as-is.
       const { statusCode, payload } = successResponse({
         message: "Payment already processed",
         data: { success: true as const, subscriptionId: sub.id },
@@ -326,8 +340,8 @@ export class PaymentsController {
     }
 
     try {
-      // Compute expiry from payment time (now), not order-creation time.
-      // Session-pool plans expire by session count; recurring plans get a calendar expiry.
+      // Session-pool plans have no calendar expiry; recurring plans expire after one billing cycle.
+      // The webhook subscription.charged will update expiresAt with the authoritative value from Razorpay.
       let expiresAt: Date | null = null;
       if (sub.sessionsTotal === null) {
         const now = new Date();

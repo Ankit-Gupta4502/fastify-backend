@@ -34,7 +34,9 @@ export const userSubscriptions = pgTable("user_subscriptions", {
     .notNull()
     .defaultNow(),
   expiresAt: timestamp("expires_at", { withTimezone: true }),
-  razorpayOrderId: text("razorpay_order_id").notNull().unique(),
+  // One of these will be set: orderId for one-time orders, subscriptionId for recurring plans
+  razorpayOrderId: text("razorpay_order_id").unique(),
+  razorpaySubscriptionId: text("razorpay_subscription_id").unique(),
   razorpayPaymentId: text("razorpay_payment_id").unique(),
 });
 
