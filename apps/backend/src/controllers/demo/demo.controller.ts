@@ -208,7 +208,7 @@ export class DemoController {
       const created = await createDemoRequest(drizzle, me.id, body);
 
       void notifyOnDemoCreated({
-        adminEmail: process.env.ADMIN_EMAIL ?? process.env.EMAIL_FROM!,
+        adminEmail: (process.env.ADMIN_EMAIL ?? process.env.EMAIL_FROM ?? "").replace(/^["']|["']$/g, ""),
         userName: me.name,
         userEmail: me.email,
         phone: body.phone ?? "",

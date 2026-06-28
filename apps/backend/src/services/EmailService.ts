@@ -16,7 +16,7 @@ export class EmailService {
     subject: string;
     html: string;
   }) {
-    const from = process.env.EMAIL_FROM ?? "(EMAIL_FROM not set)";
+    const from = (process.env.EMAIL_FROM ?? "(EMAIL_FROM not set)").replace(/^["']|["']$/g, "");
 
     console.log(
       tag,
