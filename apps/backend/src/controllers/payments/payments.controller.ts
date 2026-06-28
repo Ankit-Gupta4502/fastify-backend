@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import {
   calcCustomPriceCents,
-  calcCustomPriceInrPaise,
+  PRICE_DISCOUNT_INR_PAISE,
   createOrderBodySchema,
   createCustomOrderBodySchema,
   verifyPaymentBodySchema,
@@ -96,9 +96,6 @@ export class PaymentsController {
     const country = detectCountry(request, clientCountry);
     const isIndia = country === "IN";
 
-    const amount = isIndia ? calcCustomPriceInrPaise(sessionCount) : calcCustomPriceCents(sessionCount);
-    const currency = isIndia ? "INR" : "USD";
-
     // Look up the fixed plan template — never create a new row
     const [plan] = await drizzle
       .select()
@@ -110,6 +107,12 @@ export class PaymentsController {
       const { statusCode, payload } = errorResponse({ message: "Plan not found", statusCode: 404 });
       return reply.status(statusCode).send(payload);
     }
+
+    const inrRatePerSession = plan.pricePerSessionInrPaise;
+    const amount = isIndia && inrRatePerSession != null
+      ? sessionCount * inrRatePerSession - PRICE_DISCOUNT_INR_PAISE
+      : calcCustomPriceCents(sessionCount);
+    const currency = isIndia && inrRatePerSession != null ? "INR" : "USD";
 
     try {
       const order = await getRazorpay().orders.create({

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { usePlansWithPricing, useMyPlan } from "@/hooks/use-plans";
 import { useCheckout, useCustomCheckout } from "@/hooks/use-checkout";
+import { isIndiaUser } from "@/lib/utils";
 import { PLAN_COPY } from "@/lib/plan-copy";
 import type { PlanRecord } from "@yoga-app/shared";
 
@@ -27,6 +28,7 @@ function PricingPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const plans = usePlansWithPricing();
   const myPlan = useMyPlan(isAuthenticated);
+  const isIndia = isIndiaUser();
   const checkout = useCheckout();
   const customCheckout = useCustomCheckout();
 
@@ -117,6 +119,7 @@ function PricingPage() {
         <PlansGrid
           isLoading={authLoading || plans.isLoading}
           isAuthenticated={isAuthenticated}
+          isIndia={isIndia}
           groupPlan={groupPlan}
           privatePlan={privatePlan}
           prenatalPlan={prenatalPlan}

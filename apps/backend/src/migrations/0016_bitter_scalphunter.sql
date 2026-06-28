@@ -1,0 +1,1 @@
+ALTER TABLE "plans" ADD COLUMN "price_per_session_inr_paise" integer;

@@ -23,6 +23,7 @@ export const plans = pgTable("plans", {
     .default(false),
   maxRoomCapacity: integer("max_room_capacity"),
   priceInrPaise: integer("price_inr_paise"),
+  pricePerSessionInrPaise: integer("price_per_session_inr_paise"),
   category: text("category").notNull().default("standard"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

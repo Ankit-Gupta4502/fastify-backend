@@ -1,9 +1,10 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, centsToDisplay } from "@/lib/utils";
+import { cn, centsToDisplay, paiseToDisplay } from "@/lib/utils";
 import type { PlanRecord } from "@yoga-app/shared";
 
 import {
   MIN_SESSIONS,
+  PRICE_DISCOUNT_INR_PAISE,
   specializedPlanConfig,
   calcPrivatePrice,
   calcSpecializedPrice,
@@ -15,6 +16,7 @@ import { SpecializedPricingCard } from "./SpecializedPricingCard";
 interface PlansGridProps {
   isLoading: boolean;
   isAuthenticated: boolean;
+  isIndia: boolean;
   groupPlan: PlanRecord | null;
   privatePlan: PlanRecord | null;
   prenatalPlan: PlanRecord | null;
@@ -39,6 +41,7 @@ interface PlansGridProps {
 export function PlansGrid({
   isLoading,
   isAuthenticated,
+  isIndia,
   groupPlan,
   privatePlan,
   prenatalPlan: _prenatalPlan,
@@ -73,9 +76,11 @@ export function PlansGrid({
             sessionCount={sessionCount}
             onSessionCountChange={onSessionCountChange}
             pricePerSessionCents={privatePlan?.pricePerSessionCents ?? null}
+            pricePerSessionInrPaise={privatePlan?.pricePerSessionInrPaise ?? null}
             isAuthenticated={isAuthenticated}
             isPending={pendingCard === "private"}
             isActive={isPrivatePlanActive}
+            isIndia={isIndia}
             activeSessions={isPrivatePlanActive ? activeSessions : null}
             onSubscribe={onPrivateSubscribe}
           />
@@ -85,6 +90,7 @@ export function PlansGrid({
               isAuthenticated={isAuthenticated}
               isPending={pendingCard === "group"}
               isActive={isGroupPlanActive}
+              isIndia={isIndia}
               onSubscribe={onGroupSubscribe}
             />
           )}
@@ -95,9 +101,11 @@ export function PlansGrid({
             sessionCount={therapeuticSessions}
             onSessionCountChange={onTherapeuticSessionsChange}
             pricePerSessionCents={therapeuticPlan?.pricePerSessionCents ?? null}
+            pricePerSessionInrPaise={therapeuticPlan?.pricePerSessionInrPaise ?? null}
             isAuthenticated={isAuthenticated}
             isPending={pendingCard === "therapeutic_yoga"}
             isActive={isTherapeuticPlanActive}
+            isIndia={isIndia}
             activeSessions={isTherapeuticPlanActive ? activeSessions : null}
             onSubscribe={() => onSpecializedSubscribe("therapeutic_yoga", therapeuticSessions)}
           />
@@ -105,9 +113,9 @@ export function PlansGrid({
       )}
 
       <p className="text-center text-xs text-muted-foreground">
-        <span className="font-semibold text-foreground/60">Private 1:1</span> — from {centsToDisplay(calcPrivatePrice(MIN_SESSIONS))}/mo.{" "}
+        <span className="font-semibold text-foreground/60">Private 1:1</span> — from {isIndia && privatePlan?.pricePerSessionInrPaise ? paiseToDisplay(MIN_SESSIONS * privatePlan.pricePerSessionInrPaise - PRICE_DISCOUNT_INR_PAISE) : centsToDisplay(calcPrivatePrice(MIN_SESSIONS))}/mo.{" "}
         <span className="font-semibold text-foreground/60">Prenatal & Postnatal</span> and{" "}
-        <span className="font-semibold text-foreground/60">Therapeutic Yoga</span> — from {centsToDisplay(calcSpecializedPrice(MIN_SESSIONS))}/mo.
+        <span className="font-semibold text-foreground/60">Therapeutic Yoga</span> — from {isIndia && therapeuticPlan?.pricePerSessionInrPaise ? paiseToDisplay(MIN_SESSIONS * therapeuticPlan.pricePerSessionInrPaise) : centsToDisplay(calcSpecializedPrice(MIN_SESSIONS))}/mo.
       </p>
     </div>
   );

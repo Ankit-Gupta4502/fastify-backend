@@ -5,12 +5,15 @@ import {
 import {
   PRICE_PER_SESSION_CENTS,
   PRICE_DISCOUNT_CENTS,
+  PRICE_PER_SESSION_INR_PAISE,
+  PRICE_DISCOUNT_INR_PAISE,
   MIN_SESSIONS,
   MAX_SESSIONS,
   calcCustomPriceCents,
+  calcCustomPriceInrPaise,
 } from "@yoga-app/shared";
 
-export { PRICE_PER_SESSION_CENTS, PRICE_DISCOUNT_CENTS, MIN_SESSIONS, MAX_SESSIONS };
+export { PRICE_PER_SESSION_CENTS, PRICE_DISCOUNT_CENTS, PRICE_PER_SESSION_INR_PAISE, PRICE_DISCOUNT_INR_PAISE, MIN_SESSIONS, MAX_SESSIONS };
 
 export function calcPrivatePrice(sessions: number) {
   return calcCustomPriceCents(sessions);
@@ -18,6 +21,14 @@ export function calcPrivatePrice(sessions: number) {
 
 export function calcSpecializedPrice(sessions: number) {
   return sessions * PRICE_PER_SESSION_CENTS;
+}
+
+export function calcPrivatePriceInrPaise(sessions: number) {
+  return calcCustomPriceInrPaise(sessions);
+}
+
+export function calcSpecializedPriceInrPaise(sessions: number) {
+  return sessions * PRICE_PER_SESSION_INR_PAISE;
 }
 
 export const planMeta: Record<string, {

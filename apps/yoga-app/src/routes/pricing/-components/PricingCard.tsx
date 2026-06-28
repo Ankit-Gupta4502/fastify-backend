@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Check, ArrowRight, Loader2, Sparkles, BadgeCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { cn, centsToDisplay } from "@/lib/utils";
+import { cn, centsToDisplay, paiseToDisplay } from "@/lib/utils";
 import { PLAN_COPY } from "@/lib/plan-copy";
 import type { PlanRecord } from "@yoga-app/shared";
 import { planMeta } from "./pricing-config";
@@ -12,10 +12,11 @@ export interface PricingCardProps {
   isAuthenticated: boolean;
   isPending: boolean;
   isActive?: boolean;
+  isIndia?: boolean;
   onSubscribe: (plan: PlanRecord) => void;
 }
 
-export function PricingCard({ plan, isAuthenticated, isPending, isActive, onSubscribe }: PricingCardProps) {
+export function PricingCard({ plan, isAuthenticated, isPending, isActive, isIndia, onSubscribe }: PricingCardProps) {
   const copy = PLAN_COPY[plan.name] ?? { title: plan.name.replace(/_/g, " "), tagline: "", perks: [] };
   const meta = planMeta[plan.name] ?? {
     icon: Sparkles,
@@ -27,6 +28,8 @@ export function PricingCard({ plan, isAuthenticated, isPending, isActive, onSubs
   const billingNote = plan.billingInterval === "week" ? "Billed weekly · Cancel any time" : "Billed monthly · Cancel any time";
   const isGroupPlan = plan.name === "group_live";
   const PlanIcon = meta.icon;
+  const showInr = isIndia && plan.priceInrPaise != null;
+  const priceDisplay = showInr ? paiseToDisplay(plan.priceInrPaise!) : centsToDisplay(plan.priceCents);
 
   return (
     <div className="relative flex flex-col">
@@ -83,7 +86,7 @@ export function PricingCard({ plan, isAuthenticated, isPending, isActive, onSubs
                 "text-[3.25rem] font-doodle tracking-tight leading-none",
                 isGroupPlan ? "text-sky-500" : "text-primary"
               )}>
-                {centsToDisplay(plan.priceCents)}
+                {priceDisplay}
               </span>
               <span className="text-muted-foreground text-sm font-medium pb-1">{billingLabel}</span>
             </div>

@@ -8,6 +8,7 @@ export interface PlanRecord {
   priceCents: number;
   priceInrPaise: number | null;
   pricePerSessionCents: number | null;
+  pricePerSessionInrPaise: number | null;
   billingInterval: BillingInterval;
   sessionsPerWeek: number | null;
   sessionsPerMonth: number | null;

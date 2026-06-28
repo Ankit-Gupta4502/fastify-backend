@@ -2,17 +2,22 @@ import { Link } from "@tanstack/react-router";
 import { Check, ArrowRight, Loader2, Lock, Minus, Plus, BadgeCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { centsToDisplay } from "@/lib/utils";
-import { MIN_SESSIONS, PRICE_DISCOUNT_CENTS } from "./pricing-config";
+import { centsToDisplay, paiseToDisplay } from "@/lib/utils";
+import {
+  MIN_SESSIONS,
+  PRICE_DISCOUNT_CENTS,
+  PRICE_DISCOUNT_INR_PAISE,
+} from "./pricing-config";
 
 export interface PrivatePricingCardProps {
   sessionCount: number;
   onSessionCountChange: (n: number) => void;
-  /** pricePerSessionCents from the DB — falls back to shared constant if null (loading) */
   pricePerSessionCents: number | null;
+  pricePerSessionInrPaise: number | null;
   isAuthenticated: boolean;
   isPending: boolean;
   isActive?: boolean;
+  isIndia?: boolean;
   activeSessions?: number | null;
   onSubscribe: () => void;
 }
@@ -23,10 +28,18 @@ const privatePerks = [
   "Priority support",
 ];
 
-export function PrivatePricingCard({ sessionCount, onSessionCountChange, pricePerSessionCents, isAuthenticated, isPending, isActive, activeSessions, onSubscribe }: PrivatePricingCardProps) {
-  const ratePerSession = pricePerSessionCents ?? 2000; // fallback while loading
+export function PrivatePricingCard({ sessionCount, onSessionCountChange, pricePerSessionCents, pricePerSessionInrPaise, isAuthenticated, isPending, isActive, isIndia, activeSessions, onSubscribe }: PrivatePricingCardProps) {
+  const ratePerSession = pricePerSessionCents ?? 2000;
+  const ratePerSessionInr = pricePerSessionInrPaise ?? 170000; // ₹1700 fallback while loading
   const priceCents = sessionCount * ratePerSession - PRICE_DISCOUNT_CENTS;
   const basePriceCents = MIN_SESSIONS * ratePerSession - PRICE_DISCOUNT_CENTS;
+  const priceInrPaise = sessionCount * ratePerSessionInr - PRICE_DISCOUNT_INR_PAISE;
+  const basePriceInrPaise = MIN_SESSIONS * ratePerSessionInr - PRICE_DISCOUNT_INR_PAISE;
+
+  const priceDisplay = isIndia ? paiseToDisplay(priceInrPaise) : centsToDisplay(priceCents);
+  const basePriceDisplay = isIndia ? paiseToDisplay(basePriceInrPaise) : centsToDisplay(basePriceCents);
+  const rateDisplay = isIndia ? paiseToDisplay(ratePerSessionInr) : centsToDisplay(ratePerSession);
+  const discountDisplay = isIndia ? paiseToDisplay(PRICE_DISCOUNT_INR_PAISE) : centsToDisplay(PRICE_DISCOUNT_CENTS);
 
   return (
     <div className="relative">
@@ -70,13 +83,13 @@ export function PrivatePricingCard({ sessionCount, onSessionCountChange, pricePe
           <div className="space-y-0.5">
             <div className="flex items-baseline gap-1.5">
               <span className="text-[3.25rem] font-doodle text-primary tracking-tight leading-none transition-all duration-300">
-                {centsToDisplay(priceCents)}
+                {priceDisplay}
               </span>
               <span className="text-muted-foreground text-sm font-medium pb-1">/ mo</span>
             </div>
             {sessionCount > MIN_SESSIONS
-              ? <p className="text-[11px] text-muted-foreground">{centsToDisplay(basePriceCents)} base · +{centsToDisplay(ratePerSession)} per extra session</p>
-              : <p className="text-[11px] text-muted-foreground">Billed monthly · Cancel any time</p>
+              ? <p className="text-[11px] text-muted-foreground">{basePriceDisplay} base · +{rateDisplay} per extra session</p>
+              : <p className="text-[11px] text-muted-foreground">Billed monthly · {discountDisplay} off · Cancel any time</p>
             }
           </div>
         </div>
@@ -86,7 +99,7 @@ export function PrivatePricingCard({ sessionCount, onSessionCountChange, pricePe
         <div className="flex-1 px-7 py-4 space-y-2.5">
           {privatePerks.map((perk) => (
             <div key={perk} className="flex items-start gap-3">
-              <div className="size-[18px] rounded-full flex items-center justify-center shrink-0 mt-px bg-primary/12">
+              <div className="size-4.5 rounded-full flex items-center justify-center shrink-0 mt-px bg-primary/12">
                 <Check className="size-2.5 text-primary" />
               </div>
               <span className="text-sm text-foreground/75 leading-snug">{perk}</span>
