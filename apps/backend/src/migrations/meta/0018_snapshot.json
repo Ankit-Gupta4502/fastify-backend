@@ -1,6 +1,6 @@
 {
-  "id": "a478ac72-882d-4ee7-a4c2-f3d2ec49fa4f",
-  "prevId": "aee61dd1-f7d2-4136-b5ae-ed27416357f1",
+  "id": "95506d6e-41e4-4f6c-9405-ac607b53f15f",
+  "prevId": "a478ac72-882d-4ee7-a4c2-f3d2ec49fa4f",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -647,7 +647,7 @@
           "name": "price_cents",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "price_per_session_cents": {
           "name": "price_per_session_cents",
