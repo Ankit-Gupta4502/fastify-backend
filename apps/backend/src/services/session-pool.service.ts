@@ -49,6 +49,10 @@ async function getActiveSubscription(db: AppDatabase, userId: string) {
         eq(userSubscriptions.userId, userId),
         eq(userSubscriptions.status, "active"),
         or(
+          isNull(userSubscriptions.expiresAt),
+          gt(userSubscriptions.expiresAt, new Date()),
+        ),
+        or(
           isNull(userSubscriptions.sessionsTotal),
           lt(userSubscriptions.sessionsUsed, userSubscriptions.sessionsTotal),
         ),
@@ -498,6 +502,7 @@ export async function bookPrivateSession(
       JOIN "plans" p ON p.id = us.plan_id
       WHERE us.user_id = ${params.userId}
         AND us.status = 'active'
+        AND (us.expires_at IS NULL OR us.expires_at > now())
         AND us.sessions_total IS NOT NULL
         AND us.sessions_used < us.sessions_total
       ORDER BY us.purchased_at DESC

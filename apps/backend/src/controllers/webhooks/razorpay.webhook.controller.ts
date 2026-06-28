@@ -232,7 +232,7 @@ export class RazorpayWebhookController {
       return;
     }
 
-    const expiresAt = computeExpiresAt(existing.sessionsTotal, existing.billingInterval, null);
+    const expiresAt = computeExpiresAt(existing.billingInterval, null);
 
     await drizzle
       .update(userSubscriptions)
@@ -303,7 +303,7 @@ export class RazorpayWebhookController {
       return;
     }
 
-    const expiresAt = computeExpiresAt(existing.sessionsTotal, existing.billingInterval, currentEnd);
+    const expiresAt = computeExpiresAt(existing.billingInterval, currentEnd);
 
     await drizzle
       .update(userSubscriptions)
@@ -347,11 +347,16 @@ export class RazorpayWebhookController {
       return;
     }
 
-    const expiresAt = computeExpiresAt(existing.sessionsTotal, existing.billingInterval, currentEnd);
+    const expiresAt = computeExpiresAt(existing.billingInterval, currentEnd);
 
     await drizzle
       .update(userSubscriptions)
-      .set({ status: "active", razorpayPaymentId, expiresAt })
+      .set({
+        status: "active",
+        razorpayPaymentId,
+        expiresAt,
+        ...(existing.sessionsTotal !== null ? { sessionsUsed: 0 } : {}),
+      })
       .where(eq(userSubscriptions.id, existing.id));
 
     request.log.info(
@@ -408,12 +413,10 @@ export class RazorpayWebhookController {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function computeExpiresAt(
-  sessionsTotal: number | null,
   billingInterval: string,
   currentEnd: Date | null,
-): Date | null {
-  if (sessionsTotal !== null) return null; // session-pool plans don't have a calendar expiry
-  if (currentEnd) return currentEnd;       // use authoritative Razorpay value when available
+): Date {
+  if (currentEnd) return currentEnd;
   const now = new Date();
   if (billingInterval === "week") {
     return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);

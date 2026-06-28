@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { and, desc, eq, isNull, lt, or } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, lt, or } from "drizzle-orm";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { requireRole } from "../../middleware/role.middleware";
 import { USER_ROLES } from "../../constants/roles";
@@ -159,6 +159,10 @@ export class PlansController {
         and(
           eq(userSubscriptions.userId, me.id),
           eq(userSubscriptions.status, "active"),
+          or(
+            isNull(userSubscriptions.expiresAt),
+            gt(userSubscriptions.expiresAt, new Date()),
+          ),
           or(
             isNull(userSubscriptions.sessionsTotal),
             lt(userSubscriptions.sessionsUsed, userSubscriptions.sessionsTotal),

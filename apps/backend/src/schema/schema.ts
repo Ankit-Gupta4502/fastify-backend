@@ -16,6 +16,8 @@ export { workshops, workShopRegisteredUsers } from "../models/workshops";
 
 export { plans, plansRelations } from "../models/plans";
 
+export { sessionPlanRazorpayPlans } from "../models/session-plan-razorpay-plans";
+
 export {
   rooms,
   roomsRelations,

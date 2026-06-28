@@ -12,9 +12,12 @@ import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { drizzle } from "../../db";
 import { plans, userSubscriptions } from "../../schema/schema";
 import {
+  getOrCreateSessionRazorpayPlan,
+  getOrCreateStandardRazorpayPlan,
+} from "../../services/razorpay-plans.service";
+import {
   getRazorpay,
   getRazorpayKeyId,
-  verifyPaymentSignature,
   verifySubscriptionSignature,
 } from "../../services/razorpay.service";
 import { detectCountry, errorResponse, successResponse, validateWithZod } from "../../utils";
@@ -48,7 +51,7 @@ export class PaymentsController {
           {
             preHandler: this.authMiddleware.handle,
             schema: {
-              description: "Create a Razorpay order for a session-based plan (private / specialised)",
+              description: "Create a Razorpay subscription for a session-based plan (private / specialised)",
               tags: ["Payments"] as string[],
               security: [{ cookieAuth: [] }],
             },
@@ -73,7 +76,7 @@ export class PaymentsController {
     );
   }
 
-  // ── Custom (session-based, one-time) order ───────────────────────────────────
+  // ── Custom (session-based, recurring) subscription ───────────────────────────
 
   private createCustomOrder = async (request: FastifyRequest, reply: FastifyReply) => {
     const invalid = validateWithZod(request, reply, {
@@ -107,12 +110,22 @@ export class PaymentsController {
       ? sessionCount * inrRatePerSession - PRICE_DISCOUNT_INR_PAISE
       : calcCustomPriceCents(sessionCount);
     const currency = isIndia && inrRatePerSession != null ? "INR" : "USD";
+    const period = plan.billingInterval === "week" ? "weekly" as const : "monthly" as const;
 
     try {
-      const order = await getRazorpay().orders.create({
+      const rpPlanId = await getOrCreateSessionRazorpayPlan({
+        planId: plan.id,
+        planName: plan.name,
+        sessionCount,
         amount,
         currency,
-        receipt: `sub-${plan.id.slice(0, 8)}-${me.id.slice(0, 8)}`,
+        period,
+      });
+
+      const rpSub = await getRazorpay().subscriptions.create({
+        plan_id: rpPlanId,
+        total_count: 120,
+        customer_notify: 1,
         notes: {
           userId: me.id,
           planId: plan.id,
@@ -128,25 +141,23 @@ export class PaymentsController {
         sessionsUsed: 0,
         pricePaidCents: amount,
         status: "pending_payment",
-        razorpayOrderId: order.id,
+        razorpaySubscriptionId: rpSub.id,
       });
 
       const { statusCode, payload } = successResponse({
-        message: "Order created",
+        message: "Subscription created",
         data: {
-          orderId: order.id,
+          subscriptionId: rpSub.id,
           keyId: getRazorpayKeyId(),
-          amount: Number(order.amount),
-          currency: order.currency,
           planId: plan.id,
           planName: plan.name,
         },
       });
       return reply.status(statusCode).send(payload);
     } catch (err) {
-      request.log.error({ err }, "razorpay custom order create failed");
+      request.log.error({ err }, "razorpay custom subscription create failed");
       const { statusCode, payload } = errorResponse({
-        message: "Could not create payment order",
+        message: "Could not create payment subscription",
         statusCode: 502,
       });
       return reply.status(statusCode).send(payload);
@@ -187,24 +198,15 @@ export class PaymentsController {
     const period = plan.billingInterval === "week" ? "weekly" as const : "monthly" as const;
 
     try {
-      // Lazily create (and cache) the Razorpay Plan for this DB plan + currency.
-      // A Razorpay Plan is a reusable template; we only need one per (plan, currency) pair.
-      let rpPlanId = isIndia ? plan.razorpayPlanIdInr : plan.razorpayPlanIdUsd;
-      if (!rpPlanId) {
-        const rpPlan = await getRazorpay().plans.create({
-          item: { name: plan.name, amount, currency },
-          period,
-          interval: 1,
-          notes: { planId: plan.id },
-        });
-        rpPlanId = rpPlan.id;
-        await drizzle
-          .update(plans)
-          .set(isIndia ? { razorpayPlanIdInr: rpPlanId } : { razorpayPlanIdUsd: rpPlanId })
-          .where(eq(plans.id, plan.id));
-      }
+      const rpPlanId = await getOrCreateStandardRazorpayPlan({
+        planId: plan.id,
+        planName: plan.name,
+        amount,
+        currency,
+        period,
+        isIndia,
+      });
 
-      // total_count 120 = effectively unlimited (10 years monthly / ~2.3 years weekly)
       const rpSub = await getRazorpay().subscriptions.create({
         plan_id: rpPlanId,
         total_count: 120,
@@ -235,7 +237,7 @@ export class PaymentsController {
     } catch (err) {
       request.log.error({ err }, "razorpay subscription create failed");
       const { statusCode, payload } = errorResponse({
-        message: "Could not create payment order",
+        message: "Could not create payment subscription",
         statusCode: 502,
       });
       return reply.status(statusCode).send(payload);
@@ -258,18 +260,20 @@ export class PaymentsController {
 
     const body = request.body as z.infer<typeof verifyPaymentBodySchema>;
 
-    // Signature format differs: subscriptions use paymentId|subscriptionId, orders use orderId|paymentId
-    const signatureValid = body.razorpaySubscriptionId
-      ? verifySubscriptionSignature({
-          subscriptionId: body.razorpaySubscriptionId,
-          paymentId: body.razorpayPaymentId,
-          signature: body.razorpaySignature,
-        })
-      : verifyPaymentSignature({
-          orderId: body.razorpayOrderId!,
-          paymentId: body.razorpayPaymentId,
-          signature: body.razorpaySignature,
-        });
+    if (!body.razorpaySubscriptionId) {
+      const { statusCode, payload } = errorResponse({
+        message: "razorpaySubscriptionId is required",
+        statusCode: 400,
+        error: "SUBSCRIPTION_ID_REQUIRED",
+      });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const signatureValid = verifySubscriptionSignature({
+      subscriptionId: body.razorpaySubscriptionId,
+      paymentId: body.razorpayPaymentId,
+      signature: body.razorpaySignature,
+    });
 
     if (!signatureValid) {
       const { statusCode, payload } = errorResponse({
@@ -280,7 +284,6 @@ export class PaymentsController {
       return reply.status(statusCode).send(payload);
     }
 
-    // Idempotency: already processed by webhook or a previous verify call.
     const [byPaymentId] = await drizzle
       .select({ id: userSubscriptions.id })
       .from(userSubscriptions)
@@ -295,38 +298,32 @@ export class PaymentsController {
       return reply.status(statusCode).send(payload);
     }
 
-    // Find the pending subscription by whichever ID the frontend supplied.
     const [sub] = await drizzle
       .select({
         id: userSubscriptions.id,
         userId: userSubscriptions.userId,
         status: userSubscriptions.status,
-        sessionsTotal: userSubscriptions.sessionsTotal,
         billingInterval: plans.billingInterval,
       })
       .from(userSubscriptions)
       .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
-      .where(
-        body.razorpaySubscriptionId
-          ? eq(userSubscriptions.razorpaySubscriptionId, body.razorpaySubscriptionId)
-          : eq(userSubscriptions.razorpayOrderId, body.razorpayOrderId!),
-      )
+      .where(eq(userSubscriptions.razorpaySubscriptionId, body.razorpaySubscriptionId))
       .limit(1);
 
     if (!sub) {
       const { statusCode, payload } = errorResponse({
-        message: "Order not found — create an order before verifying",
+        message: "Subscription not found — create a subscription before verifying",
         statusCode: 404,
-        error: "ORDER_NOT_FOUND",
+        error: "SUBSCRIPTION_NOT_FOUND",
       });
       return reply.status(statusCode).send(payload);
     }
 
     if (sub.userId !== me.id) {
       const { statusCode, payload } = errorResponse({
-        message: "Order does not belong to this account",
+        message: "Subscription does not belong to this account",
         statusCode: 403,
-        error: "ORDER_USER_MISMATCH",
+        error: "SUBSCRIPTION_USER_MISMATCH",
       });
       return reply.status(statusCode).send(payload);
     }
@@ -340,18 +337,13 @@ export class PaymentsController {
     }
 
     try {
-      // Session-pool plans have no calendar expiry; recurring plans expire after one billing cycle.
-      // The webhook subscription.charged will update expiresAt with the authoritative value from Razorpay.
-      let expiresAt: Date | null = null;
-      if (sub.sessionsTotal === null) {
-        const now = new Date();
-        if (sub.billingInterval === "week") {
-          expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-        } else {
-          const d = new Date(now);
-          d.setMonth(d.getMonth() + 1);
-          expiresAt = d;
-        }
+      const now = new Date();
+      let expiresAt: Date;
+      if (sub.billingInterval === "week") {
+        expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      } else {
+        expiresAt = new Date(now);
+        expiresAt.setMonth(expiresAt.getMonth() + 1);
       }
 
       await drizzle

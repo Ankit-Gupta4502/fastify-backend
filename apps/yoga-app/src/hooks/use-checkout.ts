@@ -7,6 +7,17 @@ import {
 import { queryKeys } from "../lib/react-query/query-keys";
 import { useAuthStore } from "../store/auth.store";
 
+function indiaSubscriptionCheckoutConfig() {
+  return {
+    display: {
+      hide: [
+        { method: "upi" as const, flow: "qr" as const },
+        { method: "upi" as const, flow: "collect" as const },
+      ],
+      preferences: { show_default_blocks: true },
+    },
+  };
+}
 
 export function useCustomCheckout() {
   const qc = useQueryClient();
@@ -24,29 +35,26 @@ export function useCustomCheckout() {
       country?: string;
     }) => {
       const order = await paymentsApi.createCustomOrder({ sessionCount, planName, country });
-      if (!order.data) throw new Error("Order creation failed");
+      if (!order.data) throw new Error("Subscription creation failed");
 
-      const { orderId, keyId, amount, currency } = order.data;
-      const isIndia = currency === "INR";
+      const { subscriptionId, keyId, planName: resolvedPlanName } = order.data;
 
       const checkout: RazorpayCheckoutResponse = await openRazorpayCheckout({
         key: keyId,
-        amount,
-        currency,
         name: "Book Your Yoga Teacher",
-        description: `${planName} — ${sessionCount} sessions/mo`,
-        order_id: orderId,
+        description: `${resolvedPlanName} — ${sessionCount} sessions/mo`,
+        subscription_id: subscriptionId,
         prefill: {
           name: user?.name ?? undefined,
           email: user?.email ?? undefined,
         },
         theme: { color: "#D97706" },
-        config: isIndia ? { display: { preferences: { show_default_blocks: true } } } : undefined,
+        config: country === "IN" ? indiaSubscriptionCheckoutConfig() : undefined,
         handler: () => {},
       });
 
       const verification = await paymentsApi.verify({
-        razorpayOrderId: checkout.razorpay_order_id,
+        razorpaySubscriptionId: checkout.razorpay_subscription_id,
         razorpayPaymentId: checkout.razorpay_payment_id,
         razorpaySignature: checkout.razorpay_signature,
       });
@@ -73,14 +81,11 @@ export function useCheckout() {
     mutationFn: async ({ planId, country }: { planId: string; country?: string }) => {
       const order = await paymentsApi.createOrder({ planId, country });
       if (!order.data) {
-        throw new Error("Order creation failed");
+        throw new Error("Subscription creation failed");
       }
 
       const { subscriptionId, keyId, planName } = order.data;
-      if (!subscriptionId) throw new Error("Expected subscriptionId for recurring plan");
 
-      // Subscription checkout: pass subscription_id instead of order_id.
-      // Razorpay handles the first authorisation charge and all renewals.
       const checkout: RazorpayCheckoutResponse = await openRazorpayCheckout({
         key: keyId,
         name: "Book Your Yoga Teacher",
@@ -91,18 +96,7 @@ export function useCheckout() {
           email: user?.email ?? undefined,
         },
         theme: { color: "#D97706" },
-        // For Indian subscriptions: keep UPI Autopay (intent/mandate) but hide one-time UPI
-        // QR-scan and collect flows — those create no recurring mandate so month-2 auto-debit
-        // will fail and Razorpay will halt the subscription after retries.
-        config: country === "IN" ? {
-          display: {
-            hide: [
-              { method: "upi", flow: "qr" },
-              { method: "upi", flow: "collect" },
-            ],
-            preferences: { show_default_blocks: true },
-          },
-        } : undefined,
+        config: country === "IN" ? indiaSubscriptionCheckoutConfig() : undefined,
         handler: () => {},
       });
 

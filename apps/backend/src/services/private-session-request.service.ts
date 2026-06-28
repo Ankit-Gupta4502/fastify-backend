@@ -190,6 +190,7 @@ export async function assignPrivateSessionRequest(
       JOIN "plans" p ON p.id = us.plan_id
       WHERE us.user_id = ${req.userId}
         AND us.status = 'active'
+        AND (us.expires_at IS NULL OR us.expires_at > now())
         AND us.sessions_total IS NOT NULL
         AND us.sessions_used < us.sessions_total
       ORDER BY us.purchased_at DESC
