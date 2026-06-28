@@ -50,9 +50,7 @@ export function PrivateSessionCard({
         "bg-card scale-105 z-10 ring-2 ring-primary/30",
       )}
     >
-      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
-        Most Popular
-      </div>
+
       {isActive && (
         <div className="absolute -top-4 right-6 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
           Current

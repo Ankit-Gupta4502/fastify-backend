@@ -92,6 +92,20 @@
       "when": 1782588325539,
       "tag": "0012_early_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1782338887991,
+      "tag": "0010_inr_pricing",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1782614372269,
+      "tag": "0013_slim_deathstrike",
+      "breakpoints": true
     }
   ]
 }

@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import {
   calcCustomPriceCents,
+  calcCustomPriceInrPaise,
   createOrderBodySchema,
   createCustomOrderBodySchema,
   verifyPaymentBodySchema,
@@ -16,6 +17,22 @@ import {
   verifyPaymentSignature,
 } from "../../services/razorpay.service";
 import { errorResponse, successResponse, validateWithZod } from "../../utils";
+
+/**
+ * Resolve the request's country code (ISO 3166-1 alpha-2).
+ * Priority: Cloudflare header → nginx header → client-supplied fallback.
+ */
+function detectCountry(request: FastifyRequest, clientCountry?: string): string | null {
+  const cf = request.headers["cf-ipcountry"];
+  if (typeof cf === "string" && cf.length === 2 && cf !== "XX") return cf.toUpperCase();
+
+  const nginx = request.headers["x-country-code"];
+  if (typeof nginx === "string" && nginx.length === 2) return nginx.toUpperCase();
+
+  if (clientCountry && clientCountry.length === 2) return clientCountry.toUpperCase();
+
+  return null;
+}
 
 export class PaymentsController {
   constructor(
@@ -85,8 +102,12 @@ export class PaymentsController {
       return reply.status(statusCode).send(payload);
     }
 
-    const { sessionCount, planName } = request.body as z.infer<typeof createCustomOrderBodySchema>;
-    const priceCents = calcCustomPriceCents(sessionCount);
+    const { sessionCount, planName, country: clientCountry } = request.body as z.infer<typeof createCustomOrderBodySchema>;
+    const country = detectCountry(request, clientCountry);
+    const isIndia = country === "IN";
+
+    const amount = isIndia ? calcCustomPriceInrPaise(sessionCount) : calcCustomPriceCents(sessionCount);
+    const currency = isIndia ? "INR" : "USD";
 
     // Look up the fixed plan template — never create a new row
     const [plan] = await drizzle
@@ -102,8 +123,8 @@ export class PaymentsController {
 
     try {
       const order = await getRazorpay().orders.create({
-        amount: priceCents,
-        currency: "USD",
+        amount,
+        currency,
         receipt: `sub-${plan.id.slice(0, 8)}-${me.id.slice(0, 8)}`,
         notes: {
           userId: me.id,
@@ -119,7 +140,7 @@ export class PaymentsController {
         planId: plan.id,
         sessionsTotal: sessionCount,
         sessionsUsed: 0,
-        pricePaidCents: priceCents,
+        pricePaidCents: amount,
         status: "pending_payment",
         razorpayOrderId: order.id,
       });
@@ -161,6 +182,8 @@ export class PaymentsController {
     }
 
     const body = request.body as z.infer<typeof createOrderBodySchema>;
+    const country = detectCountry(request, body.country);
+    const isIndia = country === "IN";
 
     const [plan] = await drizzle
       .select()
@@ -173,10 +196,13 @@ export class PaymentsController {
       return reply.status(statusCode).send(payload);
     }
 
+    const amount = isIndia && plan.priceInrPaise != null ? plan.priceInrPaise : plan.priceCents;
+    const currency = isIndia && plan.priceInrPaise != null ? "INR" : "USD";
+
     try {
       const order = await getRazorpay().orders.create({
-        amount: plan.priceCents,
-        currency: "USD",
+        amount,
+        currency,
         receipt: `sub-${plan.id.slice(0, 8)}-${me.id.slice(0, 8)}`,
         notes: {
           userId: me.id,
@@ -191,7 +217,7 @@ export class PaymentsController {
         planId: plan.id,
         sessionsTotal: null,
         sessionsUsed: 0,
-        pricePaidCents: plan.priceCents,
+        pricePaidCents: amount,
         status: "pending_payment",
         razorpayOrderId: order.id,
       });

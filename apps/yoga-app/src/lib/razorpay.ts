@@ -22,11 +22,18 @@ export interface RazorpayCheckoutOptions {
   prefill?: {
     name?: string;
     email?: string;
-    contact?: string;
+    contact?: string; // phone number — used for UPI VPA auto-fill in India
   };
   theme?: { color?: string };
   handler: (response: RazorpayCheckoutResponse) => void;
   modal?: { ondismiss?: () => void };
+  config?: {
+    display?: {
+      blocks?: Record<string, unknown>;
+      sequence?: string[];
+      preferences?: { show_default_blocks?: boolean };
+    };
+  };
 }
 
 interface RazorpayInstance {

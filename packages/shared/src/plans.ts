@@ -6,6 +6,7 @@ export interface PlanRecord {
   id: string;
   name: PlanName;
   priceCents: number;
+  priceInrPaise: number | null;
   pricePerSessionCents: number | null;
   billingInterval: BillingInterval;
   sessionsPerWeek: number | null;
