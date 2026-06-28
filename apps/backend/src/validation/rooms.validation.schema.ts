@@ -15,8 +15,19 @@ export const privateBookingBodySchema = z
     path: ["endUtc"],
   });
 
+export const requestPrivateBodySchema = z
+  .object({
+    requestedStartUtc: z.iso.datetime({ offset: true }),
+    requestedEndUtc: z.iso.datetime({ offset: true }),
+  })
+  .refine((v) => new Date(v.requestedEndUtc) > new Date(v.requestedStartUtc), {
+    message: "requestedEndUtc must be after requestedStartUtc",
+    path: ["requestedEndUtc"],
+  });
+
 export type RoomIdParams = z.infer<typeof roomIdParamsSchema>;
 export type PrivateBookingBody = z.infer<typeof privateBookingBodySchema>;
+export type RequestPrivateBody = z.infer<typeof requestPrivateBodySchema>;
 
 export const roomsSwaggerSchemas = {
   listUpcomingGroup: {

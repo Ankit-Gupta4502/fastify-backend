@@ -5,7 +5,9 @@ import {
   type InstructorScheduleRoom,
   type JoinRoomResult,
   type LeaveRoomResult,
+  type MyPrivateSessionRequest,
   type PublicRoomPreview,
+  type RequestPrivateSessionResult,
   type UpcomingRoom,
 } from "@yoga-app/shared";
 import { apiRequest } from "../lib/http";
@@ -41,6 +43,15 @@ export const roomsApi = {
       method: "POST",
       data: payload,
     }),
+
+  requestPrivate: (payload: { requestedStartUtc: string; requestedEndUtc: string }) =>
+    apiRequest<RequestPrivateSessionResult>(API_ENDPOINTS.ROOMS.REQUEST_PRIVATE, {
+      method: "POST",
+      data: payload,
+    }),
+
+  myPrivateRequests: () =>
+    apiRequest<MyPrivateSessionRequest[]>(API_ENDPOINTS.ROOMS.MY_PRIVATE_REQUESTS),
 
   mySchedule: () =>
     apiRequest<InstructorScheduleRoom[]>(API_ENDPOINTS.INSTRUCTORS.MY_SCHEDULE),

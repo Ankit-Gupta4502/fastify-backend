@@ -20,6 +20,8 @@ export const API_ENDPOINTS = {
     JOIN: (id: string) => `/rooms/${id}/join`,
     LEAVE: (id: string) => `/rooms/${id}/leave`,
     BOOK_PRIVATE: "/rooms/private/book",
+    REQUEST_PRIVATE: "/rooms/private/request",
+    MY_PRIVATE_REQUESTS: "/rooms/private/my-requests",
   },
   REVIEWS: {
     PUBLIC: "/reviews",
@@ -50,6 +52,10 @@ export const API_ENDPOINTS = {
     APPROVE_INSTRUCTOR: (id: string) => `/admin/instructors/${id}/approve`,
     UPDATE_INSTRUCTOR_PRIORITY: (id: string) => `/admin/instructors/${id}/priority`,
     GROUP_ROOMS: "/admin/rooms/group",
+    PRIVATE_REQUESTS: (status?: "pending" | "approved" | "rejected") =>
+      `/admin/rooms/private-requests${status ? `?status=${status}` : ""}`,
+    ASSIGN_PRIVATE_REQUEST: (id: string) => `/admin/rooms/private-requests/${id}/assign`,
+    REJECT_PRIVATE_REQUEST: (id: string) => `/admin/rooms/private-requests/${id}/reject`,
     REVIEWS: "/admin/reviews",
     REVIEW: (id: string) => `/admin/reviews/${id}`,
   },

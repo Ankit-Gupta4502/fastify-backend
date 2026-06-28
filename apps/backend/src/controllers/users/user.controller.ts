@@ -1,30 +1,15 @@
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { userSwaggerSchemas } from "../../validation/user.validation.schema";
+import {
+  saveAcquisitionSchema,
+  savePreferencesSchema,
+  userSwaggerSchemas,
+} from "../../validation/user.validation.schema";
 import { successResponse, errorResponse, validateWithZod } from "../../utils";
 import { z } from "zod";
 import { drizzle } from "../../db";
 import { userPreferences, userAcquisition } from "../../schema/schema";
 import { eq } from "drizzle-orm";
-
-const saveAcquisitionSchema = z.object({
-  utmSource: z.string().optional().nullable(),
-  utmMedium: z.string().optional().nullable(),
-  utmCampaign: z.string().optional().nullable(),
-  utmContent: z.string().optional().nullable(),
-  utmTerm: z.string().optional().nullable(),
-  referrer: z.string().optional().nullable(),
-  landingPage: z.string().optional().nullable(),
-});
-
-const savePreferencesSchema = z.object({
-  gender: z.enum(["Male", "Female", "Other"]),
-  phone: z.string().optional().nullable(),
-  purposes: z.array(z.string()).min(1),
-  otherPurpose: z.string().optional().nullable(),
-  preferredTimeOfDay: z.enum(["Morning", "Afternoon", "Evening", "Flexible"]).optional().nullable(),
-  timezone: z.string().min(1),
-});
 
 export class UserController {
   constructor(

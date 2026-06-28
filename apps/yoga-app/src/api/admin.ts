@@ -1,7 +1,9 @@
 import type {
+  AdminPrivateSessionRequest,
   AdminUser,
   AdminInstructor,
   AdminRoom,
+  AssignPrivateSessionBody,
   CreateGroupRoomBody,
   CreateGroupRoomResult,
   CreateInstructorBody,
@@ -41,5 +43,20 @@ export const adminApi = {
     apiRequest<CreateGroupRoomResult>(API_ENDPOINTS.ADMIN.GROUP_ROOMS, {
       method: "POST",
       data: body,
+    }),
+
+  listPrivateRequests: (status: "pending" | "approved" | "rejected" = "pending") =>
+    apiRequest<AdminPrivateSessionRequest[]>(API_ENDPOINTS.ADMIN.PRIVATE_REQUESTS(status)),
+
+  assignPrivateRequest: (id: string, body: AssignPrivateSessionBody) =>
+    apiRequest<{ roomId: string }>(API_ENDPOINTS.ADMIN.ASSIGN_PRIVATE_REQUEST(id), {
+      method: "PATCH",
+      data: body,
+    }),
+
+  rejectPrivateRequest: (id: string, adminNote?: string | null) =>
+    apiRequest<null>(API_ENDPOINTS.ADMIN.REJECT_PRIVATE_REQUEST(id), {
+      method: "PATCH",
+      data: { adminNote: adminNote ?? null },
     }),
 };

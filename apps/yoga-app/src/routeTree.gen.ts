@@ -34,9 +34,11 @@ import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
 import { Route as AdminSubscriptionsIndexRouteImport } from './routes/admin/subscriptions/index'
 import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
 import { Route as AdminReviewsIndexRouteImport } from './routes/admin/reviews/index'
+import { Route as AdminPrivateSessionsIndexRouteImport } from './routes/admin/private-sessions/index'
 import { Route as AdminInstructorsIndexRouteImport } from './routes/admin/instructors/index'
 import { Route as AdminDemoRequestsIndexRouteImport } from './routes/admin/demo-requests/index'
 import { Route as UserRoomsIndexRouteImport } from './routes/_user/rooms/index'
+import { Route as UserPrivateSessionsIndexRouteImport } from './routes/_user/private-sessions/index'
 import { Route as UserEditProfileIndexRouteImport } from './routes/_user/edit-profile/index'
 import { Route as UserDashboardIndexRouteImport } from './routes/_user/dashboard/index'
 import { Route as UserBillingIndexRouteImport } from './routes/_user/billing/index'
@@ -166,6 +168,12 @@ const AdminReviewsIndexRoute = AdminReviewsIndexRouteImport.update({
   path: '/reviews/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminPrivateSessionsIndexRoute =
+  AdminPrivateSessionsIndexRouteImport.update({
+    id: '/private-sessions/',
+    path: '/private-sessions/',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
 const AdminInstructorsIndexRoute = AdminInstructorsIndexRouteImport.update({
   id: '/instructors/',
   path: '/instructors/',
@@ -181,6 +189,12 @@ const UserRoomsIndexRoute = UserRoomsIndexRouteImport.update({
   path: '/rooms/',
   getParentRoute: () => UserRouteRoute,
 } as any)
+const UserPrivateSessionsIndexRoute =
+  UserPrivateSessionsIndexRouteImport.update({
+    id: '/private-sessions/',
+    path: '/private-sessions/',
+    getParentRoute: () => UserRouteRoute,
+  } as any)
 const UserEditProfileIndexRoute = UserEditProfileIndexRouteImport.update({
   id: '/edit-profile/',
   path: '/edit-profile/',
@@ -215,9 +229,11 @@ export interface FileRoutesByFullPath {
   '/billing/': typeof UserBillingIndexRoute
   '/dashboard/': typeof UserDashboardIndexRoute
   '/edit-profile/': typeof UserEditProfileIndexRoute
+  '/private-sessions/': typeof UserPrivateSessionsIndexRoute
   '/rooms/': typeof UserRoomsIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
+  '/admin/private-sessions/': typeof AdminPrivateSessionsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
   '/admin/subscriptions/': typeof AdminSubscriptionsIndexRoute
@@ -246,9 +262,11 @@ export interface FileRoutesByTo {
   '/billing': typeof UserBillingIndexRoute
   '/dashboard': typeof UserDashboardIndexRoute
   '/edit-profile': typeof UserEditProfileIndexRoute
+  '/private-sessions': typeof UserPrivateSessionsIndexRoute
   '/rooms': typeof UserRoomsIndexRoute
   '/admin/demo-requests': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors': typeof AdminInstructorsIndexRoute
+  '/admin/private-sessions': typeof AdminPrivateSessionsIndexRoute
   '/admin/reviews': typeof AdminReviewsIndexRoute
   '/admin/rooms': typeof AdminRoomsIndexRoute
   '/admin/subscriptions': typeof AdminSubscriptionsIndexRoute
@@ -280,9 +298,11 @@ export interface FileRoutesById {
   '/_user/billing/': typeof UserBillingIndexRoute
   '/_user/dashboard/': typeof UserDashboardIndexRoute
   '/_user/edit-profile/': typeof UserEditProfileIndexRoute
+  '/_user/private-sessions/': typeof UserPrivateSessionsIndexRoute
   '/_user/rooms/': typeof UserRoomsIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
+  '/admin/private-sessions/': typeof AdminPrivateSessionsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
   '/admin/subscriptions/': typeof AdminSubscriptionsIndexRoute
@@ -314,9 +334,11 @@ export interface FileRouteTypes {
     | '/billing/'
     | '/dashboard/'
     | '/edit-profile/'
+    | '/private-sessions/'
     | '/rooms/'
     | '/admin/demo-requests/'
     | '/admin/instructors/'
+    | '/admin/private-sessions/'
     | '/admin/reviews/'
     | '/admin/rooms/'
     | '/admin/subscriptions/'
@@ -345,9 +367,11 @@ export interface FileRouteTypes {
     | '/billing'
     | '/dashboard'
     | '/edit-profile'
+    | '/private-sessions'
     | '/rooms'
     | '/admin/demo-requests'
     | '/admin/instructors'
+    | '/admin/private-sessions'
     | '/admin/reviews'
     | '/admin/rooms'
     | '/admin/subscriptions'
@@ -378,9 +402,11 @@ export interface FileRouteTypes {
     | '/_user/billing/'
     | '/_user/dashboard/'
     | '/_user/edit-profile/'
+    | '/_user/private-sessions/'
     | '/_user/rooms/'
     | '/admin/demo-requests/'
     | '/admin/instructors/'
+    | '/admin/private-sessions/'
     | '/admin/reviews/'
     | '/admin/rooms/'
     | '/admin/subscriptions/'
@@ -588,6 +614,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReviewsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/private-sessions/': {
+      id: '/admin/private-sessions/'
+      path: '/private-sessions'
+      fullPath: '/admin/private-sessions/'
+      preLoaderRoute: typeof AdminPrivateSessionsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/instructors/': {
       id: '/admin/instructors/'
       path: '/instructors'
@@ -607,6 +640,13 @@ declare module '@tanstack/react-router' {
       path: '/rooms'
       fullPath: '/rooms/'
       preLoaderRoute: typeof UserRoomsIndexRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
+    '/_user/private-sessions/': {
+      id: '/_user/private-sessions/'
+      path: '/private-sessions'
+      fullPath: '/private-sessions/'
+      preLoaderRoute: typeof UserPrivateSessionsIndexRouteImport
       parentRoute: typeof UserRouteRoute
     }
     '/_user/edit-profile/': {
@@ -637,6 +677,7 @@ interface UserRouteRouteChildren {
   UserBillingIndexRoute: typeof UserBillingIndexRoute
   UserDashboardIndexRoute: typeof UserDashboardIndexRoute
   UserEditProfileIndexRoute: typeof UserEditProfileIndexRoute
+  UserPrivateSessionsIndexRoute: typeof UserPrivateSessionsIndexRoute
   UserRoomsIndexRoute: typeof UserRoomsIndexRoute
 }
 
@@ -644,6 +685,7 @@ const UserRouteRouteChildren: UserRouteRouteChildren = {
   UserBillingIndexRoute: UserBillingIndexRoute,
   UserDashboardIndexRoute: UserDashboardIndexRoute,
   UserEditProfileIndexRoute: UserEditProfileIndexRoute,
+  UserPrivateSessionsIndexRoute: UserPrivateSessionsIndexRoute,
   UserRoomsIndexRoute: UserRoomsIndexRoute,
 }
 
@@ -654,6 +696,7 @@ const UserRouteRouteWithChildren = UserRouteRoute._addFileChildren(
 interface AdminRouteRouteChildren {
   AdminDemoRequestsIndexRoute: typeof AdminDemoRequestsIndexRoute
   AdminInstructorsIndexRoute: typeof AdminInstructorsIndexRoute
+  AdminPrivateSessionsIndexRoute: typeof AdminPrivateSessionsIndexRoute
   AdminReviewsIndexRoute: typeof AdminReviewsIndexRoute
   AdminRoomsIndexRoute: typeof AdminRoomsIndexRoute
   AdminSubscriptionsIndexRoute: typeof AdminSubscriptionsIndexRoute
@@ -664,6 +707,7 @@ interface AdminRouteRouteChildren {
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminDemoRequestsIndexRoute: AdminDemoRequestsIndexRoute,
   AdminInstructorsIndexRoute: AdminInstructorsIndexRoute,
+  AdminPrivateSessionsIndexRoute: AdminPrivateSessionsIndexRoute,
   AdminReviewsIndexRoute: AdminReviewsIndexRoute,
   AdminRoomsIndexRoute: AdminRoomsIndexRoute,
   AdminSubscriptionsIndexRoute: AdminSubscriptionsIndexRoute,

@@ -16,23 +16,13 @@ import {
   getRazorpayKeyId,
   verifyPaymentSignature,
 } from "../../services/razorpay.service";
-import { errorResponse, successResponse, validateWithZod } from "../../utils";
+import { detectCountry, errorResponse, successResponse, validateWithZod } from "../../utils";
 
 /**
  * Resolve the request's country code (ISO 3166-1 alpha-2).
  * Priority: Cloudflare header → nginx header → client-supplied fallback.
  */
-function detectCountry(request: FastifyRequest, clientCountry?: string): string | null {
-  const cf = request.headers["cf-ipcountry"];
-  if (typeof cf === "string" && cf.length === 2 && cf !== "XX") return cf.toUpperCase();
 
-  const nginx = request.headers["x-country-code"];
-  if (typeof nginx === "string" && nginx.length === 2) return nginx.toUpperCase();
-
-  if (clientCountry && clientCountry.length === 2) return clientCountry.toUpperCase();
-
-  return null;
-}
 
 export class PaymentsController {
   constructor(

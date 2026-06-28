@@ -81,3 +81,21 @@ export function useBookPrivate() {
     },
   });
 }
+
+export function useRequestPrivate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: roomsApi.requestPrivate,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.rooms.privateRequests() });
+    },
+  });
+}
+
+export function useMyPrivateRequests() {
+  return useQuery({
+    queryKey: queryKeys.rooms.privateRequests(),
+    queryFn: roomsApi.myPrivateRequests,
+    staleTime: 30_000,
+  });
+}

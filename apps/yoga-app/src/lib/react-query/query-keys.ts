@@ -11,6 +11,7 @@ export const queryKeys = {
     all: ["rooms"] as const,
     upcoming: () => [...queryKeys.rooms.all, "upcoming"] as const,
     publicPreview: () => [...queryKeys.rooms.all, "public-preview"] as const,
+    privateRequests: () => [...queryKeys.rooms.all, "private-requests"] as const,
   },
   reviews: {
     all: ["reviews"] as const,
@@ -35,6 +36,7 @@ export const queryKeys = {
     users: () => [...queryKeys.admin.all, "users"] as const,
     instructors: () => [...queryKeys.admin.all, "instructors"] as const,
     groupRooms: () => [...queryKeys.admin.all, "group-rooms"] as const,
+    privateRequests: () => [...queryKeys.admin.all, "private-requests"] as const,
     workshops: () => [...queryKeys.admin.all, "workshops"] as const,
   },
   workshops: {

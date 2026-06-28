@@ -56,6 +56,26 @@ export interface BookPrivateResult {
   roomId: string;
 }
 
+export interface RequestPrivateSessionBody {
+  requestedStartUtc: string;
+  requestedEndUtc: string;
+}
+
+export interface RequestPrivateSessionResult {
+  requestId: string;
+}
+
+export interface MyPrivateSessionRequest {
+  id: string;
+  requestedStart: string;
+  requestedEnd: string;
+  status: "pending" | "approved" | "rejected";
+  instructorName: string | null;
+  roomId: string | null;
+  adminNote: string | null;
+  createdAt: string;
+}
+
 export interface InstructorScheduleRoom {
   id: string;
   type: RoomType;

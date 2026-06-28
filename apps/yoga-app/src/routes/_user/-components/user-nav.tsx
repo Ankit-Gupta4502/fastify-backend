@@ -1,13 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, CalendarDays, Wallet, LogOut, User } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Wallet, LogOut, User, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
 const navItems = [
-  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
-  { label: "Sessions",  to: "/rooms",     icon: CalendarDays },
-  { label: "Billing",   to: "/billing",   icon: Wallet },
+  { label: "Dashboard",        to: "/dashboard",         icon: LayoutDashboard },
+  { label: "Group Sessions",   to: "/rooms",             icon: CalendarDays },
+  { label: "Private Sessions", to: "/private-sessions",  icon: UserRound },
+  { label: "Billing",          to: "/billing",           icon: Wallet },
 ] as const;
 
 export function UserNav() {

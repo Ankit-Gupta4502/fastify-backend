@@ -16,7 +16,12 @@ import {
   SessionPoolError,
 } from "../../services/session-pool.service";
 import {
+  createPrivateSessionRequest,
+  listMyPrivateSessionRequests,
+} from "../../services/private-session-request.service";
+import {
   privateBookingBodySchema,
+  requestPrivateBodySchema,
   roomIdParamsSchema,
   roomsSwaggerSchemas,
 } from "../../validation/rooms.validation.schema";
@@ -91,6 +96,23 @@ export class RoomsController {
             schema: roomsSwaggerSchemas.privateBook,
           },
           this.bookPrivate,
+        );
+
+        router.post(
+          "/private/request",
+          {
+            preHandler: [
+              this.authMiddleware.handle,
+              requireRole(USER_ROLES.USER, USER_ROLES.INSTRUCTOR, USER_ROLES.ADMIN),
+            ],
+          },
+          this.requestPrivate,
+        );
+
+        router.get(
+          "/private/my-requests",
+          { preHandler: this.authMiddleware.handle },
+          this.myPrivateRequests,
         );
       },
       { prefix: "/rooms" },
@@ -294,6 +316,47 @@ export class RoomsController {
     } catch (err) {
       return this.handleSessionPoolError(err, reply);
     }
+  };
+
+  private requestPrivate = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: requestPrivateBodySchema });
+    if (invalid) return invalid;
+
+    const me = request.user;
+    if (!me) {
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const body = request.body as z.infer<typeof requestPrivateBodySchema>;
+
+    try {
+      const result = await createPrivateSessionRequest(drizzle, {
+        userId: me.id,
+        requestedStartUtc: new Date(body.requestedStartUtc),
+        requestedEndUtc: new Date(body.requestedEndUtc),
+      });
+      const { statusCode, payload } = successResponse({
+        message: "Private session request submitted",
+        data: result,
+        statusCode: 201,
+      });
+      return reply.status(statusCode).send(payload);
+    } catch (err) {
+      return this.handleSessionPoolError(err, reply);
+    }
+  };
+
+  private myPrivateRequests = async (request: FastifyRequest, reply: FastifyReply) => {
+    const me = request.user;
+    if (!me) {
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const data = await listMyPrivateSessionRequests(drizzle, me.id);
+    const { statusCode, payload } = successResponse({ message: "Your private session requests", data });
+    return reply.status(statusCode).send(payload);
   };
 
   private handleSessionPoolError(err: unknown, reply: FastifyReply) {

@@ -14,43 +14,23 @@ import {
   createInstructor,
   updateInstructorPriority,
 } from "../../services/admin.service";
-
-const approveInstructorBodySchema = z.object({
-  approve: z.boolean(),
-});
-
-const updatePriorityBodySchema = z.object({
-  sortOrder: z.number().int().min(0),
-});
-
-const createInstructorBodySchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
-const instructorIdParamsSchema = z.object({
-  id: z.string().uuid("Invalid instructor id"),
-});
-
-const createGroupRoomBodySchema = z
-  .object({
-    instructorId: z.string().uuid(),
-    scheduledStartUtc: z.string().datetime(),
-    scheduledEndUtc: z.string().datetime(),
-    capacity: z.number().int().min(2).max(50).default(20),
-    meetLink: z.string().url().refine((v) => v.startsWith("https://"), {
-      message: "meetLink must use https",
-    }).optional().nullable(),
-  })
-  .refine((v) => new Date(v.scheduledEndUtc) > new Date(v.scheduledStartUtc), {
-    message: "scheduledEndUtc must be after scheduledStartUtc",
-    path: ["scheduledEndUtc"],
-  })
-  .refine((v) => new Date(v.scheduledStartUtc) > new Date(), {
-    message: "scheduledStartUtc must be in the future",
-    path: ["scheduledStartUtc"],
-  });
+import {
+  listAllPrivateSessionRequests,
+  assignPrivateSessionRequest,
+  rejectPrivateSessionRequest,
+} from "../../services/private-session-request.service";
+import { SessionPoolError } from "../../services/session-pool.service";
+import {
+  approveInstructorBodySchema,
+  updatePriorityBodySchema,
+  createInstructorBodySchema,
+  instructorIdParamsSchema,
+  createGroupRoomBodySchema,
+  privateRequestIdParamsSchema,
+  privateRequestsQuerySchema,
+  assignPrivateRequestBodySchema,
+  rejectPrivateRequestBodySchema,
+} from "../../validation/admin.validation.schema";
 
 export class AdminController {
   constructor(
@@ -75,6 +55,9 @@ export class AdminController {
         router.patch("/instructors/:id/priority", { preHandler }, this.updatePriority);
         router.get("/rooms/group", { preHandler }, this.getGroupRooms);
         router.post("/rooms/group", { preHandler }, this.createGroupRoom);
+        router.get("/rooms/private-requests", { preHandler }, this.getPrivateRequests);
+        router.patch("/rooms/private-requests/:id/assign", { preHandler }, this.assignPrivateRequest);
+        router.patch("/rooms/private-requests/:id/reject", { preHandler }, this.rejectPrivateRequest);
       },
       { prefix: "/admin" },
     );
@@ -165,6 +148,74 @@ export class AdminController {
     const data = await listGroupRooms(drizzle);
     const { statusCode, payload } = successResponse({ message: "Group rooms", data });
     return reply.status(statusCode).send(payload);
+  };
+
+  private getPrivateRequests = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { query: privateRequestsQuerySchema });
+    if (invalid) return invalid;
+
+    const { status } = request.query as z.infer<typeof privateRequestsQuerySchema>;
+    const data = await listAllPrivateSessionRequests(drizzle, status);
+    const { statusCode, payload } = successResponse({ message: "Private session requests", data });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private assignPrivateRequest = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalidParams = validateWithZod(request, reply, { params: privateRequestIdParamsSchema });
+    if (invalidParams) return invalidParams;
+
+    const invalidBody = validateWithZod(request, reply, { body: assignPrivateRequestBodySchema });
+    if (invalidBody) return invalidBody;
+
+    const { id } = request.params as z.infer<typeof privateRequestIdParamsSchema>;
+    const body = request.body as z.infer<typeof assignPrivateRequestBodySchema>;
+
+    try {
+      const data = await assignPrivateSessionRequest(drizzle, {
+        requestId: id,
+        instructorId: body.instructorId,
+        adminNote: body.adminNote ?? null,
+      });
+      const { statusCode, payload } = successResponse({ message: "Session approved and room created", data });
+      return reply.status(statusCode).send(payload);
+    } catch (err) {
+      if (err instanceof SessionPoolError) {
+        const { statusCode, payload } = errorResponse({
+          message: err.message,
+          statusCode: err.statusCode,
+          error: err.code,
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      throw err;
+    }
+  };
+
+  private rejectPrivateRequest = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalidParams = validateWithZod(request, reply, { params: privateRequestIdParamsSchema });
+    if (invalidParams) return invalidParams;
+
+    const invalidBody = validateWithZod(request, reply, { body: rejectPrivateRequestBodySchema });
+    if (invalidBody) return invalidBody;
+
+    const { id } = request.params as z.infer<typeof privateRequestIdParamsSchema>;
+    const body = request.body as z.infer<typeof rejectPrivateRequestBodySchema>;
+
+    try {
+      await rejectPrivateSessionRequest(drizzle, { requestId: id, adminNote: body.adminNote ?? null });
+      const { statusCode, payload } = successResponse({ message: "Request rejected", data: null });
+      return reply.status(statusCode).send(payload);
+    } catch (err) {
+      if (err instanceof SessionPoolError) {
+        const { statusCode, payload } = errorResponse({
+          message: err.message,
+          statusCode: err.statusCode,
+          error: err.code,
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      throw err;
+    }
   };
 
   private createGroupRoom = async (request: FastifyRequest, reply: FastifyReply) => {

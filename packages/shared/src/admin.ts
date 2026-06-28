@@ -66,3 +66,25 @@ export interface CreateGroupRoomBody {
 export interface CreateGroupRoomResult {
   roomId: string;
 }
+
+export type PrivateSessionRequestStatus = "pending" | "approved" | "rejected";
+
+export interface AdminPrivateSessionRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  requestedStart: string;
+  requestedEnd: string;
+  status: PrivateSessionRequestStatus;
+  instructorId: string | null;
+  instructorName: string | null;
+  roomId: string | null;
+  adminNote: string | null;
+  createdAt: string;
+}
+
+export interface AssignPrivateSessionBody {
+  instructorId: string;
+  adminNote?: string | null;
+}

@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DURATION_OPTIONS } from "./book-private-session-config";
 import { useBookPrivateSession } from "./use-book-private-session";
-import { InstructorPicker } from "./InstructorPicker";
 
 interface BookPrivateSessionDialogProps {
   open: boolean;
@@ -24,11 +23,7 @@ export function BookPrivateSessionDialog({
   onOpenChange,
 }: BookPrivateSessionDialogProps) {
   const {
-    instructors,
-    allInstructors,
-    bookPrivate,
-    selectedId,
-    setSelectedId,
+    requestPrivate,
     date,
     setDate,
     startTime,
@@ -36,7 +31,7 @@ export function BookPrivateSessionDialog({
     duration,
     setDuration,
     error,
-    bookedRoomId,
+    submittedRequestId,
     isFormValid,
     handleOpenChange,
     handleSubmit,
@@ -47,15 +42,15 @@ export function BookPrivateSessionDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        {bookedRoomId ? (
+        {submittedRequestId ? (
           /* Success state */
           <div className="py-6 text-center space-y-4">
             <CheckCircle2 className="size-14 text-emerald-500 mx-auto" />
             <DialogHeader>
-              <DialogTitle className="text-center text-xl">Session booked!</DialogTitle>
+              <DialogTitle className="text-center text-xl">Request submitted!</DialogTitle>
               <DialogDescription className="text-center">
-                Your private session has been confirmed. Check your email for details.
-                Your instructor will also be notified.
+                Your private session request has been received. Our team will assign an
+                instructor and confirm your session shortly.
               </DialogDescription>
             </DialogHeader>
             <Button className="w-full rounded-xl" onClick={() => handleOpenChange(false)}>
@@ -65,24 +60,17 @@ export function BookPrivateSessionDialog({
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Book a Private 1:1 Session</DialogTitle>
+              <DialogTitle>Request a Private 1:1 Session</DialogTitle>
               <DialogDescription>
-                Choose an instructor and a time that works for you.
+                Choose your preferred time. Our team will assign an instructor and confirm your booking.
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-5 py-2">
-              <InstructorPicker
-                isLoading={instructors.isLoading}
-                instructors={allInstructors}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-              />
-
               {/* Date */}
               <div className="space-y-2">
                 <Label htmlFor="session-date" className="text-sm font-semibold">
-                  Date
+                  Preferred date
                 </Label>
                 <Input
                   id="session-date"
@@ -97,7 +85,7 @@ export function BookPrivateSessionDialog({
               {/* Start time */}
               <div className="space-y-2">
                 <Label htmlFor="session-time" className="text-sm font-semibold">
-                  Start time <span className="text-muted-foreground font-normal">(your local time)</span>
+                  Preferred start time <span className="text-muted-foreground font-normal">(your local time)</span>
                 </Label>
                 <Input
                   id="session-time"
@@ -144,16 +132,16 @@ export function BookPrivateSessionDialog({
             <DialogFooter showCloseButton>
               <Button
                 className="rounded-xl font-bold px-6"
-                disabled={!isFormValid || bookPrivate.isPending}
+                disabled={!isFormValid || requestPrivate.isPending}
                 onClick={handleSubmit}
               >
-                {bookPrivate.isPending ? (
+                {requestPrivate.isPending ? (
                   <>
                     <Loader2 className="size-4 mr-2 animate-spin" />
-                    Booking…
+                    Submitting…
                   </>
                 ) : (
-                  "Confirm booking"
+                  "Request session"
                 )}
               </Button>
             </DialogFooter>

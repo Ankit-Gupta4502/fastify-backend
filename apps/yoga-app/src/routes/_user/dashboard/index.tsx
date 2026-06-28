@@ -6,7 +6,6 @@ import { StatCard } from "@/components/shared/StatCard";
 import { NextFlowCard } from "../-components/dashboard/NextFlowCard";
 import { PlanCard } from "../-components/dashboard/PlanCard";
 import { ProfileCard } from "../-components/dashboard/ProfileCard";
-import { UpcomingSessionList } from "../-components/dashboard/UpcomingSessionList";
 import { BookPrivateSessionDialog } from "../-components/dashboard/BookPrivateSessionDialog";
 import { useUpcomingRooms, useEnrolRoom, useJoinRoom } from "@/hooks/use-rooms";
 import { useMyPlan } from "@/hooks/use-plans";
@@ -136,14 +135,6 @@ function UserDashboard() {
         />
       </div>
 
-      {/* Rest of upcoming rooms */}
-      <UpcomingSessionList
-        rooms={rooms.slice(1, 6)}
-        isLoading={upcoming.isLoading}
-        actingId={actingId}
-        onEnrol={handleEnrol}
-        onJoinLive={handleJoinLive}
-      />
 
       <BookPrivateSessionDialog
         open={bookPrivateOpen}

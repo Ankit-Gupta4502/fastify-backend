@@ -1,29 +1,24 @@
 import { useState } from "react";
-import { useInstructors } from "@/hooks/use-instructors";
-import { useBookPrivate } from "@/hooks/use-rooms";
+import { useRequestPrivate } from "@/hooks/use-rooms";
 import { MIN_ADVANCE_MS } from "./book-private-session-config";
 
 export function useBookPrivateSession(onOpenChange: (open: boolean) => void) {
-  const instructors = useInstructors();
-  const bookPrivate = useBookPrivate();
+  const requestPrivate = useRequestPrivate();
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [duration, setDuration] = useState(60);
   const [error, setError] = useState<string | null>(null);
-  const [bookedRoomId, setBookedRoomId] = useState<string | null>(null);
+  const [submittedRequestId, setSubmittedRequestId] = useState<string | null>(null);
 
-  const allInstructors = instructors.data?.data ?? [];
-  const isFormValid = selectedId && date && startTime;
+  const isFormValid = !!(date && startTime);
 
   function resetForm() {
-    setSelectedId(null);
     setDate("");
     setStartTime("");
     setDuration(60);
     setError(null);
-    setBookedRoomId(null);
+    setSubmittedRequestId(null);
   }
 
   function handleOpenChange(next: boolean) {
@@ -32,7 +27,7 @@ export function useBookPrivateSession(onOpenChange: (open: boolean) => void) {
   }
 
   function handleSubmit() {
-    if (!selectedId || !date || !startTime) return;
+    if (!date || !startTime) return;
     setError(null);
 
     const startLocal = new Date(`${date}T${startTime}`);
@@ -42,29 +37,24 @@ export function useBookPrivateSession(onOpenChange: (open: boolean) => void) {
     }
     const endLocal = new Date(startLocal.getTime() + duration * 60_000);
 
-    bookPrivate.mutate(
+    requestPrivate.mutate(
       {
-        instructorId: selectedId,
-        startUtc: startLocal.toISOString(),
-        endUtc: endLocal.toISOString(),
+        requestedStartUtc: startLocal.toISOString(),
+        requestedEndUtc: endLocal.toISOString(),
       },
       {
         onSuccess: (result) => {
-          setBookedRoomId(result.data?.roomId ?? null);
+          setSubmittedRequestId(result.data?.requestId ?? null);
         },
         onError: (err) => {
-          setError(err instanceof Error ? err.message : "Booking failed. Please try again.");
+          setError(err instanceof Error ? err.message : "Request failed. Please try again.");
         },
       },
     );
   }
 
   return {
-    instructors,
-    allInstructors,
-    bookPrivate,
-    selectedId,
-    setSelectedId,
+    requestPrivate,
     date,
     setDate,
     startTime,
@@ -72,7 +62,7 @@ export function useBookPrivateSession(onOpenChange: (open: boolean) => void) {
     duration,
     setDuration,
     error,
-    bookedRoomId,
+    submittedRequestId,
     isFormValid,
     handleOpenChange,
     handleSubmit,

@@ -19,18 +19,9 @@ import { formatForInstructor } from "../../services/timezone.service";
 import {
   instructorsSwaggerSchemas,
   listInstructorsQuerySchema,
+  updateInstructorProfileBodySchema,
 } from "../../validation/instructors.validation.schema";
 import { errorResponse, successResponse, validateWithZod } from "../../utils";
-
-const updateProfileBodySchema = z.object({
-  bio: z.string().max(1000).optional(),
-  tagline: z.string().max(120).optional(),
-  profileImageUrl: z.url().optional().nullable(),
-  avatarKey: z.string().optional().nullable(),
-  videoLinks: z.array(z.url()).max(5).optional(),
-  tags: z.array(z.string().max(40)).max(10).optional(),
-  yearsOfExperience: z.number().int().min(0).max(60).optional().nullable(),
-});
 
 export class InstructorsController {
   constructor(
@@ -279,10 +270,10 @@ export class InstructorsController {
   private updateProfile = async (request: FastifyRequest, reply: FastifyReply) => {
     const me = request.user!;
 
-    const invalid = validateWithZod(request, reply, { body: updateProfileBodySchema });
+    const invalid = validateWithZod(request, reply, { body: updateInstructorProfileBodySchema });
     if (invalid) return invalid;
 
-    const body = request.body as z.infer<typeof updateProfileBodySchema>;
+    const body = request.body as z.infer<typeof updateInstructorProfileBodySchema>;
 
     await drizzle
       .update(instructorDetails)

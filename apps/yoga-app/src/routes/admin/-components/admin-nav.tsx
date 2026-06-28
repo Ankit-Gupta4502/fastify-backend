@@ -9,6 +9,7 @@ import {
   ClipboardList,
   Star,
   CreditCard,
+  UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ const navItems = [
   { label: "Instructors", to: "/admin/instructors", icon: GraduationCap },
   { label: "Demo Requests", to: "/admin/demo-requests", icon: ClipboardList },
   { label: "Classes", to: "/admin/rooms", icon: CalendarDays },
+  { label: "Private Sessions", to: "/admin/private-sessions", icon: UserRound },
   { label: "Workshops", to: "/admin/workshops", icon: BookOpen },
   { label: "Reviews", to: "/admin/reviews", icon: Star },
 ] as const;

@@ -8,6 +8,18 @@ type Schemas = {
   params?: ZodType;
 };
 
+export function detectCountry(request: FastifyRequest, clientCountry?: string): string | null {
+  const cf = request.headers["cf-ipcountry"];
+  if (typeof cf === "string" && cf.length === 2 && cf !== "XX") return cf.toUpperCase();
+
+  const nginx = request.headers["x-country-code"];
+  if (typeof nginx === "string" && nginx.length === 2) return nginx.toUpperCase();
+
+  if (clientCountry && clientCountry.length === 2) return clientCountry.toUpperCase();
+
+  return null;
+}
+
 export function formatZodErrors(error: ZodError): Record<string, string> {
   const formatted: Record<string, string> = {};
   for (const issue of error.issues) {

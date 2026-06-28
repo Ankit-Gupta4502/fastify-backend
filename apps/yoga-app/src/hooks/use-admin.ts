@@ -77,3 +77,34 @@ export function useCreateGroupRoom() {
     },
   });
 }
+
+export function useAdminPrivateRequests(status: "pending" | "approved" | "rejected" = "pending") {
+  return useQuery({
+    queryKey: [...queryKeys.admin.privateRequests(), status],
+    queryFn: () => adminApi.listPrivateRequests(status),
+    staleTime: 30_000,
+  });
+}
+
+export function useAssignPrivateRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, instructorId, adminNote }: { id: string; instructorId: string; adminNote?: string | null }) =>
+      adminApi.assignPrivateRequest(id, { instructorId, adminNote }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.privateRequests() });
+    },
+  });
+}
+
+export function useRejectPrivateRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, adminNote }: { id: string; adminNote?: string | null }) =>
+      adminApi.rejectPrivateRequest(id, adminNote),
+    onSuccess: () => {
+      // Invalidate all status tabs so counts stay fresh after a status change
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.privateRequests() });
+    },
+  });
+}
