@@ -145,7 +145,7 @@ const start = async () => {
     });
 
     await fastify.register(fastifySwaggerUi, {
-      routePrefix: "/docs",
+      routePrefix: "/api/docs",
       uiConfig: {
         docExpansion: "list",
         deepLinking: false,
