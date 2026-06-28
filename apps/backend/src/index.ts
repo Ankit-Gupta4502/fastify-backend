@@ -1,4 +1,4 @@
-import Fastify from "fastify";
+import Fastify, { FastifyRequest } from "fastify";
 import fastifyStatic from "@fastify/static";
 import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
@@ -172,8 +172,8 @@ const start = async () => {
     new DemoController(authMiddleware, fastify);
 
 
-    fastify.get("/health", async () => {
-      return { status: "ok", timestamp: new Date().toISOString() };
+    fastify.get("/health", async (request: FastifyRequest) => {
+      return { status: "ok", timestamp: new Date().toISOString(), country: request.headers["cf-ipcountry"] };
     });
 
 
