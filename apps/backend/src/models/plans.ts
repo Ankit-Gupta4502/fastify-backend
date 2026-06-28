@@ -12,7 +12,7 @@ import { userSubscriptions } from "./user-subscription";
 export const plans = pgTable("plans", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull().unique(),
-  priceCents: integer("price_cents").notNull(),
+  priceCents: integer("price_cents"),
   pricePerSessionCents: integer("price_per_session_cents"),
   billingInterval: text("billing_interval").notNull().default("month"),
   sessionsPerWeek: integer("sessions_per_week"),
