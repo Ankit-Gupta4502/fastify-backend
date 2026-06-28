@@ -2,11 +2,7 @@ import { EmailService } from "./EmailService";
 
 const APP_NAME = "BookYourYogaTeacher";
 
-// Serve logo from the backend itself so it's always reachable in emails.
-// Set BACKEND_URL in prod (e.g. https://api.bookyouryogateacher.com).
-const BACKEND_URL = process.env.VITE_API_BASE_URL ?? "http://localhost:8080";
-const LOGO_URL =
-  process.env.APP_LOGO_URL ?? `${BACKEND_URL}/static/logo.png`;
+const LOGO_URL = "https://pub-89b1de93308a45efb0b4e47ee91424a6.r2.dev/uploads/android-chrome-512x512.png";
 const BRAND_PRIMARY = "#d96b3a";
 const BRAND_DARK = "#b45309";
 const BRAND_LIGHT = "#fdf8f4";

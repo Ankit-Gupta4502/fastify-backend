@@ -96,6 +96,9 @@ function studentConfirmationHtml(p: {
         <!-- Header -->
         <tr>
           <td style="background:linear-gradient(135deg,#d96b3a,#e8924a);padding:36px 40px;text-align:center;">
+            <img src="https://pub-89b1de93308a45efb0b4e47ee91424a6.r2.dev/uploads/android-chrome-512x512.png"
+              alt="${p.appName}" width="56" height="56"
+              style="display:block;margin:0 auto 14px;border-radius:14px;" />
             <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.8);">
               ${p.appName}
             </p>
@@ -190,7 +193,10 @@ function instructorNotificationHtml(p: {
       <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.06);">
         <!-- Header -->
         <tr>
-          <td style="background:linear-gradient(135deg,#3a7bd9,#4a9ae8);padding:36px 40px;text-align:center;">
+          <td style="background:linear-gradient(135deg,#d96b3a,#e8924a);padding:36px 40px;text-align:center;">
+            <img src="https://pub-89b1de93308a45efb0b4e47ee91424a6.r2.dev/uploads/android-chrome-512x512.png"
+              alt="${p.appName}" width="56" height="56"
+              style="display:block;margin:0 auto 14px;border-radius:14px;" />
             <p style="margin:0;font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.8);">
               ${p.appName}
             </p>
