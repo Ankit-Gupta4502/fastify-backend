@@ -21,7 +21,7 @@ function BillingPage() {
   const activeSessions = activePlan?.sessionsPerMonth ?? null;
   const isPrivateActive = activePlan?.name?.startsWith("custom_private_") ?? false;
 
-  const activePlanRecord: PlanRecord | undefined = (plans.data?.data ?? []).find(
+  const activePlanRecord: PlanRecord | undefined = (plans.data?.data?.plans ?? []).find(
     (p) => p.id === activePlanId && p.category === "standard" && !p.name.startsWith("custom_"),
   );
 
@@ -62,7 +62,6 @@ function BillingPage() {
         )}
       </div>
 
-      <SecureFooter />
     </div>
   );
 }
