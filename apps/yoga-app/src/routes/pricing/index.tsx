@@ -60,11 +60,13 @@ function PricingPage() {
     if (isTherapeuticPlanActive) setTherapeuticSessions(activeSessions);
   }, [activeSessions, isPrivatePlanActive, isPrenatalPlanActive, isTherapeuticPlanActive]);
 
+  const country = plans.data?.data?.country ?? undefined;
+
   const handleGroupSubscribe = (plan: PlanRecord) => {
     setError(null);
     setSuccess(null);
     setPendingCard("group");
-    checkout.mutate(plan.id, {
+    checkout.mutate({ planId: plan.id, country }, {
       onSuccess: () => { setPendingCard(null); setSuccess(`You're now on ${PLAN_COPY[plan.name]?.title ?? plan.name}!`); },
       onError: (err) => { setPendingCard(null); setError(err instanceof Error ? err.message : "Payment failed"); },
     });
@@ -75,7 +77,7 @@ function PricingPage() {
     setSuccess(null);
     setPendingCard(planName);
     const title = specializedPlanConfig[planName]?.title ?? planName;
-    customCheckout.mutate({ sessionCount: sessions, planName }, {
+    customCheckout.mutate({ sessionCount: sessions, planName, country }, {
       onSuccess: () => { setPendingCard(null); setSuccess(`${title} activated — ${sessions} sessions/mo`); },
       onError: (err) => { setPendingCard(null); setError(err instanceof Error ? err.message : "Payment failed"); },
     });
@@ -85,7 +87,7 @@ function PricingPage() {
     setError(null);
     setSuccess(null);
     setPendingCard("private");
-    customCheckout.mutate({ sessionCount, planName: "private" }, {
+    customCheckout.mutate({ sessionCount, planName: "private", country }, {
       onSuccess: () => { setPendingCard(null); setSuccess(`Private plan activated — ${sessionCount} sessions/mo`); },
       onError: (err) => { setPendingCard(null); setError(err instanceof Error ? err.message : "Payment failed"); },
     });

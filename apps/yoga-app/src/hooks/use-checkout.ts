@@ -14,8 +14,16 @@ export function useCustomCheckout() {
 
   return useMutation({
     retry: 1,
-    mutationFn: async ({ sessionCount, planName }: { sessionCount: number; planName: "private" | "prenatal_postnatal" | "therapeutic_yoga" }) => {
-      const order = await paymentsApi.createCustomOrder({ sessionCount, planName });
+    mutationFn: async ({
+      sessionCount,
+      planName,
+      country,
+    }: {
+      sessionCount: number;
+      planName: "private" | "prenatal_postnatal" | "therapeutic_yoga";
+      country?: string;
+    }) => {
+      const order = await paymentsApi.createCustomOrder({ sessionCount, planName, country });
       if (!order.data) throw new Error("Order creation failed");
 
       const { orderId, keyId, amount, currency } = order.data;
@@ -62,32 +70,33 @@ export function useCheckout() {
 
   return useMutation({
     retry: 3,
-    mutationFn: async (planId: string) => {
-      const order = await paymentsApi.createOrder({ planId });
+    mutationFn: async ({ planId, country }: { planId: string; country?: string }) => {
+      const order = await paymentsApi.createOrder({ planId, country });
       if (!order.data) {
         throw new Error("Order creation failed");
       }
-      const { orderId, keyId, amount, currency, planName } = order.data;
-      const isIndia = currency === "INR";
 
+      const { subscriptionId, keyId, planName } = order.data;
+      if (!subscriptionId) throw new Error("Expected subscriptionId for recurring plan");
+
+      // Subscription checkout: pass subscription_id instead of order_id.
+      // Razorpay handles the first authorisation charge and all renewals.
       const checkout: RazorpayCheckoutResponse = await openRazorpayCheckout({
         key: keyId,
-        amount,
-        currency,
         name: "Book Your Yoga Teacher",
         description: `Plan: ${planName}`,
-        order_id: orderId,
+        subscription_id: subscriptionId,
         prefill: {
           name: user?.name ?? undefined,
           email: user?.email ?? undefined,
         },
         theme: { color: "#D97706" },
-        config: isIndia ? { display: { preferences: { show_default_blocks: true } } } : undefined,
+        config: country === "IN" ? { display: { preferences: { show_default_blocks: true } } } : undefined,
         handler: () => {},
       });
 
       const verification = await paymentsApi.verify({
-        razorpayOrderId: checkout.razorpay_order_id,
+        razorpaySubscriptionId: checkout.razorpay_subscription_id,
         razorpayPaymentId: checkout.razorpay_payment_id,
         razorpaySignature: checkout.razorpay_signature,
       });

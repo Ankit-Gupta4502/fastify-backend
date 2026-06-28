@@ -17,6 +17,11 @@ export function detectCountry(request: FastifyRequest, clientCountry?: string): 
 
   if (clientCountry && clientCountry.length === 2) return clientCountry.toUpperCase();
 
+  // Env-level override — set FORCE_COUNTRY=IN in .env.local or staging config
+  // to get INR pricing without Cloudflare/nginx headers present.
+  const env = process.env.FORCE_COUNTRY;
+  if (env && env.length === 2) return env.toUpperCase();
+
   return null;
 }
 

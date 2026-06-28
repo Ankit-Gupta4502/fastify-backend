@@ -21,7 +21,13 @@ export const plansApi = {
   list: () => apiRequest<PlanFeatures[]>(API_ENDPOINTS.PLANS.LIST),
 
   // User-only — includes priceCents + server-detected country for the pricing page.
-  listWithPricing: () => apiRequest<PlansWithPricingResponse>(API_ENDPOINTS.PLANS.PRICING),
+  // VITE_FORCE_COUNTRY overrides server-detected country in local/staging (e.g. VITE_FORCE_COUNTRY=IN).
+  listWithPricing: () => {
+    const forceCountry = import.meta.env.VITE_FORCE_COUNTRY as string | undefined;
+    return apiRequest<PlansWithPricingResponse>(API_ENDPOINTS.PLANS.PRICING, {
+      params: forceCountry ? { country: forceCountry } : undefined,
+    });
+  },
 
   // User-only — current active subscription + plan details.
   mine: () => apiRequest<MyPlanResponse | null>(API_ENDPOINTS.PLANS.MINE),

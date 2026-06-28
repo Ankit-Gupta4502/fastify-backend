@@ -8,21 +8,27 @@ declare global {
 
 export interface RazorpayCheckoutResponse {
   razorpay_payment_id: string;
-  razorpay_order_id: string;
+  razorpay_order_id?: string;
+  razorpay_subscription_id?: string;
   razorpay_signature: string;
 }
 
 export interface RazorpayCheckoutOptions {
   key: string;
-  amount: number;
-  currency: string;
+  /** Required for one-time orders; omit for subscription checkout */
+  amount?: number;
+  /** Required for one-time orders; omit for subscription checkout */
+  currency?: string;
   name: string;
   description?: string;
-  order_id: string;
+  /** One-time order ID — mutually exclusive with subscription_id */
+  order_id?: string;
+  /** Razorpay Subscription ID — mutually exclusive with order_id */
+  subscription_id?: string;
   prefill?: {
     name?: string;
     email?: string;
-    contact?: string; // phone number — used for UPI VPA auto-fill in India
+    contact?: string;
   };
   theme?: { color?: string };
   handler: (response: RazorpayCheckoutResponse) => void;

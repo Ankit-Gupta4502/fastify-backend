@@ -91,7 +91,8 @@ export class PlansController {
   };
 
   private listWithPricing = async (req: FastifyRequest, reply: FastifyReply) => {
-    const country = detectCountry(req);
+    const { country: queryCountry } = req.query as { country?: string };
+    const country = detectCountry(req, queryCountry);
 
     const rows = await drizzle
       .select({
