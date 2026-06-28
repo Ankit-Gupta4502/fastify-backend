@@ -6,7 +6,6 @@ import { BillingHeader } from "../-components/billing/billing-header";
 import { CurrentPlanBanner } from "../-components/billing/current-plan-banner";
 import { PlanCard } from "../-components/billing/plan-card";
 import { PrivateSessionCard } from "../-components/billing/private-session-card";
-import { SecureFooter } from "../-components/billing/secure-footer";
 
 export const Route = createFileRoute("/_user/billing/")({
   component: BillingPage,
@@ -15,13 +14,11 @@ export const Route = createFileRoute("/_user/billing/")({
 function BillingPage() {
   const plans = usePlansWithPricing();
   const myPlan = useMyPlan();
-
   const activePlan = myPlan.data?.data?.plan ?? null;
   const activePlanId = activePlan?.id ?? null;
   const activeSessions = activePlan?.sessionsPerMonth ?? null;
   const isPrivateActive = activePlan?.name?.startsWith("custom_private_") ?? false;
-
-  const activePlanRecord: PlanRecord | undefined = (plans.data?.data?.plans ?? []).find(
+  const activePlanRecord: PlanRecord | undefined = (plans.data?.data?.plans ?? [])?.find(
     (p) => p.id === activePlanId && p.category === "standard" && !p.name.startsWith("custom_"),
   );
 
