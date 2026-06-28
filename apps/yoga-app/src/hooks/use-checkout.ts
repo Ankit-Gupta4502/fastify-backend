@@ -91,7 +91,18 @@ export function useCheckout() {
           email: user?.email ?? undefined,
         },
         theme: { color: "#D97706" },
-        config: country === "IN" ? { display: { preferences: { show_default_blocks: true } } } : undefined,
+        // For Indian subscriptions: keep UPI Autopay (intent/mandate) but hide one-time UPI
+        // QR-scan and collect flows — those create no recurring mandate so month-2 auto-debit
+        // will fail and Razorpay will halt the subscription after retries.
+        config: country === "IN" ? {
+          display: {
+            hide: [
+              { method: "upi", flow: "qr" },
+              { method: "upi", flow: "collect" },
+            ],
+            preferences: { show_default_blocks: true },
+          },
+        } : undefined,
         handler: () => {},
       });
 

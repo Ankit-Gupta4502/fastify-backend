@@ -339,6 +339,14 @@ export class RazorpayWebhookController {
       return;
     }
 
+    if (existing.status === "cancelled" || existing.status === "expired") {
+      request.log.warn(
+        { razorpaySubscriptionId, status: existing.status },
+        "razorpay webhook: ignoring renewal for terminated subscription",
+      );
+      return;
+    }
+
     const expiresAt = computeExpiresAt(existing.sessionsTotal, existing.billingInterval, currentEnd);
 
     await drizzle

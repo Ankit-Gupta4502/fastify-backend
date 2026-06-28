@@ -38,6 +38,8 @@ export interface RazorpayCheckoutOptions {
       blocks?: Record<string, unknown>;
       sequence?: string[];
       preferences?: { show_default_blocks?: boolean };
+      /** Hide specific payment flows — e.g. one-time UPI QR/collect for subscription checkouts */
+      hide?: Array<{ method: string; flow?: string }>;
     };
   };
 }
