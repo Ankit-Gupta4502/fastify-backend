@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import {
   calcCustomPriceCents,
@@ -112,6 +112,33 @@ export class PaymentsController {
     const currency = isIndia && inrRatePerSession != null ? "INR" : "USD";
     const period = plan.billingInterval === "week" ? "weekly" as const : "monthly" as const;
 
+    // Idempotency: return an existing pending subscription rather than creating a duplicate
+    const [existingPending] = await drizzle
+      .select({ razorpaySubscriptionId: userSubscriptions.razorpaySubscriptionId })
+      .from(userSubscriptions)
+      .where(
+        and(
+          eq(userSubscriptions.userId, me.id),
+          eq(userSubscriptions.planId, plan.id),
+          eq(userSubscriptions.status, "pending_payment"),
+          eq(userSubscriptions.sessionsTotal, sessionCount),
+        ),
+      )
+      .limit(1);
+
+    if (existingPending?.razorpaySubscriptionId) {
+      const { statusCode, payload } = successResponse({
+        message: "Subscription created",
+        data: {
+          subscriptionId: existingPending.razorpaySubscriptionId,
+          keyId: getRazorpayKeyId(),
+          planId: plan.id,
+          planName: plan.name,
+        },
+      });
+      return reply.status(statusCode).send(payload);
+    }
+
     try {
       const rpPlanId = await getOrCreateSessionRazorpayPlan({
         planId: plan.id,
@@ -196,6 +223,38 @@ export class PaymentsController {
     const amount = isIndia && plan.priceInrPaise != null ? plan.priceInrPaise : plan.priceCents;
     const currency = isIndia && plan.priceInrPaise != null ? "INR" : "USD";
     const period = plan.billingInterval === "week" ? "weekly" as const : "monthly" as const;
+
+    if (amount == null) {
+      const { statusCode, payload } = errorResponse({ message: "Plan price not configured", statusCode: 400 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    // Idempotency: return an existing pending subscription rather than creating a duplicate
+    const [existingPending] = await drizzle
+      .select({ razorpaySubscriptionId: userSubscriptions.razorpaySubscriptionId })
+      .from(userSubscriptions)
+      .where(
+        and(
+          eq(userSubscriptions.userId, me.id),
+          eq(userSubscriptions.planId, plan.id),
+          eq(userSubscriptions.status, "pending_payment"),
+          isNull(userSubscriptions.sessionsTotal),
+        ),
+      )
+      .limit(1);
+
+    if (existingPending?.razorpaySubscriptionId) {
+      const { statusCode, payload } = successResponse({
+        message: "Subscription created",
+        data: {
+          subscriptionId: existingPending.razorpaySubscriptionId,
+          keyId: getRazorpayKeyId(),
+          planId: plan.id,
+          planName: plan.name,
+        },
+      });
+      return reply.status(statusCode).send(payload);
+    }
 
     try {
       const rpPlanId = await getOrCreateStandardRazorpayPlan({

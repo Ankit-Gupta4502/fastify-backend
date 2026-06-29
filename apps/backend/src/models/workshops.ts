@@ -12,6 +12,8 @@ export const workshops = pgTable("workshops", {
   meetLink: text("meet_link"),
   scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
   maxAttendees: integer("max_attendees").notNull().default(50),
+  utmPriceInr: integer("utm_price_inr").notNull().default(9900),
+  utmPriceUsd: integer("utm_price_usd").notNull().default(100),
   isActive: boolean("is_active").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

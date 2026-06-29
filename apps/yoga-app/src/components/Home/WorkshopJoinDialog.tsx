@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { X, CalendarDays, Users, Video, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { X, CalendarDays, Users, Video, ArrowRight, CheckCircle2, Loader2, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useJoinWorkshop } from "@/hooks/use-workshops";
 import { formatCompact, userTimezone } from "@/lib/timezone";
 import type { Workshop } from "@yoga-app/shared";
+import { useAuthStore } from "@/store/auth.store";
+import { getStoredUtm } from "@/lib/utm";
+import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useWorkshopCheckout } from "@/hooks/use-workshops";
 
 interface Props {
   workshop: Workshop;
@@ -13,25 +15,36 @@ interface Props {
 
 export function WorkshopJoinDialog({ workshop: w, onClose }: Props) {
   const tz = userTimezone();
-  const join = useJoinWorkshop();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const checkout = useWorkshopCheckout(w);
+  const { isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const spotsLeft = w.maxAttendees - w.attendeeCount;
   const full = spotsLeft <= 0;
 
+  const utm = getStoredUtm();
+  const utmSource = utm?.utmSource ?? null;
+  const isPaid = !!utmSource && (w.utmPriceInr > 0 || w.utmPriceUsd > 0);
+
+  const displayPriceInr = utmSource ? w.utmPriceInr : w.priceInr;
+  const displayPriceUsd = utmSource ? w.utmPriceUsd : w.priceUsd;
+
   const handleJoin = () => {
-    if (!name.trim() || !email.trim()) return;
+    if (!isAuthenticated) {
+      navigate({ to: "/login" });
+      return;
+    }
     setError(null);
-    join.mutate(
-      { id: w.id, body: { name: name.trim(), email: email.trim() } },
-      {
-        onSuccess: () => setDone(true),
-        onError: (err) => setError(err instanceof Error ? err.message : "Could not register"),
+    checkout.mutate(undefined, {
+      onSuccess: () => setDone(true),
+      onError: (err) => {
+        const msg = err instanceof Error ? err.message : "Could not register";
+        if (msg === "Payment cancelled") return;
+        setError(msg);
       },
-    );
+    });
   };
 
   return (
@@ -65,10 +78,10 @@ export function WorkshopJoinDialog({ workshop: w, onClose }: Props) {
                   Google Meet
                 </span>
               )}
-              {w.priceInr != null && w.priceInr > 0 ? (
-                <span className="font-bold text-foreground">₹{(w.priceInr / 100).toFixed(0)}</span>
-              ) : w.priceUsd != null && w.priceUsd > 0 ? (
-                <span className="font-bold text-foreground">${(w.priceUsd / 100).toFixed(0)}</span>
+              {displayPriceInr != null && displayPriceInr > 0 ? (
+                <span className="font-bold text-foreground">₹{(displayPriceInr / 100).toFixed(0)}</span>
+              ) : displayPriceUsd != null && displayPriceUsd > 0 ? (
+                <span className="font-bold text-foreground">${(displayPriceUsd / 100).toFixed(0)}</span>
               ) : (
                 <span className="rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold px-2 py-0.5">FREE</span>
               )}
@@ -97,20 +110,16 @@ export function WorkshopJoinDialog({ workshop: w, onClose }: Props) {
             </p>
           ) : (
             <div className="space-y-3">
-              <Input
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="rounded-xl"
-              />
-              <Input
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleJoin()}
-                className="rounded-xl"
-              />
+              {isPaid && (
+                <div className="text-xs text-muted-foreground bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-xl px-3 py-2">
+                  Special offer price applied. Payment is processed securely via Razorpay.
+                </div>
+              )}
+              {!isAuthenticated && (
+                <p className="text-xs text-muted-foreground bg-secondary/40 rounded-xl px-3 py-2">
+                  You need to be signed in to reserve a spot.
+                </p>
+              )}
               {error && (
                 <p className="text-xs text-destructive bg-destructive/5 border border-destructive/20 rounded-xl px-3 py-2">
                   {error}
@@ -118,11 +127,15 @@ export function WorkshopJoinDialog({ workshop: w, onClose }: Props) {
               )}
               <Button
                 className="w-full rounded-xl gap-2"
-                disabled={join.isPending || !name.trim() || !email.trim()}
+                disabled={checkout.isPending}
                 onClick={handleJoin}
               >
-                {join.isPending ? (
-                  <><Loader2 className="size-4 animate-spin" /> Registering…</>
+                {checkout.isPending ? (
+                  <><Loader2 className="size-4 animate-spin" /> {isPaid ? "Processing payment…" : "Registering…"}</>
+                ) : !isAuthenticated ? (
+                  <><LogIn className="size-4" /> Sign in to Register</>
+                ) : isPaid ? (
+                  <>Pay & Reserve Spot <ArrowRight className="size-4" /></>
                 ) : (
                   <>Reserve My Spot <ArrowRight className="size-4" /></>
                 )}

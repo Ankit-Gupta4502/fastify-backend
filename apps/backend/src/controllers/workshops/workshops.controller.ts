@@ -6,12 +6,15 @@ import { requireRole } from "../../middleware/role.middleware";
 import { USER_ROLES } from "../../constants/roles";
 import { drizzle } from "../../db";
 import { registeredWorkshops, workshops } from "../../schema/schema";
-import { errorResponse, successResponse, validateWithZod } from "../../utils";
+import { detectCountry, errorResponse, successResponse, validateWithZod } from "../../utils";
 import { deleteFile } from "../../services/upload.service";
+import { getRazorpay, getRazorpayKeyId, verifyPaymentSignature } from "../../services/razorpay.service";
 
 const joinBodySchema = z.object({
-  name: z.string().min(1).max(100),
-  email: z.string().email(),
+  utmSource: z.string().max(200).optional().nullable(),
+  razorpayOrderId: z.string().optional(),
+  razorpayPaymentId: z.string().optional(),
+  razorpaySignature: z.string().optional(),
 });
 
 const createBodySchema = z.object({
@@ -19,6 +22,8 @@ const createBodySchema = z.object({
   description: z.string().min(1).max(2000),
   priceInr: z.number().int().min(0).optional().nullable(),
   priceUsd: z.number().int().min(0).optional().nullable(),
+  utmPriceInr: z.number().int().min(0).optional(),
+  utmPriceUsd: z.number().int().min(0).optional(),
   image: z.string().url().optional().nullable(),
   meetLink: z.string().url().optional().nullable(),
   scheduledAt: z.string().datetime().optional().nullable(),
@@ -44,7 +49,10 @@ export class WorkshopsController {
         // ── Public ──────────────────────────────────────────────
         router.get("/workshops", this.listActive);
         router.get("/workshops/:id", this.getWorkshop);
-        router.post("/workshops/:id/join", this.joinWorkshop);
+
+        // ── Authenticated ────────────────────────────────────────
+        router.post("/workshops/:id/create-order", { preHandler: [this.authMiddleware.handle] }, this.createOrder);
+        router.post("/workshops/:id/join", { preHandler: [this.authMiddleware.handle] }, this.joinWorkshop);
 
         // ── Admin ────────────────────────────────────────────────
         router.get("/admin/workshops", { preHandler: adminGuard }, this.adminList);
@@ -64,6 +72,8 @@ export class WorkshopsController {
         description: workshops.description,
         priceInr: workshops.priceInr,
         priceUsd: workshops.priceUsd,
+        utmPriceInr: workshops.utmPriceInr,
+        utmPriceUsd: workshops.utmPriceUsd,
         image: workshops.image,
         meetLink: workshops.meetLink,
         scheduledAt: workshops.scheduledAt,
@@ -105,6 +115,8 @@ export class WorkshopsController {
         description: workshops.description,
         priceInr: workshops.priceInr,
         priceUsd: workshops.priceUsd,
+        utmPriceInr: workshops.utmPriceInr,
+        utmPriceUsd: workshops.utmPriceUsd,
         image: workshops.image,
         meetLink: workshops.meetLink,
         scheduledAt: workshops.scheduledAt,
@@ -133,15 +145,11 @@ export class WorkshopsController {
     return reply.status(statusCode).send(payload);
   };
 
-  private joinWorkshop = async (request: FastifyRequest, reply: FastifyReply) => {
-    const invalid = validateWithZod(request, reply, { body: joinBodySchema });
-    if (invalid) return invalid;
-
+  private createOrder = async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
-    const body = request.body as z.infer<typeof joinBodySchema>;
 
     const [workshop] = await drizzle
-      .select({ id: workshops.id, isActive: workshops.isActive })
+      .select({ id: workshops.id, isActive: workshops.isActive, name: workshops.name, utmPriceInr: workshops.utmPriceInr, utmPriceUsd: workshops.utmPriceUsd })
       .from(workshops)
       .where(eq(workshops.id, id));
 
@@ -154,25 +162,149 @@ export class WorkshopsController {
       return reply.status(statusCode).send(payload);
     }
 
-    const existing = await drizzle
-      .select({ id: registeredWorkshops.id })
-      .from(registeredWorkshops)
-      .where(
-        and(
-          eq(registeredWorkshops.workshopId, id),
-          eq(registeredWorkshops.email, body.email),
-        ),
-      );
+    const country = detectCountry(request, undefined);
+    const isIndia = country === "IN";
+    const amount = isIndia ? workshop.utmPriceInr : workshop.utmPriceUsd;
+    const currency = isIndia ? "INR" : "USD";
+
+    // If the workshop is free for this country (price=0), skip Razorpay entirely
+    if (amount === 0) {
+      const { statusCode, payload } = successResponse({
+        message: "Order created",
+        data: { orderId: null, keyId: "", amount: 0, currency },
+      });
+      return reply.status(statusCode).send(payload);
+    }
+
+    try {
+      const order = await getRazorpay().orders.create({
+        amount,
+        currency,
+        notes: { workshopId: workshop.id, workshopName: workshop.name, isIndia: isIndia ? "1" : "0" },
+      });
+
+      const { statusCode, payload } = successResponse({
+        message: "Order created",
+        data: { orderId: order.id, keyId: getRazorpayKeyId(), amount, currency },
+      });
+      return reply.status(statusCode).send(payload);
+    } catch (err) {
+      request.log.error({ err }, "razorpay workshop order create failed");
+      const { statusCode, payload } = errorResponse({ message: "Could not create payment order", statusCode: 502 });
+      return reply.status(statusCode).send(payload);
+    }
+  };
+
+  private joinWorkshop = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: joinBodySchema });
+    if (invalid) return invalid;
+
+    const { id } = request.params as { id: string };
+    const body = request.body as z.infer<typeof joinBodySchema>;
+    const user = request.user as { name: string; email: string };
+
+    const [workshop] = await drizzle
+      .select({ id: workshops.id, isActive: workshops.isActive, maxAttendees: workshops.maxAttendees, utmPriceInr: workshops.utmPriceInr, utmPriceUsd: workshops.utmPriceUsd })
+      .from(workshops)
+      .where(eq(workshops.id, id));
+
+    if (!workshop) {
+      const { statusCode, payload } = errorResponse({ message: "Workshop not found", statusCode: 404 });
+      return reply.status(statusCode).send(payload);
+    }
+    if (!workshop.isActive) {
+      const { statusCode, payload } = errorResponse({ message: "Workshop is not active", statusCode: 400 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const [countResult, existing] = await Promise.all([
+      drizzle.select({ n: count() }).from(registeredWorkshops).where(eq(registeredWorkshops.workshopId, id)),
+      drizzle
+        .select({ id: registeredWorkshops.id })
+        .from(registeredWorkshops)
+        .where(and(eq(registeredWorkshops.workshopId, id), eq(registeredWorkshops.email, user.email))),
+    ]);
 
     if (existing.length > 0) {
       const { statusCode, payload } = errorResponse({ message: "Already registered", statusCode: 409 });
       return reply.status(statusCode).send(payload);
     }
 
+    if (Number(countResult[0]?.n ?? 0) >= workshop.maxAttendees) {
+      const { statusCode, payload } = errorResponse({ message: "Workshop is full", statusCode: 409 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const utmSource = body.utmSource ?? null;
+
+    // Payment is required if UTM source is present AND the workshop has a non-zero UTM price in any currency.
+    // The exact country/currency is resolved from the Razorpay order notes to avoid a second detectCountry
+    // call that may return a different result (VPN flip, CDN header mismatch between the two requests).
+    const hasAnyUtmPrice = workshop.utmPriceInr > 0 || workshop.utmPriceUsd > 0;
+    const requiresPayment = !!utmSource && hasAnyUtmPrice;
+
+    let pricePaid: number | null = null;
+    let currency: string | null = null;
+    let razorpayOrderId: string | null = null;
+    let razorpayPaymentId: string | null = null;
+
+    if (requiresPayment) {
+      const { razorpayOrderId: orderId, razorpayPaymentId: paymentId, razorpaySignature: signature } = body;
+
+      if (!orderId || !paymentId || !signature) {
+        const { statusCode, payload } = errorResponse({ message: "Payment required", statusCode: 402 });
+        return reply.status(statusCode).send(payload);
+      }
+
+      const valid = verifyPaymentSignature({ orderId, paymentId, signature });
+      if (!valid) {
+        const { statusCode, payload } = errorResponse({ message: "Invalid payment signature", statusCode: 400 });
+        return reply.status(statusCode).send(payload);
+      }
+
+      // Fetch order from Razorpay to verify it was created for this specific workshop
+      let rzOrder: { amount: number | string; notes: Record<string, string> };
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        rzOrder = (await getRazorpay().orders.fetch(orderId)) as any;
+      } catch (err) {
+        request.log.error({ err }, "razorpay order fetch failed during join");
+        const { statusCode, payload } = errorResponse({ message: "Could not verify payment", statusCode: 502 });
+        return reply.status(statusCode).send(payload);
+      }
+
+      if (rzOrder.notes?.workshopId !== id) {
+        const { statusCode, payload } = errorResponse({ message: "Payment does not belong to this workshop", statusCode: 400 });
+        return reply.status(statusCode).send(payload);
+      }
+
+      // Guard against the same order being used twice
+      const [usedOrder] = await drizzle
+        .select({ id: registeredWorkshops.id })
+        .from(registeredWorkshops)
+        .where(eq(registeredWorkshops.razorpayOrderId, orderId));
+
+      if (usedOrder) {
+        const { statusCode, payload } = errorResponse({ message: "Payment already used", statusCode: 409 });
+        return reply.status(statusCode).send(payload);
+      }
+
+      // Use the amount and country from the Razorpay order — authoritative, avoids country re-detection mismatch
+      pricePaid = Number(rzOrder.amount);
+      currency = rzOrder.notes?.isIndia === "1" ? "INR" : "USD";
+      razorpayOrderId = orderId;
+      razorpayPaymentId = paymentId;
+    }
+
     await drizzle.insert(registeredWorkshops).values({
       workshopId: id,
-      name: body.name,
-      email: body.email,
+      name: user.name,
+      email: user.email,
+      utmSource,
+      razorpayOrderId,
+      razorpayPaymentId,
+      pricePaid,
+      currency,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
@@ -189,6 +321,8 @@ export class WorkshopsController {
         description: workshops.description,
         priceInr: workshops.priceInr,
         priceUsd: workshops.priceUsd,
+        utmPriceInr: workshops.utmPriceInr,
+        utmPriceUsd: workshops.utmPriceUsd,
         image: workshops.image,
         meetLink: workshops.meetLink,
         scheduledAt: workshops.scheduledAt,
@@ -235,6 +369,8 @@ export class WorkshopsController {
         description: body.description,
         priceInr: body.priceInr ?? null,
         priceUsd: body.priceUsd ?? null,
+        utmPriceInr: body.utmPriceInr ?? 9900,
+        utmPriceUsd: body.utmPriceUsd ?? 100,
         image: body.image ?? null,
         meetLink: body.meetLink ?? null,
         scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
@@ -281,6 +417,8 @@ export class WorkshopsController {
         ...(body.meetLink !== undefined && { meetLink: body.meetLink }),
         ...(body.scheduledAt !== undefined && { scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null }),
         ...(body.maxAttendees !== undefined && { maxAttendees: body.maxAttendees }),
+        ...(body.utmPriceInr !== undefined && { utmPriceInr: body.utmPriceInr }),
+        ...(body.utmPriceUsd !== undefined && { utmPriceUsd: body.utmPriceUsd }),
         ...(body.isActive !== undefined && { isActive: body.isActive }),
         updatedAt: new Date(),
       })

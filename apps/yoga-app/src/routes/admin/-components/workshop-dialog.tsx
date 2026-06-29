@@ -121,6 +121,35 @@ export function WorkshopDialog({ initial, onClose }: Props) {
             </Field>
           </div>
 
+          <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800/40 px-4 py-3 space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+              UTM / Social media price
+            </p>
+            <p className="text-xs text-muted-foreground -mt-1">
+              Applied when a user arrives via a UTM source (e.g. Instagram, Facebook).
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="UTM Price INR (paise)">
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.utmPriceInr ?? 9900}
+                  onChange={(e) => set("utmPriceInr", Number(e.target.value))}
+                  className="rounded-xl"
+                />
+              </Field>
+              <Field label="UTM Price USD (cents)">
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.utmPriceUsd ?? 100}
+                  onChange={(e) => set("utmPriceUsd", Number(e.target.value))}
+                  className="rounded-xl"
+                />
+              </Field>
+            </div>
+          </div>
+
           {/* Active toggle */}
           <div className="flex items-center gap-3 pt-1">
             <button

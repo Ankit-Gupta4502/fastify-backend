@@ -4,6 +4,8 @@ export interface Workshop {
   description: string;
   priceInr: number | null;
   priceUsd: number | null;
+  utmPriceInr: number;
+  utmPriceUsd: number;
   image: string | null;
   meetLink: string | null;
   scheduledAt: string | null;
@@ -16,9 +18,18 @@ export interface AdminWorkshop extends Workshop {
   createdAt: string;
 }
 
+export interface WorkshopOrderResponse {
+  orderId: string | null;
+  keyId: string;
+  amount: number;
+  currency: "INR" | "USD";
+}
+
 export interface WorkshopJoinBody {
-  name: string;
-  email: string;
+  utmSource?: string | null;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySignature?: string;
 }
 
 export interface CreateWorkshopBody {
@@ -26,6 +37,8 @@ export interface CreateWorkshopBody {
   description: string;
   priceInr?: number | null;
   priceUsd?: number | null;
+  utmPriceInr?: number;
+  utmPriceUsd?: number;
   image?: string | null;
   meetLink?: string | null;
   scheduledAt?: string | null;
@@ -38,6 +51,8 @@ export interface UpdateWorkshopBody {
   description?: string;
   priceInr?: number | null;
   priceUsd?: number | null;
+  utmPriceInr?: number;
+  utmPriceUsd?: number;
   image?: string | null;
   meetLink?: string | null;
   scheduledAt?: string | null;

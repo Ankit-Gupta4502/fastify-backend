@@ -53,6 +53,10 @@ export function useCustomCheckout() {
         handler: () => {},
       });
 
+      if (!checkout.razorpay_subscription_id) throw new Error("Subscription ID missing from payment response");
+
+      if (!checkout.razorpay_subscription_id) throw new Error("Subscription ID missing from payment response");
+
       const verification = await paymentsApi.verify({
         razorpaySubscriptionId: checkout.razorpay_subscription_id,
         razorpayPaymentId: checkout.razorpay_payment_id,
@@ -77,7 +81,7 @@ export function useCheckout() {
   const user = useAuthStore((s) => s.user);
 
   return useMutation({
-    retry: 3,
+    retry: 1,
     mutationFn: async ({ planId, country }: { planId: string; country?: string }) => {
       const order = await paymentsApi.createOrder({ planId, country });
       if (!order.data) {
@@ -99,6 +103,8 @@ export function useCheckout() {
         config: country === "IN" ? indiaSubscriptionCheckoutConfig() : undefined,
         handler: () => {},
       });
+
+      if (!checkout.razorpay_subscription_id) throw new Error("Subscription ID missing from payment response");
 
       const verification = await paymentsApi.verify({
         razorpaySubscriptionId: checkout.razorpay_subscription_id,

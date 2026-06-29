@@ -141,6 +141,27 @@
       "when": 1782669414259,
       "tag": "0019_round_micromacro",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1782752027144,
+      "tag": "0020_striped_skreet",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1782752461654,
+      "tag": "0021_damp_baron_zemo",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1782753550553,
+      "tag": "0022_serious_marrow",
+      "breakpoints": true
     }
   ]
 }

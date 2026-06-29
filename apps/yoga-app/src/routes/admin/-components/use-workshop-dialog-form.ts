@@ -8,6 +8,8 @@ export const EMPTY_WORKSHOP: CreateWorkshopBody = {
   description: "",
   priceInr: null,
   priceUsd: null,
+  utmPriceInr: 9900,
+  utmPriceUsd: 100,
   image: null,
   meetLink: "",
   scheduledAt: null,
@@ -32,6 +34,8 @@ export function useWorkshopDialogForm(
           description: initial.description,
           priceInr: initial.priceInr,
           priceUsd: initial.priceUsd,
+          utmPriceInr: initial.utmPriceInr,
+          utmPriceUsd: initial.utmPriceUsd,
           image: initial.image ?? null,
           meetLink: initial.meetLink ?? "",
           scheduledAt: initial.scheduledAt

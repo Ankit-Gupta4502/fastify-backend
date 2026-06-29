@@ -1,0 +1,1 @@
+ALTER TABLE "workshop_user" ADD CONSTRAINT "workshop_user_workshop_email_unique" UNIQUE("workshop_id","email");

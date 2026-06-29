@@ -1,7 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { workshopsApi } from "../api/workshops";
 import { queryKeys } from "../lib/react-query/query-keys";
-import type { WorkshopJoinBody, CreateWorkshopBody, UpdateWorkshopBody } from "@yoga-app/shared";
+import type { Workshop, WorkshopJoinBody, CreateWorkshopBody, UpdateWorkshopBody } from "@yoga-app/shared";
+import { openRazorpayCheckout } from "../lib/razorpay";
+import { useAuthStore } from "../store/auth.store";
+import { getStoredUtm } from "../lib/utm";
 
 export function useWorkshops() {
   return useQuery({
@@ -24,6 +27,71 @@ export function useJoinWorkshop() {
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: WorkshopJoinBody }) =>
       workshopsApi.join(id, body),
+  });
+}
+
+export function useWorkshopCheckout(workshop: Workshop) {
+  const user = useAuthStore((s) => s.user);
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const utm = getStoredUtm();
+      const utmSource = utm?.utmSource ?? null;
+
+      if (!utmSource) {
+        await workshopsApi.join(workshop.id, { utmSource: null });
+        return;
+      }
+
+      // Ask the backend whether payment is needed for this country. The backend
+      // returns amount=0 when the UTM price is zero for the user's country.
+      const orderRes = await workshopsApi.createOrder(workshop.id);
+      if (!orderRes.data) throw new Error("Could not create payment order");
+
+      const { orderId, keyId, amount, currency } = orderRes.data;
+
+      if (amount === 0 || !orderId) {
+        // Backend decided this country pays nothing — enroll for free
+        await workshopsApi.join(workshop.id, { utmSource });
+        return;
+      }
+
+      const checkout = await openRazorpayCheckout({
+        key: keyId,
+        amount,
+        currency,
+        name: "Book Your Yoga Teacher",
+        description: workshop.name,
+        order_id: orderId,
+        prefill: { name: user?.name ?? undefined, email: user?.email ?? undefined },
+        theme: { color: "#D97706" },
+        handler: () => {},
+      });
+
+      // Retry the join up to 3 times in case of a transient network error after payment succeeds.
+      // The server's unique(razorpayOrderId) constraint makes re-submitting the same proof idempotent.
+      let lastErr: unknown;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          await workshopsApi.join(workshop.id, {
+            utmSource,
+            razorpayOrderId: checkout.razorpay_order_id,
+            razorpayPaymentId: checkout.razorpay_payment_id,
+            razorpaySignature: checkout.razorpay_signature,
+          });
+          return;
+        } catch (err) {
+          lastErr = err;
+          if (attempt < 2) await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        }
+      }
+      throw lastErr;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.workshops.detail(workshop.id) });
+      void qc.invalidateQueries({ queryKey: queryKeys.workshops.list() });
+    },
   });
 }
 

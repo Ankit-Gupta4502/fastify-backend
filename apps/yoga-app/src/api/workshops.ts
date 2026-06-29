@@ -2,6 +2,7 @@ import type {
   Workshop,
   AdminWorkshop,
   WorkshopJoinBody,
+  WorkshopOrderResponse,
   CreateWorkshopBody,
   UpdateWorkshopBody,
 } from "@yoga-app/shared";
@@ -14,6 +15,9 @@ export const workshopsApi = {
 
   detail: (id: string) =>
     apiRequest<Workshop>(API_ENDPOINTS.WORKSHOPS.DETAIL(id)),
+
+  createOrder: (id: string) =>
+    apiRequest<WorkshopOrderResponse>(API_ENDPOINTS.WORKSHOPS.CREATE_ORDER(id), { method: "POST" }),
 
   join: (id: string, body: WorkshopJoinBody) =>
     apiRequest<null>(API_ENDPOINTS.WORKSHOPS.JOIN(id), { method: "POST", data: body }),
