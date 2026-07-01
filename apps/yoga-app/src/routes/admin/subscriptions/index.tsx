@@ -20,7 +20,7 @@ function getPlanPriceCents(planName: string, plans: PlanRecord[]): number {
     const sessions = parseInt(parts[parts.length - 1] ?? "4", 10);
     return calcCustomPriceCents(isNaN(sessions) ? 4 : sessions);
   }
-  return plans.find((p) => p.name === planName)?.priceCents ?? 0;
+  return plans?.find((p) => p.name === planName)?.priceCents ?? 0;
 }
 
 function AdminSubscriptionsPage() {
@@ -28,7 +28,7 @@ function AdminSubscriptionsPage() {
   const { data: plansData } = usePlansWithPricing();
 
   const users = usersData?.data ?? [];
-  const plans = plansData?.data ?? [];
+  const plans = plansData?.data?.plans ?? [];
 
   const regularUsers = users.filter((u) => u.role === "user");
   const subscribers = regularUsers.filter((u) => u.planName !== null);

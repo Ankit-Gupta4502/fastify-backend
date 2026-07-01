@@ -33,7 +33,8 @@ export const queryKeys = {
   },
   admin: {
     all: ["admin"] as const,
-    users: () => [...queryKeys.admin.all, "users"] as const,
+    users: (filters?: { search?: string; role?: string; plan?: string }) =>
+      [...queryKeys.admin.all, "users", filters ?? {}] as const,
     userDetail: (id: string) => [...queryKeys.admin.all, "users", id] as const,
     instructors: () => [...queryKeys.admin.all, "instructors"] as const,
     groupRooms: () => [...queryKeys.admin.all, "group-rooms"] as const,

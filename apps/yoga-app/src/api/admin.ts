@@ -13,8 +13,15 @@ import { API_ENDPOINTS } from "@yoga-app/shared";
 import { apiRequest } from "../lib/http";
 
 export const adminApi = {
-  listUsers: () =>
-    apiRequest<AdminUser[]>(API_ENDPOINTS.ADMIN.USERS),
+  listUsers: (filters?: { search?: string; role?: string; plan?: string }) => {
+    const params: Record<string, string> = {};
+    if (filters?.search) params.search = filters.search;
+    if (filters?.role) params.role = filters.role;
+    if (filters?.plan) params.plan = filters.plan;
+    return apiRequest<AdminUser[]>(API_ENDPOINTS.ADMIN.USERS, {
+      params: Object.keys(params).length ? params : undefined,
+    });
+  },
 
   getUserDetail: (id: string) =>
     apiRequest<AdminUserDetail>(API_ENDPOINTS.ADMIN.USER_DETAIL(id)),

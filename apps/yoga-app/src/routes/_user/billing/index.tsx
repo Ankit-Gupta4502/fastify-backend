@@ -3,7 +3,6 @@ import type { PlanRecord } from "@yoga-app/shared";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMyPlan, usePlansWithPricing } from "@/hooks/use-plans";
 import { BillingHeader } from "../-components/billing/billing-header";
-import { CurrentPlanBanner } from "../-components/billing/current-plan-banner";
 import { PlanCard } from "../-components/billing/plan-card";
 import { PrivateSessionCard } from "../-components/billing/private-session-card";
 

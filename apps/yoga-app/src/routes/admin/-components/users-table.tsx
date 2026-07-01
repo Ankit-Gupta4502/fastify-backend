@@ -9,6 +9,7 @@ interface UsersTableProps {
   users: AdminUser[];
   isLoading: boolean;
   error: Error | null;
+  search?: string;
 }
 
 const ROLE_CHIP_VARIANT: Record<string, ChipVariant> = {
@@ -39,7 +40,7 @@ function SourceBadge({ source }: { source: string | null | undefined }) {
   );
 }
 
-export function UsersTable({ users, isLoading, error }: UsersTableProps) {
+export function UsersTable({ users, isLoading, error, search }: UsersTableProps) {
   const navigate = useNavigate();
 
   if (error) return <ErrorCard message="Failed to load users." />;
@@ -87,7 +88,9 @@ export function UsersTable({ users, isLoading, error }: UsersTableProps) {
         </tbody>
       </table>
       {!isLoading && users.length === 0 && (
-        <p className="text-center text-muted-foreground text-sm py-10">No users found.</p>
+        <p className="text-center text-muted-foreground text-sm py-10">
+          {search ? `No users matching "${search}".` : "No users found."}
+        </p>
       )}
     </div>
   );

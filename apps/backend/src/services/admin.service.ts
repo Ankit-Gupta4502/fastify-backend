@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import type { AppDatabase } from "../types/database.types";
 import { user, plans, rooms, roomUsers, instructorDetails, userSubscriptions, userPreferences, userAcquisition, privateSessionRequests } from "../schema/schema";
 import { auth } from "../lib/auth";
@@ -7,7 +7,30 @@ import { createHmsRoom } from "./hms.service";
 import { ROOM_STATUS, ROOM_TYPE } from "../constants/sessions";
 import { notifyEligibleGroupUsers } from "./room-notification.service";
 
-export async function listUsers(db: AppDatabase) {
+export async function listUsers(db: AppDatabase, search?: string, role?: string, plan?: string) {
+  let planUserIds: string[] | undefined;
+  if (plan) {
+    const planRows = await db
+      .select({ userId: userSubscriptions.userId })
+      .from(userSubscriptions)
+      .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
+      .where(
+        and(
+          eq(plans.name, plan),
+          eq(userSubscriptions.status, "active"),
+          or(isNull(userSubscriptions.sessionsTotal), lt(userSubscriptions.sessionsUsed, userSubscriptions.sessionsTotal)),
+        ),
+      );
+    planUserIds = planRows.map((r) => r.userId);
+    if (planUserIds.length === 0) return [];
+  }
+
+  const whereClause = and(
+    search ? or(ilike(user.name, `%${search}%`), ilike(user.email, `%${search}%`)) : undefined,
+    role ? eq(user.role, role) : undefined,
+    planUserIds ? inArray(user.id, planUserIds) : undefined,
+  );
+
   const users = await db
     .select({
       id: user.id,
@@ -17,6 +40,7 @@ export async function listUsers(db: AppDatabase) {
       createdAt: user.createdAt,
     })
     .from(user)
+    .where(whereClause)
     .orderBy(desc(user.createdAt));
 
   const activeSubs = await db

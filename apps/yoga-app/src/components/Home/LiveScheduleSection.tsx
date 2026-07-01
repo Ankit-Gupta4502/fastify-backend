@@ -1,15 +1,26 @@
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useIntersection } from "@/hooks/use-intersection";
 import { usePublicRooms } from "@/hooks/use-rooms";
+import { useAuthStore } from "@/store/auth.store";
+import { planQueryOptions } from "@/hooks/use-plans";
 import { SessionRow } from "./SessionRow";
 
 export function LiveScheduleSection() {
   const [sectionRef, isVisible] = useIntersection<HTMLElement>();
   const { data, isLoading } = usePublicRooms();
+  const { isAuthenticated } = useAuthStore();
+  const { data: planData } = useQuery({
+    ...planQueryOptions.mine(),
+    enabled: isAuthenticated,
+  });
+
+  const hasPlan = isAuthenticated && Boolean(planData?.data?.plan);
+  const scheduleLink = hasPlan ? "/rooms" : "/pricing";
 
   const sessions = data?.data ?? [];
   const hasLive = sessions.some((r) => r.canJoinLive);
@@ -44,7 +55,7 @@ export function LiveScheduleSection() {
           </div>
 
           <Button asChild variant="outline" className="rounded-full gap-2 sketch-border-sm self-start md:self-auto">
-            <Link to="/rooms">
+            <Link to={scheduleLink}>
               See full schedule <ArrowRight className="size-3.5" />
             </Link>
           </Button>
@@ -62,10 +73,6 @@ export function LiveScheduleSection() {
               <Zap className="size-6 text-primary" />
             </div>
             <p className="font-semibold text-lg">New sessions dropping soon</p>
-            <p className="text-sm text-muted-foreground">Sign up to get notified when new classes go live.</p>
-            <Button asChild className="rounded-full mt-2">
-              <Link to="/login">Get notified</Link>
-            </Button>
           </div>
         ) : (
           <div className="space-y-3">

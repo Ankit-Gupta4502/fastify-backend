@@ -26,6 +26,7 @@ import {
   updatePriorityBodySchema,
   createInstructorBodySchema,
   instructorIdParamsSchema,
+  listUsersQuerySchema,
   userIdParamsSchema,
   createGroupRoomBodySchema,
   privateRequestIdParamsSchema,
@@ -66,8 +67,11 @@ export class AdminController {
     );
   }
 
-  private getUsers = async (_req: FastifyRequest, reply: FastifyReply) => {
-    const data = await listUsers(drizzle);
+  private getUsers = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { query: listUsersQuerySchema });
+    if (invalid) return invalid;
+    const { search, role, plan } = request.query as z.infer<typeof listUsersQuerySchema>;
+    const data = await listUsers(drizzle, search, role, plan);
     const { statusCode, payload } = successResponse({ message: "Users", data });
     return reply.status(statusCode).send(payload);
   };

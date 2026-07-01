@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRequestPrivate } from "@/hooks/use-rooms";
 import { useMyPlan } from "@/hooks/use-plans";
 import {
@@ -94,17 +94,25 @@ export function useBookPrivateSession(onOpenChange: (open: boolean) => void) {
 
   // ── Recurring ─────────────────────────────────────────────────────────────
   const [recurringConfig, setRecurringConfig] = useState<RecurringConfig>(emptyRecurring());
-  const [recurringSlots, setRecurringSlots] = useState<SlotEntry[]>([]);
+  const [removedRecurringDates, setRemovedRecurringDates] = useState<Set<string>>(new Set());
+
+  // Always derived from current config + limit so plan data loading async is handled correctly
+  const allRecurringSlots = useMemo(
+    () => generateRecurringSlots(recurringConfig, recurringLimit),
+    [recurringConfig, recurringLimit],
+  );
+  const recurringSlots = useMemo(
+    () => allRecurringSlots.filter((s) => !removedRecurringDates.has(s.date)),
+    [allRecurringSlots, removedRecurringDates],
+  );
 
   function updateRecurring(patch: Partial<RecurringConfig>) {
-    setRecurringConfig((prev) => {
-      const next = { ...prev, ...patch };
-      setRecurringSlots(generateRecurringSlots(next, recurringLimit));
-      return next;
-    });
+    setRemovedRecurringDates(new Set());
+    setRecurringConfig((prev) => ({ ...prev, ...patch }));
   }
   function removeRecurringSlot(i: number) {
-    setRecurringSlots((p) => p.filter((_, idx) => idx !== i));
+    const slot = recurringSlots[i];
+    if (slot) setRemovedRecurringDates((prev) => new Set([...prev, slot.date]));
   }
 
   // ── Shared ────────────────────────────────────────────────────────────────
@@ -122,7 +130,7 @@ export function useBookPrivateSession(onOpenChange: (open: boolean) => void) {
     setActiveTab("manual");
     setManualSlots([emptySlot()]);
     setRecurringConfig(emptyRecurring());
-    setRecurringSlots([]);
+    setRemovedRecurringDates(new Set());
     setError(null);
     setSubmittedRequestId(null);
   }

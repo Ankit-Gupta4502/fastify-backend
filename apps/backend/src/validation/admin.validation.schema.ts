@@ -22,6 +22,12 @@ export const userIdParamsSchema = z.object({
   id: z.string().uuid("Invalid user id"),
 });
 
+export const listUsersQuerySchema = z.object({
+  search: z.string().optional(),
+  role: z.enum(["user", "instructor", "admin"]).optional(),
+  plan: z.string().optional(),
+});
+
 export const createGroupRoomBodySchema = z
   .object({
     instructorId: z.string().uuid(),

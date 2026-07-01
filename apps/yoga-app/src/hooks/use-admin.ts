@@ -3,10 +3,10 @@ import { adminApi } from "../api/admin";
 import { queryKeys } from "../lib/react-query/query-keys";
 
 export const adminQueryOptions = {
-  users: () =>
+  users: (filters?: { search?: string; role?: string; plan?: string }) =>
     queryOptions({
-      queryKey: queryKeys.admin.users(),
-      queryFn: adminApi.listUsers,
+      queryKey: queryKeys.admin.users(filters),
+      queryFn: () => adminApi.listUsers(filters),
       staleTime: 30_000,
     }),
   instructors: () =>
@@ -23,8 +23,8 @@ export const adminQueryOptions = {
     }),
 };
 
-export function useAdminUsers() {
-  return useQuery(adminQueryOptions.users());
+export function useAdminUsers(filters?: { search?: string; role?: string; plan?: string }) {
+  return useQuery(adminQueryOptions.users(filters));
 }
 
 export function useAdminUserDetail(id: string) {
