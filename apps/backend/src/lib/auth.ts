@@ -45,14 +45,18 @@ export const auth = betterAuth({
       await EmailService.sendPasswordResetEmail(user.email, user.name, url);
     },
     resetPasswordTokenExpiresIn: 3600,
-    requireEmailVerification: true,
   },
+  // Email verification is enforced only for role=USER — see the manual check in
+  // AuthController.loginUser. Instructor/admin accounts are created out-of-band
+  // (e.g. by an admin) and should never be blocked from signing in by this.
   emailVerification: {
-    sendVerificationEmail: async ({ user, token }: { user: { email: string; name: string }; token: string }) => {
+    sendVerificationEmail: async ({ user, token }: { user: { email: string; name: string; role?: string }; token: string }) => {
+      if (user.role && user.role !== USER_ROLES.USER) return;
       const url = `${config.frontend.url}/verify-email?token=${token}`;
       console.log("[auth] sendVerificationEmail called for", user.email, "| url:", url);
       await EmailService.sendVerificationEmail(user.email, user.name, url);
     },
+    sendOnSignUp: true,
     expiresIn: 3600,
   },
 

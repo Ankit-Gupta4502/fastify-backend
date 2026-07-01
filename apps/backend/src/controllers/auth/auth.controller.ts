@@ -144,6 +144,28 @@ export class AuthController {
         return reply.status(statusCode).send(payload);
       }
 
+      // Email verification is only enforced for role=USER — instructor/admin
+      // accounts are created out-of-band and shouldn't be gated by this.
+      if (existingUser.role === USER_ROLES.USER && !existingUser.emailVerified) {
+        try {
+          await auth.api.sendVerificationEmail({
+            body: { email: existingUser.email },
+            headers: fromNodeHeaders(request.headers),
+          });
+        } catch (err) {
+          if (process.env.NODE_ENV !== "production") {
+            console.error("[loginUser] sendVerificationEmail threw:", err);
+          }
+        }
+
+        const { statusCode, payload } = errorResponse({
+          message: "Email not verified",
+          statusCode: 403,
+          error: "EMAIL_NOT_VERIFIED",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+
       const { headers, response: data } = await auth.api.signInEmail({
         body: {
           email: body.email,
