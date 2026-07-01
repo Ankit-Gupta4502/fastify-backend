@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
  */
 export function useIntersection<T extends Element>(
   options?: IntersectionObserverInit,
-): [React.RefObject<T>, boolean] {
+): [React.RefObject<T | null>, boolean] {
   const ref = useRef<T>(null);
   const [isVisible, setIsVisible] = useState(false);
 

@@ -8,7 +8,6 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { APP_NAME } from "@yoga-app/shared";
 import { captureUtm } from "@/lib/utm";
 import { PAGE_SEO, ROOT_GLOBAL_META } from "@/lib/seo";
 import Layout from "@/components/rootLayout/Layout";
