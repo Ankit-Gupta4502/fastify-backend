@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Clock, CheckCircle2, XCircle, User, Calendar } from "lucide-react";
+import { Plus, Clock, CheckCircle2, XCircle, User, Calendar, Lock, ShieldAlert, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMyPrivateRequests } from "@/hooks/use-rooms";
+import { useMyPlan } from "@/hooks/use-plans";
 import { BookPrivateSessionDialog } from "../dashboard/-components/BookPrivateSessionDialog";
 import type { MyPrivateSessionRequest, PrivateSessionRequestStatus } from "@yoga-app/shared";
 
@@ -91,10 +92,114 @@ function SkeletonCard() {
   );
 }
 
+type GuardReason = "no_plan" | "no_private_access" | "no_sessions_left" | null;
+
+const GUARD_CONFIG: Record<
+  NonNullable<GuardReason>,
+  { icon: React.ElementType; color: string; title: string; description: (expiresAt?: string | null) => string; cta: string | null }
+> = {
+  no_plan: {
+    icon: Lock,
+    color: "amber",
+    title: "Active plan required",
+    description: () => "You need an active subscription to request private sessions.",
+    cta: "Get a plan",
+  },
+  no_private_access: {
+    icon: ShieldAlert,
+    color: "violet",
+    title: "Plan upgrade required",
+    description: () =>
+      "Your current plan doesn't include private 1:1 sessions. Upgrade to Private, Prenatal & Postnatal, or Therapeutic Yoga to unlock them.",
+    cta: "Upgrade plan",
+  },
+  no_sessions_left: {
+    icon: BarChart2,
+    color: "rose",
+    title: "No sessions remaining",
+    description: (expiresAt) =>
+      expiresAt
+        ? `You've used all your sessions for this billing period. They renew on ${new Date(expiresAt).toLocaleDateString(undefined, { month: "long", day: "numeric" })}.`
+        : "You've used all your sessions for this billing period.",
+    cta: null,
+  },
+};
+
+const COLOR_CLASSES: Record<string, { border: string; bg: string; iconBg: string; iconText: string }> = {
+  amber: {
+    border: "border-amber-500/20",
+    bg: "bg-amber-500/5",
+    iconBg: "bg-amber-500/10",
+    iconText: "text-amber-600 dark:text-amber-400",
+  },
+  violet: {
+    border: "border-violet-500/20",
+    bg: "bg-violet-500/5",
+    iconBg: "bg-violet-500/10",
+    iconText: "text-violet-600 dark:text-violet-400",
+  },
+  rose: {
+    border: "border-rose-500/20",
+    bg: "bg-rose-500/5",
+    iconBg: "bg-rose-500/10",
+    iconText: "text-rose-600 dark:text-rose-400",
+  },
+};
+
+function GuardBanner({ reason, expiresAt }: { reason: NonNullable<GuardReason>; expiresAt?: string | null }) {
+  const cfg = GUARD_CONFIG[reason];
+  const colors = COLOR_CLASSES[cfg.color];
+  const Icon = cfg.icon;
+
+  return (
+    <div className={`flex items-start gap-4 rounded-2xl border ${colors.border} ${colors.bg} px-5 py-4`}>
+      <div className={`size-9 rounded-xl ${colors.iconBg} ${colors.iconText} flex items-center justify-center shrink-0 mt-0.5`}>
+        <Icon className="size-4" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground">{cfg.title}</p>
+        <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
+          {cfg.description(expiresAt)}
+        </p>
+      </div>
+      {cfg.cta && (
+        <Button asChild size="sm" className="shrink-0 rounded-xl">
+          <Link to="/billing">{cfg.cta}</Link>
+        </Button>
+      )}
+    </div>
+  );
+}
+
 function PrivateSessionsPage() {
   const { data, isLoading } = useMyPrivateRequests();
+  const myPlan = useMyPlan();
   const requests = data?.data ?? [];
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const planRow = myPlan.data?.data ?? null;
+  const planLoading = myPlan.isLoading;
+
+  const hasPlan = Boolean(planRow);
+  const allowsPrivate = planRow?.plan?.allowsPrivate === true;
+  const sessionsTotal = planRow?.sessionsTotal ?? null;
+  const sessionsUsed = planRow?.sessionsUsed ?? 0;
+  const hasSessionsLeft = sessionsTotal === null || sessionsUsed < sessionsTotal;
+
+  const guardReason: GuardReason = !hasPlan
+    ? "no_plan"
+    : !allowsPrivate
+      ? "no_private_access"
+      : !hasSessionsLeft
+        ? "no_sessions_left"
+        : null;
+
+  const canRequest = !planLoading && guardReason === null;
+
+  function openDialog() {
+    if (!canRequest) return;
+    setDialogOpen(true);
+  }
 
   return (
     <div className="space-y-6 px-1">
@@ -105,11 +210,19 @@ function PrivateSessionsPage() {
             Request a 1:1 session — our team will assign an instructor and confirm your booking.
           </p>
         </div>
-        <Button className="rounded-2xl gap-2 shadow-sm" onClick={() => setDialogOpen(true)}>
+        <Button
+          className="rounded-2xl gap-2 shadow-sm"
+          disabled={!canRequest}
+          onClick={openDialog}
+        >
           <Plus className="size-4" />
           Request session
         </Button>
       </div>
+
+      {!planLoading && guardReason && (
+        <GuardBanner reason={guardReason} expiresAt={planRow?.expiresAt} />
+      )}
 
       {isLoading ? (
         <div className="space-y-3">
@@ -129,7 +242,8 @@ function PrivateSessionsPage() {
           <Button
             variant="outline"
             className="rounded-xl mt-2"
-            onClick={() => setDialogOpen(true)}
+            disabled={!canRequest}
+            onClick={openDialog}
           >
             <Plus className="size-4 mr-2" />
             Request your first session
@@ -143,12 +257,7 @@ function PrivateSessionsPage() {
         </div>
       )}
 
-      <BookPrivateSessionDialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          setDialogOpen(open);
-        }}
-      />
+      <BookPrivateSessionDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 }
