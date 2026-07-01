@@ -6,7 +6,6 @@ import { BillingHeader } from "../-components/billing/billing-header";
 import { CurrentPlanBanner } from "../-components/billing/current-plan-banner";
 import { PlanCard } from "../-components/billing/plan-card";
 import { PrivateSessionCard } from "../-components/billing/private-session-card";
-import { CancelSubscriptionCard } from "../-components/billing/cancel-subscription-card";
 
 export const Route = createFileRoute("/_user/billing/")({
   component: BillingPage,
@@ -31,10 +30,7 @@ function BillingPage() {
     <div className="max-w-6xl mx-auto space-y-12 pb-12">
       <BillingHeader />
 
-      <CurrentPlanBanner
-        isLoading={myPlan.isLoading}
-        planName={activePlan?.name}
-      />
+
 
       <div className="grid md:grid-cols-3 gap-8 items-start">
         {isLoading ? (
@@ -44,6 +40,7 @@ function BillingPage() {
             plan={activePlanRecord}
             isActive
             readOnly
+            expiresAt={activeExpiresAt}
           />
         ) : isPrivateActive ? (
           <PrivateSessionCard
@@ -54,6 +51,7 @@ function BillingPage() {
             isPending={false}
             onSubscribe={() => {}}
             readOnly
+            expiresAt={activeExpiresAt}
           />
         ) : (
           <div className="md:col-span-3 text-center text-muted-foreground py-12">
@@ -62,12 +60,6 @@ function BillingPage() {
         )}
       </div>
 
-      {!isLoading && activePlan && (
-        <CancelSubscriptionCard
-          planName={activePlan.name}
-          expiresAt={activeExpiresAt}
-        />
-      )}
     </div>
   );
 }

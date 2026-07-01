@@ -34,7 +34,7 @@ function UserDashboard() {
   const planRow = myPlan.data?.data;
   const plan = planRow?.plan ?? null;
   const used = planRow?.sessionsUsedThisWeek ?? 0;
-  const limit = plan?.sessionsPerWeek ?? null;
+  const limit = planRow?.sessionsTotal ?? null; // null = unlimited (group plan); number = purchased session count
   const remaining = limit !== null ? Math.max(limit - used, 0) : null;
 
   const myPrefs = useMyPreferences();

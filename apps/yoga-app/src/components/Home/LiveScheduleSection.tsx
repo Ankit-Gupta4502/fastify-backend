@@ -44,7 +44,7 @@ export function LiveScheduleSection() {
           </div>
 
           <Button asChild variant="outline" className="rounded-full gap-2 sketch-border-sm self-start md:self-auto">
-            <Link to="/login">
+            <Link to="/rooms">
               See full schedule <ArrowRight className="size-3.5" />
             </Link>
           </Button>
