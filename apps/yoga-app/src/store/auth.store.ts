@@ -7,6 +7,7 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   image?: string | null;
+  emailVerified: boolean;
 }
 
 type AuthStore = {

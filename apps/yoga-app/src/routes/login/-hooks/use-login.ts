@@ -36,6 +36,10 @@ export function useLogin() {
       await login.mutateAsync(values);
       navigate({ to: "/", replace: true });
     } catch (error) {
+      if (error instanceof ApiRequestError && error.payload?.error === "EMAIL_NOT_VERIFIED") {
+        navigate({ to: "/verify-email" });
+        return;
+      }
       setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Login failed");
     }
   }
@@ -46,7 +50,7 @@ export function useLogin() {
       await registerUserMutation.mutateAsync(values);
       fireAcquisition();
       setFeedback("Account created! Redirecting…");
-      setTimeout(() => navigate({ to: "/", replace: true }), 1500);
+      setTimeout(() => navigate({ to: "/verify-email", replace: true }), 1500);
     } catch (error) {
       setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Registration failed");
     }

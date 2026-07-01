@@ -7,6 +7,8 @@ export const API_ENDPOINTS = {
     GOOGLE: "/auth/google",
     FORGOT_PASSWORD: "/auth/forgot-password",
     RESET_PASSWORD: "/auth/reset-password",
+    RESEND_VERIFICATION_EMAIL: "/auth/resend-verification-email",
+    VERIFY_EMAIL: "/auth/verify-email",
   },
   USER: {
     DETAIL: "/user/detail",

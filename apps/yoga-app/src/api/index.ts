@@ -17,6 +17,7 @@ export interface SessionPayload {
     email: string;
     role: UserRole;
     image?: string | null;
+    emailVerified: boolean;
   };
 }
 
@@ -57,6 +58,18 @@ export const authApi = {
     apiRequest<null>(ENDPOINTS.AUTH.RESET_PASSWORD, {
       method: "POST",
       data: payload,
+    }),
+
+  resendVerificationEmail: (email: string) =>
+    apiRequest<null>(ENDPOINTS.AUTH.RESEND_VERIFICATION_EMAIL, {
+      method: "POST",
+      data: { email },
+    }),
+
+  verifyEmail: (token: string) =>
+    apiRequest<SessionPayload>(ENDPOINTS.AUTH.VERIFY_EMAIL, {
+      method: "POST",
+      data: { token },
     }),
 };
 

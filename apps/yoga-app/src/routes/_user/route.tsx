@@ -7,6 +7,9 @@ export const Route = createFileRoute("/_user")({
     if (!context.user || context.user.role !== USER_ROLES.USER) {
       throw redirect({ to: "/login" });
     }
+    if (!context.user.emailVerified) {
+      throw redirect({ to: "/verify-email" });
+    }
   },
   component: UserLayout,
 });

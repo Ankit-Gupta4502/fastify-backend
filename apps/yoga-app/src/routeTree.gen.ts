@@ -14,6 +14,7 @@ import { Route as DemoRouteRouteImport } from './routes/demo/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as UserRouteRouteImport } from './routes/_user/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VerifyEmailIndexRouteImport } from './routes/verify-email/index'
 import { Route as TermsIndexRouteImport } from './routes/terms/index'
 import { Route as ResetPasswordIndexRouteImport } from './routes/reset-password/index'
 import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
@@ -66,6 +67,11 @@ const UserRouteRoute = UserRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyEmailIndexRoute = VerifyEmailIndexRouteImport.update({
+  id: '/verify-email/',
+  path: '/verify-email/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsIndexRoute = TermsIndexRouteImport.update({
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/terms/': typeof TermsIndexRoute
+  '/verify-email/': typeof VerifyEmailIndexRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/billing/': typeof UserBillingIndexRoute
   '/dashboard/': typeof UserDashboardIndexRoute
@@ -266,6 +273,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyIndexRoute
   '/reset-password': typeof ResetPasswordIndexRoute
   '/terms': typeof TermsIndexRoute
+  '/verify-email': typeof VerifyEmailIndexRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/billing': typeof UserBillingIndexRoute
   '/dashboard': typeof UserDashboardIndexRoute
@@ -303,6 +311,7 @@ export interface FileRoutesById {
   '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/terms/': typeof TermsIndexRoute
+  '/verify-email/': typeof VerifyEmailIndexRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/_user/billing/': typeof UserBillingIndexRoute
   '/_user/dashboard/': typeof UserDashboardIndexRoute
@@ -340,6 +349,7 @@ export interface FileRouteTypes {
     | '/privacy/'
     | '/reset-password/'
     | '/terms/'
+    | '/verify-email/'
     | '/admin/users/$userId'
     | '/billing/'
     | '/dashboard/'
@@ -374,6 +384,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reset-password'
     | '/terms'
+    | '/verify-email'
     | '/admin/users/$userId'
     | '/billing'
     | '/dashboard'
@@ -410,6 +421,7 @@ export interface FileRouteTypes {
     | '/privacy/'
     | '/reset-password/'
     | '/terms/'
+    | '/verify-email/'
     | '/admin/users/$userId'
     | '/_user/billing/'
     | '/_user/dashboard/'
@@ -445,6 +457,7 @@ export interface RootRouteChildren {
   PrivacyIndexRoute: typeof PrivacyIndexRoute
   ResetPasswordIndexRoute: typeof ResetPasswordIndexRoute
   TermsIndexRoute: typeof TermsIndexRoute
+  VerifyEmailIndexRoute: typeof VerifyEmailIndexRoute
   ExpertsExpertIdIndexRoute: typeof ExpertsExpertIdIndexRoute
   SessionRoomIdIndexRoute: typeof SessionRoomIdIndexRoute
 }
@@ -484,6 +497,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-email/': {
+      id: '/verify-email/'
+      path: '/verify-email'
+      fullPath: '/verify-email/'
+      preLoaderRoute: typeof VerifyEmailIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms/': {
@@ -784,6 +804,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyIndexRoute: PrivacyIndexRoute,
   ResetPasswordIndexRoute: ResetPasswordIndexRoute,
   TermsIndexRoute: TermsIndexRoute,
+  VerifyEmailIndexRoute: VerifyEmailIndexRoute,
   ExpertsExpertIdIndexRoute: ExpertsExpertIdIndexRoute,
   SessionRoomIdIndexRoute: SessionRoomIdIndexRoute,
 }

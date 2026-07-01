@@ -4,6 +4,8 @@ export {
   socialCallbackQuerySchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  resendVerificationEmailSchema,
+  verifyEmailSchema,
 } from "@yoga-app/shared";
 
 export const authSwaggerSchemas = {
@@ -76,6 +78,28 @@ export const authSwaggerSchemas = {
       properties: {
         token: { type: "string" as const },
         newPassword: { type: "string" as const, minLength: 8 },
+      },
+    },
+  },
+  resendVerificationEmail: {
+    description: "Resend the email verification link",
+    tags: ["Auth"] as string[],
+    body: {
+      type: "object" as const,
+      required: ["email"],
+      properties: {
+        email: { type: "string" as const, format: "email" },
+      },
+    },
+  },
+  verifyEmail: {
+    description: "Verify email using a token from email",
+    tags: ["Auth"] as string[],
+    body: {
+      type: "object" as const,
+      required: ["token"],
+      properties: {
+        token: { type: "string" as const },
       },
     },
   },

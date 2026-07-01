@@ -45,6 +45,15 @@ export const auth = betterAuth({
       await EmailService.sendPasswordResetEmail(user.email, user.name, url);
     },
     resetPasswordTokenExpiresIn: 3600,
+    requireEmailVerification: true,
+  },
+  emailVerification: {
+    sendVerificationEmail: async ({ user, token }: { user: { email: string; name: string }; token: string }) => {
+      const url = `${config.frontend.url}/verify-email?token=${token}`;
+      console.log("[auth] sendVerificationEmail called for", user.email, "| url:", url);
+      await EmailService.sendVerificationEmail(user.email, user.name, url);
+    },
+    expiresIn: 3600,
   },
 
   ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET

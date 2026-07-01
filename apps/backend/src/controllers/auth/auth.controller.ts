@@ -19,6 +19,8 @@ import {
   socialCallbackQuerySchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  resendVerificationEmailSchema,
+  verifyEmailSchema,
 } from "../../validation/auth.validation.schema";
 import { USER_ROLES } from "../../constants/roles";
 import {
@@ -70,6 +72,16 @@ export class AuthController {
           "/reset-password",
           { schema: authSwaggerSchemas.resetPassword },
           this.resetPassword,
+        );
+        router.post(
+          "/resend-verification-email",
+          { schema: authSwaggerSchemas.resendVerificationEmail },
+          this.resendVerificationEmail,
+        );
+        router.post(
+          "/verify-email",
+          { schema: authSwaggerSchemas.verifyEmail },
+          this.verifyEmail,
         );
       },
       { prefix: "/auth" },
@@ -289,6 +301,60 @@ export class AuthController {
       const { statusCode, payload } = successResponse({
         message: "Password updated successfully.",
         data: null,
+      });
+      return reply.status(statusCode).send(payload);
+    } catch (error) {
+      return this.handleAuthError(error, reply);
+    }
+  };
+
+  private resendVerificationEmail = async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ) => {
+    const invalid = validateWithZod(request, reply, {
+      body: resendVerificationEmailSchema,
+    });
+    if (invalid) return invalid;
+
+    const body = request.body as z.infer<typeof resendVerificationEmailSchema>;
+
+    try {
+      await auth.api.sendVerificationEmail({
+        body: { email: body.email },
+        headers: fromNodeHeaders(request.headers),
+      });
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[resendVerificationEmail] sendVerificationEmail threw:", err);
+      }
+    }
+
+    const { statusCode, payload } = successResponse({
+      message: "If an account with that email exists, a verification link has been sent.",
+      data: null,
+    });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private verifyEmail = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: verifyEmailSchema });
+    if (invalid) return invalid;
+
+    const body = request.body as z.infer<typeof verifyEmailSchema>;
+
+    try {
+      const { headers, response: data } = await auth.api.verifyEmail({
+        query: { token: body.token },
+        headers: fromNodeHeaders(request.headers),
+        returnHeaders: true,
+      });
+
+      applyAuthResponseHeaders(reply, headers);
+
+      const { statusCode, payload } = successResponse({
+        message: "Email verified successfully",
+        data,
       });
       return reply.status(statusCode).send(payload);
     } catch (error) {
