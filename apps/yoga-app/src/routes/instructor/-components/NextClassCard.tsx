@@ -68,6 +68,11 @@ export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassC
                   {room.status}
                 </span>
               </div>
+              {room.adminNote && (
+                <p className="text-sm text-muted-foreground italic bg-muted/40 rounded-xl px-3 py-2">
+                  Note from admin: {room.adminNote}
+                </p>
+              )}
             </div>
 
             {room.canJoinLive ? (

@@ -11,6 +11,7 @@ import { drizzle } from "../../db";
 import {
   instructorDetails,
   instructorWallet,
+  privateSessionRequests,
   rooms,
   user,
   walletTransaction,
@@ -164,8 +165,10 @@ export class InstructorsController {
         scheduledStartUtc: rooms.scheduledStart,
         scheduledEndUtc: rooms.scheduledEnd,
         meetLink: rooms.meetLink,
+        adminNote: privateSessionRequests.adminNote,
       })
       .from(rooms)
+      .leftJoin(privateSessionRequests, eq(privateSessionRequests.roomId, rooms.id))
       .where(
         and(
           eq(rooms.instructorId, me.id),

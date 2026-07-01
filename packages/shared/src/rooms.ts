@@ -77,7 +77,6 @@ export interface MyPrivateSessionRequest {
   status: "pending" | "approved" | "rejected";
   instructorName: string | null;
   roomId: string | null;
-  adminNote: string | null;
   createdAt: string;
 }
 
@@ -94,4 +93,5 @@ export interface InstructorScheduleRoom {
   /** Server-computed: true when the live-join window is open (15 min before start until end) */
   canJoinLive: boolean;
   meetLink: string | null;
+  adminNote: string | null;
 }

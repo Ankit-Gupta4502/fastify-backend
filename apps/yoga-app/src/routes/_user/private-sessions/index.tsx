@@ -1,13 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Plus, Clock, CheckCircle2, XCircle, User, Calendar, Lock, ShieldAlert, BarChart2 } from "lucide-react";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { Plus, Clock, CheckCircle2, XCircle, User, Calendar, Lock, ShieldAlert, BarChart2, Video, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMyPrivateRequests } from "@/hooks/use-rooms";
+import { useMyPrivateRequests, useJoinRoom } from "@/hooks/use-rooms";
 import { useMyPlan } from "@/hooks/use-plans";
 import { BookPrivateSessionDialog } from "../dashboard/-components/BookPrivateSessionDialog";
 import type { MyPrivateSessionRequest, PrivateSessionRequestStatus } from "@yoga-app/shared";
+
+const JOIN_WINDOW_MS = 3 * 60 * 1000;
 
 export const Route = createFileRoute("/_user/private-sessions/")({
   component: PrivateSessionsPage,
@@ -46,7 +48,38 @@ function formatDateTime(iso: string) {
   });
 }
 
+function useNow(intervalMs = 30_000) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return now;
+}
+
 function RequestCard({ req }: { req: MyPrivateSessionRequest }) {
+  const router = useRouter();
+  const join = useJoinRoom();
+  const now = useNow();
+
+  const startMs = new Date(req.requestedStart).getTime();
+  const endMs = new Date(req.requestedEnd).getTime();
+  const canJoin =
+    req.status === "approved" &&
+    req.roomId !== null &&
+    now >= startMs - JOIN_WINDOW_MS &&
+    now <= endMs;
+
+  function handleJoin() {
+    if (!req.roomId) return;
+    join.mutate(req.roomId, {
+      onSuccess: (result) => {
+        const code = result.data?.hmsRoomCode ?? undefined;
+        router.navigate({ to: "/session/$roomId", params: { roomId: req.roomId! }, search: { code } });
+      },
+    });
+  }
+
   return (
     <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-3 hover:border-primary/30 transition-colors">
       <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -69,10 +102,18 @@ function RequestCard({ req }: { req: MyPrivateSessionRequest }) {
         </p>
       )}
 
-      {req.adminNote && (
-        <p className="text-sm text-muted-foreground italic bg-muted/40 rounded-xl px-3 py-2">
-          Note: {req.adminNote}
-        </p>
+      {canJoin && (
+        <Button
+          className="w-full rounded-xl gap-2 shadow-md shadow-primary/20 hover:shadow-primary/30"
+          disabled={join.isPending}
+          onClick={handleJoin}
+        >
+          {join.isPending ? (
+            <><Loader2 className="size-4 animate-spin" /> Joining…</>
+          ) : (
+            <><Video className="size-4" /> Join session</>
+          )}
+        </Button>
       )}
     </div>
   );

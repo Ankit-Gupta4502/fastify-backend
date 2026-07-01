@@ -63,7 +63,6 @@ export async function listMyPrivateSessionRequests(db: AppDatabase, userId: stri
       status: privateSessionRequests.status,
       instructorName: user.name,
       roomId: privateSessionRequests.roomId,
-      adminNote: privateSessionRequests.adminNote,
       createdAt: privateSessionRequests.createdAt,
     })
     .from(privateSessionRequests)

@@ -58,6 +58,11 @@ export function ScheduleList({ rooms, isLoading, joiningId, onJoin }: ScheduleLi
                       {room.status}
                     </span>
                   </p>
+                  {room.adminNote && (
+                    <p className="text-xs text-muted-foreground italic mt-1">
+                      Note from admin: {room.adminNote}
+                    </p>
+                  )}
                 </div>
               </div>
 
