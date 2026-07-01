@@ -1,7 +1,8 @@
 
 import { Link } from "@tanstack/react-router";
-import { Facebook, Instagram, Linkedin, Twitter, Youtube } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 import { Separator } from "../ui/separator";
+import { XIcon } from "../icons";
 
 type FooterLink =
   | { label: string; to: "/" | "/pricing" | "/privacy" | "/terms" | "/contact" }
@@ -134,7 +135,7 @@ export function Footer() {
               rel="noopener noreferrer"
               aria-label="X (Twitter)"
             >
-              <Twitter className="size-4" />
+              <XIcon className="size-4" />
             </a>
             <a
               className="rounded-full p-2 transition-colors hover:bg-background hover:text-foreground"

@@ -26,4 +26,9 @@ export const paymentsApi = {
       method: "POST",
       data: payload,
     }),
+
+  cancel: () =>
+    apiRequest<{ success: true }>(API_ENDPOINTS.PAYMENTS.CANCEL, {
+      method: "POST",
+    }),
 };

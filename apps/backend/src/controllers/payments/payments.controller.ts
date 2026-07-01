@@ -71,6 +71,19 @@ export class PaymentsController {
           },
           this.verify,
         );
+
+        router.post(
+          "/cancel",
+          {
+            preHandler: this.authMiddleware.handle,
+            schema: {
+              description: "Cancel the user's active subscription at period end",
+              tags: ["Payments"] as string[],
+              security: [{ cookieAuth: [] }],
+            },
+          },
+          this.cancel,
+        );
       },
       { prefix: "/payments" },
     );
@@ -426,6 +439,64 @@ export class PaymentsController {
     const { statusCode, payload } = successResponse({
       message: "Payment verified",
       data: { success: true as const, subscriptionId: sub.id },
+    });
+    return reply.status(statusCode).send(payload);
+  };
+
+  // ── Cancel active subscription ───────────────────────────────────────────────
+
+  private cancel = async (request: FastifyRequest, reply: FastifyReply) => {
+    const me = request.user;
+    if (!me) {
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const [sub] = await drizzle
+      .select({
+        id: userSubscriptions.id,
+        razorpaySubscriptionId: userSubscriptions.razorpaySubscriptionId,
+        status: userSubscriptions.status,
+      })
+      .from(userSubscriptions)
+      .where(
+        and(
+          eq(userSubscriptions.userId, me.id),
+          eq(userSubscriptions.status, "active"),
+        ),
+      )
+      .limit(1);
+
+    if (!sub) {
+      const { statusCode, payload } = errorResponse({
+        message: "No active subscription found",
+        statusCode: 404,
+      });
+      return reply.status(statusCode).send(payload);
+    }
+
+    try {
+      if (sub.razorpaySubscriptionId) {
+        // cancel_at_cycle_end: 1 — user keeps access until the current period ends
+        await getRazorpay().subscriptions.cancel(sub.razorpaySubscriptionId,false);
+      }
+
+      await drizzle
+        .update(userSubscriptions)
+        .set({ status: "cancelled" })
+        .where(eq(userSubscriptions.id, sub.id));
+    } catch (err) {
+      request.log.error({ err }, "failed to cancel subscription");
+      const { statusCode, payload } = errorResponse({
+        message: "Could not cancel subscription. Please try again or contact support.",
+        statusCode: 502,
+      });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const { statusCode, payload } = successResponse({
+      message: "Subscription cancelled",
+      data: { success: true as const },
     });
     return reply.status(statusCode).send(payload);
   };

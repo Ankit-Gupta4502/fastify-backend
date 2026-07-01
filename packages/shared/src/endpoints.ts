@@ -47,6 +47,7 @@ export const API_ENDPOINTS = {
     CREATE_ORDER: "/payments/orders",
     CREATE_CUSTOM_ORDER: "/payments/custom-order",
     VERIFY: "/payments/verify",
+    CANCEL: "/payments/cancel",
   },
   ADMIN: {
     USERS: "/admin/users",

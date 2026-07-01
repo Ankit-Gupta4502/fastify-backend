@@ -1,5 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { paymentsApi } from "../api";
+
+export function useCancelSubscription() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => paymentsApi.cancel(),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.plans.mine() });
+    },
+  });
+}
 import {
   openRazorpayCheckout,
   type RazorpayCheckoutResponse,

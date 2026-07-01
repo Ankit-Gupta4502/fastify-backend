@@ -3,7 +3,7 @@ export const PLAN_COPY: Record<string, { title: string; tagline: string; perks: 
     title: "Group Live",
     tagline: "Live group flows with elite instructors.",
     perks: [
-      "4 live group sessions / week",
+      "Unlimited group classes",
       "Access to all group rooms",
       "Local-time auto conversion",
       "Cancel any time",
@@ -14,6 +14,7 @@ export const PLAN_COPY: Record<string, { title: string; tagline: string; perks: 
     tagline: "1:1 sessions with your chosen instructor.",
     perks: [
       "4 private sessions / week",
+      "Unlimited group classes",
       "Time-of-day flexibility",
       "Direct instructor messaging",
       "Priority support",
