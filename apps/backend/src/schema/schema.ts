@@ -57,7 +57,6 @@ export {
   demoRequestStatusEnum,
 } from "../models/demo-request";
 
-export { paymentReceipts } from "../models/payment-receipt";
 
 export {
   userSubscriptions,
