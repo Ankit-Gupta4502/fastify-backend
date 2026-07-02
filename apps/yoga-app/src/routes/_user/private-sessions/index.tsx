@@ -65,11 +65,13 @@ function RequestCard({ req }: { req: MyPrivateSessionRequest }) {
 
   const startMs = new Date(req.requestedStart).getTime();
   const endMs = new Date(req.requestedEnd).getTime();
+  const joinOpensAtMs = startMs - JOIN_WINDOW_MS;
   const canJoin =
     req.status === "approved" &&
     req.roomId !== null &&
-    now >= startMs - JOIN_WINDOW_MS &&
+    now >= joinOpensAtMs &&
     now <= endMs;
+  const isBeforeJoinWindow = req.status === "approved" && req.roomId !== null && now < joinOpensAtMs;
 
   function handleJoin() {
     if (!req.roomId) return;
@@ -124,6 +126,27 @@ function RequestCard({ req }: { req: MyPrivateSessionRequest }) {
             <p className="text-xs text-destructive text-center">{joinError}</p>
           )}
         </>
+      )}
+
+      {req.status === "pending" && (
+        <div className="rounded-xl border border-dashed border-border/60 bg-muted/30 px-4 py-3 space-y-2">
+          <div className="flex items-center gap-2 animate-pulse">
+            <Skeleton className="size-4 rounded-full shrink-0" />
+            <Skeleton className="h-4 flex-1" />
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            Join link will be available here once admin approves your request.
+          </p>
+        </div>
+      )}
+
+      {isBeforeJoinWindow && (
+        <div className="rounded-xl border border-dashed border-border/60 bg-muted/30 px-4 py-3 flex items-center gap-2 justify-center">
+          <Clock className="size-4 text-muted-foreground shrink-0" />
+          <p className="text-xs text-muted-foreground text-center">
+            Join link opens at {formatDateTime(new Date(joinOpensAtMs).toISOString())}
+          </p>
+        </div>
       )}
     </div>
   );
