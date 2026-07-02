@@ -48,7 +48,7 @@ export function PlanCard({ plan, sessionsUsed, sessionLimit, onBookPrivate }: Pl
           asChild
           className="w-full bg-white text-primary hover:bg-white/90 rounded-xl font-bold py-5"
         >
-          <Link to="/billing">
+          <Link to={plan?"/billing":"/pricing"}>
             {plan ? "Manage plan" : "Choose a plan"}
           </Link>
         </Button>
