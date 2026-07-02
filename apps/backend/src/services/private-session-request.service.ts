@@ -12,6 +12,7 @@ import {
 } from "../schema/schema";
 import { ROOM_STATUS, ROOM_TYPE } from "../constants/sessions";
 import { SessionPoolError } from "./session-pool.service";
+import { EmailService } from "./EmailService";
 
 const MIN_ADVANCE_MS = 2 * 60 * 60 * 1000;
 
@@ -110,16 +111,16 @@ export async function listAllPrivateSessionRequests(
 
   const userRows = userIds.length
     ? await db
-        .select({ id: user.id, name: user.name, email: user.email })
-        .from(user)
-        .where(inArray(user.id, userIds))
+      .select({ id: user.id, name: user.name, email: user.email })
+      .from(user)
+      .where(inArray(user.id, userIds))
     : [];
 
   const instructorRows = instructorIds.length
     ? await db
-        .select({ id: user.id, name: user.name })
-        .from(user)
-        .where(inArray(user.id, instructorIds))
+      .select({ id: user.id, name: user.name })
+      .from(user)
+      .where(inArray(user.id, instructorIds))
     : [];
 
   const userMap = new Map(userRows.map((u) => [u.id, u]));
@@ -170,9 +171,9 @@ export async function assignPrivateSessionRequest(
     const slots: Array<{ startUtc: Date; endUtc: Date }> =
       req.preferredSlots && req.preferredSlots.length > 0
         ? req.preferredSlots.map((s) => ({
-            startUtc: new Date(s.startUtc),
-            endUtc: new Date(s.endUtc),
-          }))
+          startUtc: new Date(s.startUtc),
+          endUtc: new Date(s.endUtc),
+        }))
         : [{ startUtc: req.requestedStart, endUtc: req.requestedEnd }];
 
     const slotCount = slots.length;
@@ -309,6 +310,15 @@ export async function assignPrivateSessionRequest(
         updatedAt: new Date(),
       })
       .where(eq(privateSessionRequests.id, params.requestId));
+
+    // Notify instructor of new session request
+    const getInstrucor = await db.query.user.findFirst({
+      where: (user, { eq }) => eq(user.id, params.instructorId),
+    })
+
+    if (getInstrucor?.email) {
+      await EmailService.notifyInstructorOfNewSessionRequest({ email: getInstrucor.email, subject: "New Session Assigned", name: getInstrucor.name })
+    }
 
     return { roomIds: createdRoomIds };
   });
