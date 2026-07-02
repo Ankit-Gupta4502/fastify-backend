@@ -61,6 +61,7 @@ function RequestCard({ req }: { req: MyPrivateSessionRequest }) {
   const router = useRouter();
   const join = useJoinRoom();
   const now = useNow();
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   const startMs = new Date(req.requestedStart).getTime();
   const endMs = new Date(req.requestedEnd).getTime();
@@ -72,10 +73,14 @@ function RequestCard({ req }: { req: MyPrivateSessionRequest }) {
 
   function handleJoin() {
     if (!req.roomId) return;
+    setJoinError(null);
     join.mutate(req.roomId, {
       onSuccess: (result) => {
         const code = result.data?.hmsRoomCode ?? undefined;
         router.navigate({ to: "/session/$roomId", params: { roomId: req.roomId! }, search: { code } });
+      },
+      onError: (err) => {
+        setJoinError(err instanceof Error ? err.message : "Could not join session");
       },
     });
   }
@@ -103,17 +108,22 @@ function RequestCard({ req }: { req: MyPrivateSessionRequest }) {
       )}
 
       {canJoin && (
-        <Button
-          className="w-full rounded-xl gap-2 shadow-md shadow-primary/20 hover:shadow-primary/30"
-          disabled={join.isPending}
-          onClick={handleJoin}
-        >
-          {join.isPending ? (
-            <><Loader2 className="size-4 animate-spin" /> Joining…</>
-          ) : (
-            <><Video className="size-4" /> Join session</>
+        <>
+          <Button
+            className="w-full rounded-xl gap-2 shadow-md shadow-primary/20 hover:shadow-primary/30"
+            disabled={join.isPending}
+            onClick={handleJoin}
+          >
+            {join.isPending ? (
+              <><Loader2 className="size-4 animate-spin" /> Joining…</>
+            ) : (
+              <><Video className="size-4" /> Join session</>
+            )}
+          </Button>
+          {joinError && (
+            <p className="text-xs text-destructive text-center">{joinError}</p>
           )}
-        </Button>
+        </>
       )}
     </div>
   );

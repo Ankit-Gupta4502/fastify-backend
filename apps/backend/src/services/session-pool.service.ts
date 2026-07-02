@@ -15,6 +15,7 @@ import {
   ROOM_TYPE,
 } from "../constants/sessions";
 import { formatForAudience } from "./timezone.service";
+import { createHmsRoom } from "./hms.service";
 
 const MIN_ADVANCE_MS = 2 * 60 * 60 * 1000;   // private booking: 2 h before
 const LIVE_JOIN_WINDOW_MS = 15 * 60 * 1000;   // can enter live room 15 min before start
@@ -576,6 +577,8 @@ export async function bookPrivateSession(
     }
 
     // 5. Create the private room
+    const hms = await createHmsRoom(true);
+
     const [created] = await trx
       .insert(rooms)
       .values({
@@ -585,6 +588,8 @@ export async function bookPrivateSession(
         capacity: 2,
         scheduledStart: params.startUtc,
         scheduledEnd: params.endUtc,
+        hmsRoomId: hms.hmsRoomId,
+        hmsRoomCode: hms.hmsRoomCode,
       })
       .returning();
 

@@ -13,6 +13,7 @@ import {
 import { ROOM_STATUS, ROOM_TYPE } from "../constants/sessions";
 import { SessionPoolError } from "./session-pool.service";
 import { EmailService } from "./EmailService";
+import { createHmsRoom } from "./hms.service";
 
 const MIN_ADVANCE_MS = 2 * 60 * 60 * 1000;
 
@@ -261,6 +262,8 @@ export async function assignPrivateSessionRequest(
     // Create one private room per slot
     const createdRoomIds: string[] = [];
     for (const slot of slots) {
+      const hms = await createHmsRoom(true);
+
       const [created] = await trx
         .insert(rooms)
         .values({
@@ -270,6 +273,8 @@ export async function assignPrivateSessionRequest(
           capacity: 2,
           scheduledStart: slot.startUtc,
           scheduledEnd: slot.endUtc,
+          hmsRoomId: hms.hmsRoomId,
+          hmsRoomCode: hms.hmsRoomCode,
         })
         .returning();
 

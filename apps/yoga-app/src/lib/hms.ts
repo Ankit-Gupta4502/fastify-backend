@@ -1,4 +1,4 @@
-const FALLBACK_SUBDOMAIN = "yoga.app.100ms.live";
+const FALLBACK_SUBDOMAIN = "bookyouryogateacher.100ms.live";
 
 export function hmsPrebuiltUrl(roomCode: string | null | undefined): string | null {
   if (!roomCode) return null;
