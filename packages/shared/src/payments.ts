@@ -37,6 +37,11 @@ export const verifyPaymentBodySchema = z.object({
 });
 export type VerifyPaymentBody = z.infer<typeof verifyPaymentBodySchema>;
 
+export const cancelSubscriptionBodySchema = z.object({
+  subscriptionId: z.uuid("Invalid subscription id"),
+});
+export type CancelSubscriptionBody = z.infer<typeof cancelSubscriptionBodySchema>;
+
 export interface CreateOrderResult {
   subscriptionId: string;
   keyId: string;

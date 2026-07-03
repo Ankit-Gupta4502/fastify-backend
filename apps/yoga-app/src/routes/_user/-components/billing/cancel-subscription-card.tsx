@@ -13,11 +13,12 @@ import {
 import { useCancelSubscription } from "@/hooks/use-checkout";
 
 interface CancelSubscriptionCardProps {
+  subscriptionId: string;
   planName: string;
   expiresAt: string | null;
 }
 
-export function CancelSubscriptionCard({ planName, expiresAt }: CancelSubscriptionCardProps) {
+export function CancelSubscriptionCard({ subscriptionId, planName, expiresAt }: CancelSubscriptionCardProps) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const cancel = useCancelSubscription();
@@ -29,7 +30,7 @@ export function CancelSubscriptionCard({ planName, expiresAt }: CancelSubscripti
 
   function handleConfirm() {
     setError(null);
-    cancel.mutate(undefined, {
+    cancel.mutate(subscriptionId, {
       onSuccess: () => setOpen(false),
       onError: (err) => setError(err instanceof Error ? err.message : "Something went wrong. Please try again."),
     });

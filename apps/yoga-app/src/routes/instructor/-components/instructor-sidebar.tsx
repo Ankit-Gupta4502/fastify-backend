@@ -1,13 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, IndianRupee, UserCircle, Pencil, LogOut } from "lucide-react";
+import { LayoutDashboard, CalendarRange, IndianRupee, UserCircle, Pencil, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
 const navItems = [
-  { label: "Dashboard", to: "/instructor/dashboard", icon: LayoutDashboard },
-  { label: "Earnings", to: "/instructor/earnings", icon: IndianRupee },
-  { label: "Profile", to: "/instructor/profile", icon: UserCircle },
+  { label: "Dashboard", to: "/instructor/dashboard", icon: LayoutDashboard, exact: true },
+  { label: "Schedule", to: "/instructor/dashboard/upcoming", icon: CalendarRange, exact: false },
+  { label: "Earnings", to: "/instructor/earnings", icon: IndianRupee, exact: false },
+  { label: "Profile", to: "/instructor/profile", icon: UserCircle, exact: false },
 ] as const;
 
 export function InstructorSidebar() {
@@ -45,10 +46,11 @@ export function InstructorSidebar() {
 
       {/* Nav items */}
       <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto py-2">
-        {navItems.map(({ label, to, icon: Icon }) => (
+        {navItems.map(({ label, to, icon: Icon, exact }) => (
           <Link
             key={to}
             to={to}
+            activeOptions={{ exact }}
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
               "text-muted-foreground hover:text-foreground hover:bg-secondary/60",

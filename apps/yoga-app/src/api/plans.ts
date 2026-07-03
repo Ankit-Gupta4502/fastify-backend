@@ -29,6 +29,6 @@ export const plansApi = {
     });
   },
 
-  // User-only — current active subscription + plan details.
-  mine: () => apiRequest<MyPlanResponse | null>(API_ENDPOINTS.PLANS.MINE),
+  // User-only — all of the user's active subscriptions + plan details.
+  mine: () => apiRequest<MyPlanResponse[]>(API_ENDPOINTS.PLANS.MINE),
 };

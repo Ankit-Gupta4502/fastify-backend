@@ -29,6 +29,7 @@ import { Route as SessionRoomIdIndexRouteImport } from './routes/session.$roomId
 import { Route as InstructorProfileIndexRouteImport } from './routes/instructor/profile/index'
 import { Route as InstructorEarningsIndexRouteImport } from './routes/instructor/earnings/index'
 import { Route as InstructorDashboardIndexRouteImport } from './routes/instructor/dashboard/index'
+import { Route as InstructorDashboardUpcomingRouteImport } from './routes/instructor/dashboard/upcoming'
 import { Route as ExpertsExpertIdIndexRouteImport } from './routes/experts/$expertId/index'
 import { Route as AdminWorkshopsIndexRouteImport } from './routes/admin/workshops/index'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
@@ -145,6 +146,12 @@ const InstructorDashboardIndexRoute =
     path: '/dashboard/',
     getParentRoute: () => InstructorRouteRoute,
   } as any)
+const InstructorDashboardUpcomingRoute =
+  InstructorDashboardUpcomingRouteImport.update({
+    id: '/dashboard/upcoming',
+    path: '/dashboard/upcoming',
+    getParentRoute: () => InstructorRouteRoute,
+  } as any)
 const ExpertsExpertIdIndexRoute = ExpertsExpertIdIndexRouteImport.update({
   id: '/experts/$expertId/',
   path: '/experts/$expertId/',
@@ -255,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/admin/workshops/': typeof AdminWorkshopsIndexRoute
   '/experts/$expertId/': typeof ExpertsExpertIdIndexRoute
   '/instructor/dashboard/': typeof InstructorDashboardIndexRoute
+  '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/instructor/earnings/': typeof InstructorEarningsIndexRoute
   '/instructor/profile/': typeof InstructorProfileIndexRoute
   '/session/$roomId/': typeof SessionRoomIdIndexRoute
@@ -290,6 +298,7 @@ export interface FileRoutesByTo {
   '/admin/workshops': typeof AdminWorkshopsIndexRoute
   '/experts/$expertId': typeof ExpertsExpertIdIndexRoute
   '/instructor/dashboard': typeof InstructorDashboardIndexRoute
+  '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/instructor/earnings': typeof InstructorEarningsIndexRoute
   '/instructor/profile': typeof InstructorProfileIndexRoute
   '/session/$roomId': typeof SessionRoomIdIndexRoute
@@ -328,6 +337,7 @@ export interface FileRoutesById {
   '/admin/workshops/': typeof AdminWorkshopsIndexRoute
   '/experts/$expertId/': typeof ExpertsExpertIdIndexRoute
   '/instructor/dashboard/': typeof InstructorDashboardIndexRoute
+  '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/instructor/earnings/': typeof InstructorEarningsIndexRoute
   '/instructor/profile/': typeof InstructorProfileIndexRoute
   '/session/$roomId/': typeof SessionRoomIdIndexRoute
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
     | '/admin/workshops/'
     | '/experts/$expertId/'
     | '/instructor/dashboard/'
+    | '/instructor/dashboard/upcoming'
     | '/instructor/earnings/'
     | '/instructor/profile/'
     | '/session/$roomId/'
@@ -401,6 +412,7 @@ export interface FileRouteTypes {
     | '/admin/workshops'
     | '/experts/$expertId'
     | '/instructor/dashboard'
+    | '/instructor/dashboard/upcoming'
     | '/instructor/earnings'
     | '/instructor/profile'
     | '/session/$roomId'
@@ -438,6 +450,7 @@ export interface FileRouteTypes {
     | '/admin/workshops/'
     | '/experts/$expertId/'
     | '/instructor/dashboard/'
+    | '/instructor/dashboard/upcoming'
     | '/instructor/earnings/'
     | '/instructor/profile/'
     | '/session/$roomId/'
@@ -602,6 +615,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/instructor/dashboard/'
       preLoaderRoute: typeof InstructorDashboardIndexRouteImport
+      parentRoute: typeof InstructorRouteRoute
+    }
+    '/instructor/dashboard/upcoming': {
+      id: '/instructor/dashboard/upcoming'
+      path: '/dashboard/upcoming'
+      fullPath: '/instructor/dashboard/upcoming'
+      preLoaderRoute: typeof InstructorDashboardUpcomingRouteImport
       parentRoute: typeof InstructorRouteRoute
     }
     '/experts/$expertId/': {
@@ -776,12 +796,14 @@ const DemoRouteRouteWithChildren = DemoRouteRoute._addFileChildren(
 
 interface InstructorRouteRouteChildren {
   InstructorDashboardIndexRoute: typeof InstructorDashboardIndexRoute
+  InstructorDashboardUpcomingRoute: typeof InstructorDashboardUpcomingRoute
   InstructorEarningsIndexRoute: typeof InstructorEarningsIndexRoute
   InstructorProfileIndexRoute: typeof InstructorProfileIndexRoute
 }
 
 const InstructorRouteRouteChildren: InstructorRouteRouteChildren = {
   InstructorDashboardIndexRoute: InstructorDashboardIndexRoute,
+  InstructorDashboardUpcomingRoute: InstructorDashboardUpcomingRoute,
   InstructorEarningsIndexRoute: InstructorEarningsIndexRoute,
   InstructorProfileIndexRoute: InstructorProfileIndexRoute,
 }

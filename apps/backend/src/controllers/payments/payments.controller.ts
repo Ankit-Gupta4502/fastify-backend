@@ -7,6 +7,7 @@ import {
   createOrderBodySchema,
   createCustomOrderBodySchema,
   verifyPaymentBodySchema,
+  cancelSubscriptionBodySchema,
 } from "@yoga-app/shared";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { drizzle } from "../../db";
@@ -77,7 +78,7 @@ export class PaymentsController {
           {
             preHandler: this.authMiddleware.handle,
             schema: {
-              description: "Cancel the user's active subscription at period end",
+              description: "Cancel one of the user's active subscriptions at period end",
               tags: ["Payments"] as string[],
               security: [{ cookieAuth: [] }],
             },
@@ -446,11 +447,18 @@ export class PaymentsController {
   // ── Cancel active subscription ───────────────────────────────────────────────
 
   private cancel = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, {
+      body: cancelSubscriptionBodySchema,
+    });
+    if (invalid) return invalid;
+
     const me = request.user;
     if (!me) {
       const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
       return reply.status(statusCode).send(payload);
     }
+
+    const { subscriptionId } = request.body as z.infer<typeof cancelSubscriptionBodySchema>;
 
     const [sub] = await drizzle
       .select({
@@ -461,6 +469,7 @@ export class PaymentsController {
       .from(userSubscriptions)
       .where(
         and(
+          eq(userSubscriptions.id, subscriptionId),
           eq(userSubscriptions.userId, me.id),
           eq(userSubscriptions.status, "active"),
         ),

@@ -126,10 +126,11 @@ export class PlansController {
       return reply.status(statusCode).send(payload);
     }
 
-    // Active subscription = status is 'active' AND either:
+    // Active subscriptions = status is 'active' AND either:
     //   - recurring plan (sessionsTotal IS NULL), or
     //   - session-based plan with remaining sessions (sessionsUsed < sessionsTotal)
-    const [row] = await drizzle
+    // A user can hold more than one at once (e.g. a group plan plus a private-session add-on).
+    const rows = await drizzle
       .select({
         subscriptionId: userSubscriptions.id,
         sessionsTotal: userSubscriptions.sessionsTotal,
@@ -169,12 +170,11 @@ export class PlansController {
           ),
         ),
       )
-      .orderBy(desc(userSubscriptions.purchasedAt))
-      .limit(1);
+      .orderBy(desc(userSubscriptions.purchasedAt));
 
     const { statusCode, payload } = successResponse({
-      message: "Current plan",
-      data: row ?? null,
+      message: "Current plans",
+      data: rows,
     });
     return reply.status(statusCode).send(payload);
   };

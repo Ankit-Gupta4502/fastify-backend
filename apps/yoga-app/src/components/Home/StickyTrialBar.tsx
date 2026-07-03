@@ -30,7 +30,7 @@ export function StickyTrialBar() {
     enabled: isAuthenticated,
   });
 
-  const hasPaidPlan = Boolean(planData?.data?.plan);
+  const hasPaidPlan = Boolean(planData?.data?.length);
   const hasActiveOrCompletedDemo = Boolean(
     demoData?.data?.some((r) =>
       ["pending", "approved", "instructor_assigned", "meeting_scheduled", "completed"].includes(

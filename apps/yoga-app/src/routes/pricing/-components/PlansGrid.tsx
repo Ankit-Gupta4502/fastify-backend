@@ -26,7 +26,9 @@ interface PlansGridProps {
   isPrivatePlanActive: boolean;
   isPrenatalPlanActive: boolean;
   isTherapeuticPlanActive: boolean;
-  activeSessions: number | null;
+  privateActiveSessions: number | null;
+  prenatalActiveSessions: number | null;
+  therapeuticActiveSessions: number | null;
   sessionCount: number;
   prenatalSessions: number;
   therapeuticSessions: number;
@@ -51,7 +53,9 @@ export function PlansGrid({
   isPrivatePlanActive,
   isPrenatalPlanActive: _isPrenatalPlanActive,
   isTherapeuticPlanActive,
-  activeSessions,
+  privateActiveSessions,
+  prenatalActiveSessions: _prenatalActiveSessions,
+  therapeuticActiveSessions,
   sessionCount,
   prenatalSessions: _prenatalSessions,
   therapeuticSessions,
@@ -81,7 +85,7 @@ export function PlansGrid({
             isPending={pendingCard === "private"}
             isActive={isPrivatePlanActive}
             isIndia={isIndia}
-            activeSessions={isPrivatePlanActive ? activeSessions : null}
+            activeSessions={privateActiveSessions}
             onSubscribe={onPrivateSubscribe}
           />
           {groupPlan && (
@@ -106,7 +110,7 @@ export function PlansGrid({
             isPending={pendingCard === "therapeutic_yoga"}
             isActive={isTherapeuticPlanActive}
             isIndia={isIndia}
-            activeSessions={isTherapeuticPlanActive ? activeSessions : null}
+            activeSessions={therapeuticActiveSessions}
             onSubscribe={() => onSpecializedSubscribe("therapeutic_yoga", therapeuticSessions)}
           />
         </div>

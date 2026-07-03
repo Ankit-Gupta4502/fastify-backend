@@ -27,8 +27,9 @@ export const paymentsApi = {
       data: payload,
     }),
 
-  cancel: () =>
+  cancel: (subscriptionId: string) =>
     apiRequest<{ success: true }>(API_ENDPOINTS.PAYMENTS.CANCEL, {
       method: "POST",
+      data: { subscriptionId },
     }),
 };

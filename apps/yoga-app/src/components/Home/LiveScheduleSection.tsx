@@ -19,7 +19,7 @@ export function LiveScheduleSection() {
     enabled: isAuthenticated,
   });
 
-  const hasPlan = isAuthenticated && Boolean(planData?.data?.plan);
+  const hasPlan = isAuthenticated && Boolean(planData?.data?.length);
   const scheduleLink = hasPlan ? "/rooms" : "/pricing";
 
   const sessions = data?.data ?? [];

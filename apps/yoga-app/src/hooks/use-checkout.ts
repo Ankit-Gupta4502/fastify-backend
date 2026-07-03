@@ -4,7 +4,7 @@ import { paymentsApi } from "../api";
 export function useCancelSubscription() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () => paymentsApi.cancel(),
+    mutationFn: (subscriptionId: string) => paymentsApi.cancel(subscriptionId),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.plans.mine() });
     },

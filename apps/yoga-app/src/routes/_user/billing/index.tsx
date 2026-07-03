@@ -13,15 +13,10 @@ export const Route = createFileRoute("/_user/billing/")({
 function BillingPage() {
   const plans = usePlansWithPricing();
   const myPlan = useMyPlan();
-  const activeSub = myPlan.data?.data ?? null;
-  const activePlan = activeSub?.plan ?? null;
-  const activePlanId = activePlan?.id ?? null;
-  const activeSessions = activePlan?.sessionsPerMonth ?? null;
-  const activeExpiresAt = activeSub?.expiresAt ?? null;
-  const isPrivateActive = activePlan?.name?.startsWith("custom_private_") ?? false;
-  const activePlanRecord: PlanRecord | undefined = (plans.data?.data?.plans ?? [])?.find(
-    (p) => p.id === activePlanId && p.category === "standard" && !p.name.startsWith("custom_"),
-  );
+  // A user can hold more than one active subscription at once (e.g. a group
+  // plan plus a private-session add-on) — render a card per subscription.
+  const activeSubs = myPlan.data?.data ?? [];
+  const allPlans = plans.data?.data?.plans ?? [];
 
   const isLoading = plans.isLoading || myPlan.isLoading;
 
@@ -34,28 +29,44 @@ function BillingPage() {
       <div className="grid md:grid-cols-3 gap-8 items-start">
         {isLoading ? (
           <Skeleton className="h-112 rounded-4xl" />
-        ) : activePlanRecord ? (
-          <PlanCard
-            plan={activePlanRecord}
-            isActive
-            readOnly
-            expiresAt={activeExpiresAt}
-          />
-        ) : isPrivateActive ? (
-          <PrivateSessionCard
-            sessionCount={activeSessions ?? 4}
-            onSessionCountChange={() => {}}
-            isActive
-            activeSessions={activeSessions}
-            isPending={false}
-            onSubscribe={() => {}}
-            readOnly
-            expiresAt={activeExpiresAt}
-          />
-        ) : (
+        ) : activeSubs.length === 0 ? (
           <div className="md:col-span-3 text-center text-muted-foreground py-12">
             You don't have an active subscription yet.
           </div>
+        ) : (
+          activeSubs.map((sub) => {
+            // Recurring plans (e.g. group_live) have no session cap; session-based
+            // plans (private / prenatal_postnatal / therapeutic_yoga) do.
+            if (sub.sessionsTotal === null) {
+              const planRecord: PlanRecord | undefined = allPlans.find((p) => p.id === sub.plan.id);
+              if (!planRecord) return null;
+              return (
+                <PlanCard
+                  key={sub.subscriptionId}
+                  plan={planRecord}
+                  isActive
+                  readOnly
+                  expiresAt={sub.expiresAt}
+                  subscriptionId={sub.subscriptionId}
+                />
+              );
+            }
+            return (
+              <PrivateSessionCard
+                key={sub.subscriptionId}
+                planName={sub.plan.name}
+                sessionCount={sub.sessionsTotal}
+                onSessionCountChange={() => {}}
+                isActive
+                activeSessions={sub.sessionsTotal}
+                isPending={false}
+                onSubscribe={() => {}}
+                readOnly
+                expiresAt={sub.expiresAt}
+                subscriptionId={sub.subscriptionId}
+              />
+            );
+          })
         )}
       </div>
 

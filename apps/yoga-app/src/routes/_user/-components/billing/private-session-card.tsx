@@ -21,19 +21,16 @@ import {
 import { cn, centsToDisplay } from "@/lib/utils";
 import { PRICE_PER_SESSION_CENTS, MIN_SESSIONS, calcCustomPriceCents } from "@yoga-app/shared";
 import { useCancelSubscription } from "@/hooks/use-checkout";
+import { PLAN_COPY } from "@/lib/plan-copy";
 
-function calcPrice(sessions: number) {
-  return calcCustomPriceCents(sessions);
+// "private" sessions get a small volume discount; the other session-based
+// plans (prenatal/therapeutic) are billed at a flat per-session rate.
+function calcPrice(planName: string, sessions: number) {
+  return planName === "private" ? calcCustomPriceCents(sessions) : sessions * PRICE_PER_SESSION_CENTS;
 }
 
-const PERKS = [
-  "Private 1:1 sessions with your instructor",
-  "Time-of-day flexibility",
-  "Direct instructor messaging",
-  "Priority support",
-];
-
 interface PrivateSessionCardProps {
+  planName?: string;
   sessionCount: number;
   onSessionCountChange: (n: number) => void;
   isActive: boolean;
@@ -42,9 +39,11 @@ interface PrivateSessionCardProps {
   onSubscribe: (sessionCount: number) => void;
   readOnly?: boolean;
   expiresAt?: string | null;
+  subscriptionId?: string | null;
 }
 
 export function PrivateSessionCard({
+  planName = "private",
   sessionCount,
   onSessionCountChange,
   isActive,
@@ -53,8 +52,10 @@ export function PrivateSessionCard({
   onSubscribe,
   readOnly,
   expiresAt,
+  subscriptionId,
 }: PrivateSessionCardProps) {
-  const priceCents = calcPrice(readOnly && activeSessions ? activeSessions : sessionCount);
+  const copy = PLAN_COPY[planName] ?? { title: "Private 1:1", tagline: "Personalised sessions with your chosen instructor.", perks: [] };
+  const priceCents = calcPrice(planName, readOnly && activeSessions ? activeSessions : sessionCount);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const cancel = useCancelSubscription();
@@ -64,8 +65,9 @@ export function PrivateSessionCard({
     : null;
 
   function handleConfirmCancel() {
+    if (!subscriptionId) return;
     setCancelError(null);
-    cancel.mutate(undefined, {
+    cancel.mutate(subscriptionId, {
       onSuccess: () => setCancelOpen(false),
       onError: (err) => setCancelError(err instanceof Error ? err.message : "Something went wrong. Please try again."),
     });
@@ -86,8 +88,8 @@ export function PrivateSessionCard({
       )}
 
       <CardHeader className="pt-10 pb-4 text-center">
-        <CardTitle className="text-2xl font-bold tracking-tight">Private 1:1</CardTitle>
-        <CardDescription className="pt-2">Personalised sessions with your chosen instructor.</CardDescription>
+        <CardTitle className="text-2xl font-bold tracking-tight">{copy.title}</CardTitle>
+        <CardDescription className="pt-2">{copy.tagline}</CardDescription>
 
         {/* Session stepper — hidden in read-only mode */}
         {!readOnly && (
@@ -122,7 +124,7 @@ export function PrivateSessionCard({
         </div>
         {!readOnly && sessionCount > MIN_SESSIONS && (
           <p className="text-xs text-muted-foreground pt-1">
-            {centsToDisplay(calcPrice(MIN_SESSIONS))}/mo base · +{centsToDisplay(PRICE_PER_SESSION_CENTS)} per extra session
+            {centsToDisplay(calcPrice(planName, MIN_SESSIONS))}/mo base · +{centsToDisplay(PRICE_PER_SESSION_CENTS)} per extra session
           </p>
         )}
         {readOnly && activeSessions !== null && (
@@ -131,7 +133,7 @@ export function PrivateSessionCard({
       </CardHeader>
 
       <CardContent className="grow space-y-4 px-8">
-        {PERKS.map((perk) => (
+        {copy.perks.map((perk) => (
           <div key={perk} className="flex items-start gap-3">
             <div className="size-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
               <Check className="size-3 text-primary" />
@@ -191,7 +193,7 @@ export function PrivateSessionCard({
                 </div>
                 <DialogTitle className="text-center">Cancel your subscription?</DialogTitle>
                 <DialogDescription className="text-center">
-                  Your <span className="font-medium capitalize text-foreground">Private 1:1</span> plan will remain active
+                  Your <span className="font-medium capitalize text-foreground">{copy.title}</span> plan will remain active
                   {expiryDate ? (
                     <> until <span className="font-medium text-foreground">{expiryDate}</span>. After that, you'll lose access to your sessions.</>
                   ) : (

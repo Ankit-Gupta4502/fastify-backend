@@ -11,7 +11,7 @@ export function Cta() {
   const navigate = useNavigate();
 
   function handleBook() {
-    if (!myPlan?.data) {
+    if (!myPlan?.data?.length) {
       navigate({ to: "/pricing" });
     }
   }

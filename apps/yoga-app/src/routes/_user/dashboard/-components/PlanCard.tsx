@@ -8,12 +8,12 @@ interface PlanCardProps {
   plan: PlanRecord | null;
   sessionsUsed: number;
   sessionLimit: number | null;
+  canBookPrivate?: boolean;
   onBookPrivate?: () => void;
 }
 
-export function PlanCard({ plan, sessionsUsed, sessionLimit, onBookPrivate }: PlanCardProps) {
+export function PlanCard({ plan, sessionsUsed, sessionLimit, canBookPrivate = false, onBookPrivate }: PlanCardProps) {
   const planLabel = plan ? plan.name.replace(/_/g, " ") : "Free trial";
-  const canBookPrivate = plan?.allowsPrivate === true;
 
   return (
     <Card className="border-none shadow-lg bg-linear-to-br from-primary to-primary/80 text-primary-foreground overflow-hidden relative rounded-3xl">

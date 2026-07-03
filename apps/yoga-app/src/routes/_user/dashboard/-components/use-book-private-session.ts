@@ -69,10 +69,11 @@ export function useBookPrivateSession(onOpenChange: (open: boolean) => void) {
   const requestPrivate = useRequestPrivate();
   const { data: myPlanData } = useMyPlan();
 
-  const planRow = myPlanData?.data ?? null;
+  const activeSubs = myPlanData?.data ?? [];
+  const privateCapableSub = activeSubs.find((s) => s.plan.allowsPrivate);
   const sessionsLeft =
-    planRow?.sessionsTotal != null
-      ? Math.max(0, planRow.sessionsTotal - planRow.sessionsUsed)
+    privateCapableSub?.sessionsTotal != null
+      ? Math.max(0, privateCapableSub.sessionsTotal - privateCapableSub.sessionsUsed)
       : MAX_SLOTS_RECURRING;
   const recurringLimit = Math.min(MAX_SLOTS_RECURRING, sessionsLeft);
 

@@ -31,11 +31,16 @@ function UserDashboard() {
   const [bookPrivateOpen, setBookPrivateOpen] = useState(false);
 
   const rooms = upcoming.data?.data ?? [];
-  const planRow = myPlan.data?.data;
-  const plan = planRow?.plan ?? null;
-  const used = planRow?.sessionsUsedThisWeek ?? 0;
-  const limit = planRow?.sessionsTotal ?? null; // null = unlimited (group plan); number = purchased session count
+  // A user can hold more than one active plan at once — the recurring plan
+  // (e.g. group_live) drives the weekly-quota stats shown here; fall back to
+  // whichever plan is active if there's no recurring one (e.g. private-only).
+  const activeSubs = myPlan.data?.data ?? [];
+  const primarySub = activeSubs.find((s) => s.sessionsTotal === null) ?? activeSubs[0] ?? null;
+  const plan = primarySub?.plan ?? null;
+  const used = primarySub?.sessionsUsedThisWeek ?? 0;
+  const limit = primarySub?.sessionsTotal ?? null; // null = unlimited (group plan); number = purchased session count
   const remaining = limit !== null ? Math.max(limit - used, 0) : null;
+  const canBookPrivate = activeSubs.some((s) => s.plan.allowsPrivate);
 
   const myPrefs = useMyPreferences();
   const preferences = myPrefs.data?.data ?? null;
@@ -131,6 +136,7 @@ function UserDashboard() {
           plan={plan}
           sessionsUsed={used}
           sessionLimit={limit}
+          canBookPrivate={canBookPrivate}
           onBookPrivate={() => setBookPrivateOpen(true)}
         />
       </div>

@@ -32,9 +32,10 @@ interface PlanCardProps {
   onSubscribe?: (plan: PlanRecord) => void;
   readOnly?: boolean;
   expiresAt?: string | null;
+  subscriptionId?: string | null;
 }
 
-export function PlanCard({ plan, isActive, isPending, onSubscribe, readOnly, expiresAt }: PlanCardProps) {
+export function PlanCard({ plan, isActive, isPending, onSubscribe, readOnly, expiresAt, subscriptionId }: PlanCardProps) {
   const copy = PLAN_COPY[plan.name] ?? { title: plan.name, tagline: "", perks: [] };
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
@@ -46,8 +47,9 @@ export function PlanCard({ plan, isActive, isPending, onSubscribe, readOnly, exp
     : null;
 
   function handleConfirmCancel() {
+    if (!subscriptionId) return;
     setCancelError(null);
-    cancel.mutate(undefined, {
+    cancel.mutate(subscriptionId, {
       onSuccess: () => setCancelOpen(false),
       onError: (err) => setCancelError(err instanceof Error ? err.message : "Something went wrong. Please try again."),
     });

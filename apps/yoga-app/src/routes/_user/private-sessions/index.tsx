@@ -228,13 +228,17 @@ function PrivateSessionsPage() {
   const requests = data?.data ?? [];
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const planRow = myPlan.data?.data ?? null;
+  const activeSubs = myPlan.data?.data ?? [];
   const planLoading = myPlan.isLoading;
 
-  const hasPlan = Boolean(planRow);
-  const allowsPrivate = planRow?.plan?.allowsPrivate === true;
-  const sessionsTotal = planRow?.sessionsTotal ?? null;
-  const sessionsUsed = planRow?.sessionsUsed ?? 0;
+  // A user can hold several active plans at once; only the one that grants
+  // private-session access matters for booking eligibility here.
+  const privateCapableSub = activeSubs.find((s) => s.plan.allowsPrivate);
+
+  const hasPlan = activeSubs.length > 0;
+  const allowsPrivate = privateCapableSub !== undefined;
+  const sessionsTotal = privateCapableSub?.sessionsTotal ?? null;
+  const sessionsUsed = privateCapableSub?.sessionsUsed ?? 0;
   const hasSessionsLeft = sessionsTotal === null || sessionsUsed < sessionsTotal;
 
   const guardReason: GuardReason = !hasPlan
@@ -272,7 +276,7 @@ function PrivateSessionsPage() {
       </div>
 
       {!planLoading && guardReason && (
-        <GuardBanner reason={guardReason} expiresAt={planRow?.expiresAt} />
+        <GuardBanner reason={guardReason} expiresAt={privateCapableSub?.expiresAt} />
       )}
 
       {isLoading ? (

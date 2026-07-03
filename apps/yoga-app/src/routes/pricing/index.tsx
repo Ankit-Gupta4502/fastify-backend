@@ -44,21 +44,34 @@ function PricingPage() {
   const prenatalPlan = allPlans.find((p) => p.name === "prenatal_postnatal") ?? null;
   const therapeuticPlan = allPlans.find((p) => p.name === "therapeutic_yoga") ?? null;
 
-  const activeSub = myPlan.data?.data ?? null;
-  const activePlan = activeSub?.plan ?? null;
-  const activePlanName = activePlan?.name ?? null;
-  const activeSessions = activeSub?.sessionsTotal ?? null;
-  const isGroupPlanActive = !!groupPlan && activePlan?.id === groupPlan.id;
-  const isPrivatePlanActive = activePlanName === "private";
-  const isPrenatalPlanActive = activePlanName === "prenatal_postnatal";
-  const isTherapeuticPlanActive = activePlanName === "therapeutic_yoga";
+  // A user can hold more than one active plan at once (e.g. a group plan plus
+  // a private-session add-on), so each plan type is looked up independently.
+  const activeSubs = myPlan.data?.data ?? [];
+  const groupSub = groupPlan ? activeSubs.find((s) => s.plan.id === groupPlan.id) : undefined;
+  const privateSub = activeSubs.find((s) => s.plan.name === "private");
+  const prenatalSub = activeSubs.find((s) => s.plan.name === "prenatal_postnatal");
+  const therapeuticSub = activeSubs.find((s) => s.plan.name === "therapeutic_yoga");
+
+  const isGroupPlanActive = !!groupSub;
+  const isPrivatePlanActive = !!privateSub;
+  const isPrenatalPlanActive = !!prenatalSub;
+  const isTherapeuticPlanActive = !!therapeuticSub;
+
+  const privateActiveSessions = privateSub?.sessionsTotal ?? null;
+  const prenatalActiveSessions = prenatalSub?.sessionsTotal ?? null;
+  const therapeuticActiveSessions = therapeuticSub?.sessionsTotal ?? null;
 
   useEffect(() => {
-    if (!activeSessions) return;
-    if (isPrivatePlanActive) setSessionCount(activeSessions);
-    if (isPrenatalPlanActive) setPrenatalSessions(activeSessions);
-    if (isTherapeuticPlanActive) setTherapeuticSessions(activeSessions);
-  }, [activeSessions, isPrivatePlanActive, isPrenatalPlanActive, isTherapeuticPlanActive]);
+    if (privateActiveSessions != null) setSessionCount(privateActiveSessions);
+  }, [privateActiveSessions]);
+
+  useEffect(() => {
+    if (prenatalActiveSessions != null) setPrenatalSessions(prenatalActiveSessions);
+  }, [prenatalActiveSessions]);
+
+  useEffect(() => {
+    if (therapeuticActiveSessions != null) setTherapeuticSessions(therapeuticActiveSessions);
+  }, [therapeuticActiveSessions]);
 
   const country = plans.data?.data?.country ?? undefined;
 
@@ -130,7 +143,9 @@ function PricingPage() {
           isPrivatePlanActive={isPrivatePlanActive}
           isPrenatalPlanActive={isPrenatalPlanActive}
           isTherapeuticPlanActive={isTherapeuticPlanActive}
-          activeSessions={activeSessions}
+          privateActiveSessions={privateActiveSessions}
+          prenatalActiveSessions={prenatalActiveSessions}
+          therapeuticActiveSessions={therapeuticActiveSessions}
           sessionCount={sessionCount}
           prenatalSessions={prenatalSessions}
           therapeuticSessions={therapeuticSessions}
