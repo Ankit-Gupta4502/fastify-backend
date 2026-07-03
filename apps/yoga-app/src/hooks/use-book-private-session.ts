@@ -6,7 +6,7 @@ import {
   MIN_ADVANCE_MS,
   MAX_SLOTS_MANUAL,
   MAX_SLOTS_RECURRING,
-} from "./book-private-session-config";
+} from "@/routes/_user/dashboard/-components/book-private-session-config";
 
 export type TabMode = "manual" | "recurring";
 

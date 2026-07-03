@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 
-import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/components/shared/doodles";
-import { useLogin } from "./-hooks/use-login";
+import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/components/shared/Doodles";
+import { useLogin } from "@/hooks/use-login";
 import { LoginCard } from "./-components/LoginCard";
 
 export const Route = createFileRoute("/login/")({

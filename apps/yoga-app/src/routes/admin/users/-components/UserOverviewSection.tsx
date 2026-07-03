@@ -1,4 +1,4 @@
-import { Chip } from "@/components/shared/chip";
+import { Chip } from "@/components/shared/Chip";
 import type { AdminUserDetail } from "@yoga-app/shared";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {

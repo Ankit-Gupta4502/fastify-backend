@@ -1,6 +1,6 @@
 import type { DemoRequestStatus } from "@yoga-app/shared";
-import { Chip } from "@/components/shared/chip";
-import type { ChipVariant } from "@/components/shared/chip";
+import { Chip } from "@/components/shared/Chip";
+import type { ChipVariant } from "@/components/shared/Chip";
 
 const STATUS_VARIANT: Record<DemoRequestStatus, ChipVariant> = {
   pending: "warning",

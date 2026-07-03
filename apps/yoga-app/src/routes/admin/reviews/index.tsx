@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Star, Plus, Pencil, Trash2, X } from "lucide-react";
 import { createReviewSchema, type CreateReviewBody, type AdminReview } from "@yoga-app/shared";
-import { SectionHeader } from "@/components/shared/section-header";
+import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";

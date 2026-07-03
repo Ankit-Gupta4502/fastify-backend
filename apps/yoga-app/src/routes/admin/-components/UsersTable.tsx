@@ -1,9 +1,9 @@
 import { useNavigate } from "@tanstack/react-router";
 import type { AdminUser } from "@yoga-app/shared";
-import { Chip } from "@/components/shared/chip";
-import { TableSkeletonRows } from "@/components/shared/table-skeleton-rows";
-import { ErrorCard } from "@/components/shared/error-card";
-import type { ChipVariant } from "@/components/shared/chip";
+import { Chip } from "@/components/shared/Chip";
+import { TableSkeletonRows } from "@/components/shared/TableSkeletonRows";
+import { ErrorCard } from "@/components/shared/ErrorCard";
+import type { ChipVariant } from "@/components/shared/Chip";
 
 interface UsersTableProps {
   users: AdminUser[];

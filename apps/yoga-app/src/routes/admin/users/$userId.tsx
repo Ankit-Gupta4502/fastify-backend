@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, User } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorCard } from "@/components/shared/error-card";
-import { Chip } from "@/components/shared/chip";
+import { ErrorCard } from "@/components/shared/ErrorCard";
+import { Chip } from "@/components/shared/Chip";
 import { useAdminUserDetail } from "@/hooks/use-admin";
-import { UserOverviewSection } from "./-components/user-overview-section";
-import { UserSubscriptionsSection } from "./-components/user-subscriptions-section";
-import { UserRoomsSection } from "./-components/user-rooms-section";
-import { UserPrivateRequestsSection } from "./-components/user-private-requests-section";
+import { UserOverviewSection } from "./-components/UserOverviewSection";
+import { UserSubscriptionsSection } from "./-components/UserSubscriptionsSection";
+import { UserRoomsSection } from "./-components/UserRoomsSection";
+import { UserPrivateRequestsSection } from "./-components/UserPrivateRequestsSection";
 
 export const Route = createFileRoute("/admin/users/$userId")({
   component: AdminUserDetailPage,

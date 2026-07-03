@@ -1,7 +1,7 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import { Star, Heart, Sparkles } from "lucide-react"
-import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/components/shared/doodles"
+import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/components/shared/Doodles"
 
 export function Hero() {
   return (

@@ -1,5 +1,5 @@
 import { useInstructorDetail } from "./context";
-import { ContentSection, ContentHeading } from "./primitives";
+import { ContentSection, ContentHeading } from "./Primitives";
 
 export function Bio() {
   const { instructor } = useInstructorDetail();

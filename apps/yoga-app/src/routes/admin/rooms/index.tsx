@@ -3,9 +3,9 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAdminGroupRooms, useAdminInstructors } from "@/hooks/use-admin";
-import { RoomsTable } from "../-components/rooms-table";
-import { CreateRoomDialog } from "../-components/create-room-dialog";
-import { SectionHeader } from "@/components/shared/section-header";
+import { RoomsTable } from "../-components/RoomsTable";
+import { CreateRoomDialog } from "../-components/CreateRoomDialog";
+import { SectionHeader } from "@/components/shared/SectionHeader";
 
 export const Route = createFileRoute("/admin/rooms/")({
   component: AdminRoomsPage,

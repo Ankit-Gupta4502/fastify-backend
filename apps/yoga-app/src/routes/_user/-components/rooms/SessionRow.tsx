@@ -3,7 +3,7 @@ import type { UpcomingRoom } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatCompact, relativeFromNow } from "@/lib/timezone";
-import { Chip } from "@/components/shared/chip";
+import { Chip } from "@/components/shared/Chip";
 
 interface SessionRowProps {
   room: UpcomingRoom;

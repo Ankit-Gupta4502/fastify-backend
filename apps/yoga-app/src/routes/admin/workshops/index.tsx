@@ -3,8 +3,8 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAdminWorkshops } from "@/hooks/use-workshops";
-import { WorkshopsTable } from "../-components/workshops-table";
-import { WorkshopDialog } from "../-components/workshop-dialog";
+import { WorkshopsTable } from "../-components/WorkshopsTable";
+import { WorkshopDialog } from "../-components/WorkshopDialog";
 import type { AdminWorkshop } from "@yoga-app/shared";
 
 export const Route = createFileRoute("/admin/workshops/")({

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Sparkles, Info } from "lucide-react";
 import { z } from "zod";
 
-import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/components/shared/doodles";
+import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/components/shared/Doodles";
 import { authApi } from "@/api";
 import { ApiRequestError } from "@/lib/http";
 import { type ResetPasswordClientBody } from "@/lib/validation/auth";

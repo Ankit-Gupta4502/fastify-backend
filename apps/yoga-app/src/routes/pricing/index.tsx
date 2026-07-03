@@ -3,7 +3,7 @@ import { PAGE_SEO } from "@/lib/seo";
 import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 
-import { StarDoodle, CircleDoodle, PlusDoodle } from "@/components/shared/doodles";
+import { StarDoodle, CircleDoodle, PlusDoodle } from "@/components/shared/Doodles";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { usePlansWithPricing, useMyPlan } from "@/hooks/use-plans";

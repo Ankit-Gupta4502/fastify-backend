@@ -1,7 +1,7 @@
 import { Plus, X, ExternalLink } from "lucide-react";
 import type { InstructorProfile } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
-import { AvatarPicker } from "./avatar-picker";
+import { AvatarPicker } from "./AvatarPicker";
 import { useProfileForm } from "./use-profile-form";
 import { TagsSection } from "./TagsSection";
 

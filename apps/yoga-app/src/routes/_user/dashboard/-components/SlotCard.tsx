@@ -2,7 +2,7 @@ import { Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import type { SlotEntry } from "./use-book-private-session";
+import type { SlotEntry } from "@/hooks/use-book-private-session";
 
 // ─── Duration picker ──────────────────────────────────────────────────────────
 

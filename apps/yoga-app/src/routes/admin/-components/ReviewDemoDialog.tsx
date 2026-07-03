@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { DemoStatusChip } from "./demo-status-chip";
-import { InstructorCombobox } from "./instructor-combobox";
+import { DemoStatusChip } from "./DemoStatusChip";
+import { InstructorCombobox } from "./InstructorCombobox";
 import { useReviewDemoDialog } from "./use-review-demo-dialog";
 
 interface Props {

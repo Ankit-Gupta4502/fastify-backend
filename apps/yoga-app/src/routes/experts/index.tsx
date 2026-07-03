@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PAGE_SEO } from "@/lib/seo";
 import { Sparkles } from "lucide-react";
 import { useInstructors } from "@/hooks/use-instructors";
-import { ExpertCard } from "@/components/ExpertCard";
+import { ExpertCard } from "@/components/shared/ExpertCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/empty-state";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 export const Route = createFileRoute("/experts/")({
   head: () => PAGE_SEO.experts,

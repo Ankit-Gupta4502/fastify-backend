@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useExpertProfile, instructorQueryOptions } from "@/hooks/use-instructors";
-import { NotFound } from "@/components/shared/not-found";
+import { NotFound } from "@/components/shared/NotFound";
 import { InstructorDetail } from "../-components/InstructorDetail";
 import { DetailSkeleton } from "../-components/InstructorDetail/Skeleton";
 import { getQueryClient } from "@/lib/react-query/query-client";

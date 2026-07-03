@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import { usePublicReviews } from "@/hooks/use-reviews";
 import { useIntersection } from "@/hooks/use-intersection";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StarDoodle } from "@/components/shared/doodles";
-import { FALLBACK_REVIEWS } from "./Reviews/reviews-data";
-import { ReviewCard } from "./Reviews/ReviewCard";
+import { StarDoodle } from "@/components/shared/Doodles";
+import { FALLBACK_REVIEWS } from "./reviews-data";
+import { ReviewCard } from "./ReviewCard";
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 

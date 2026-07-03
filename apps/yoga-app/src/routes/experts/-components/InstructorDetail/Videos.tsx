@@ -1,6 +1,6 @@
 import { Play, ExternalLink } from "lucide-react";
 import { useInstructorDetail } from "./context";
-import { ContentSection, ContentHeading } from "./primitives";
+import { ContentSection, ContentHeading } from "./Primitives";
 
 export function Videos() {
   const { instructor } = useInstructorDetail();

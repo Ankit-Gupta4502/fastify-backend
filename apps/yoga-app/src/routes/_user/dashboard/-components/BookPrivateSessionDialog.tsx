@@ -20,9 +20,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { DAYS_OF_WEEK } from "./book-private-session-config";
-import { useBookPrivateSession } from "./use-book-private-session";
-import { ManualSlotCard, DurationPicker } from "./slot-card";
-import type { SlotEntry, TabMode } from "./use-book-private-session";
+import { useBookPrivateSession } from "@/hooks/use-book-private-session";
+import { ManualSlotCard, DurationPicker } from "./SlotCard";
+import type { SlotEntry, TabMode } from "@/hooks/use-book-private-session";
 
 interface BookPrivateSessionDialogProps {
   open: boolean;

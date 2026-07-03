@@ -1,8 +1,8 @@
 import type { AdminRoom } from "@yoga-app/shared";
 import { cn } from "@/lib/utils";
 import { Video } from "lucide-react";
-import { TableSkeletonRows } from "@/components/shared/table-skeleton-rows";
-import { ErrorCard } from "@/components/shared/error-card";
+import { TableSkeletonRows } from "@/components/shared/TableSkeletonRows";
+import { ErrorCard } from "@/components/shared/ErrorCard";
 
 interface RoomsTableProps {
   rooms: AdminRoom[];

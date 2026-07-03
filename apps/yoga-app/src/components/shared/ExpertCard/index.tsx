@@ -1,9 +1,9 @@
 import type { InstructorListItem } from "@yoga-app/shared";
-import { ExpertCardContext } from "./context";
-import { accentMap } from "./config";
-import { Header } from "./Header";
-import { Content } from "./Content";
-import { Footer } from "./Footer";
+import { ExpertCardContext } from "./expert-card-context";
+import { accentMap } from "./expert-card-config";
+import { ExpertCardHeader } from "./ExpertCardHeader";
+import { ExpertCardContent } from "./ExpertCardContent";
+import { ExpertCardFooter } from "./ExpertCardFooter";
 
 function ExpertCardRoot({
   instructor,
@@ -26,9 +26,9 @@ function ExpertCardRoot({
         <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         {children ?? (
           <>
-            <Header />
-            <Content />
-            <Footer />
+            <ExpertCardHeader />
+            <ExpertCardContent />
+            <ExpertCardFooter />
           </>
         )}
       </div>
@@ -36,8 +36,8 @@ function ExpertCardRoot({
   );
 }
 
-ExpertCardRoot.Header  = Header;
-ExpertCardRoot.Content = Content;
-ExpertCardRoot.Footer  = Footer;
+ExpertCardRoot.Header  = ExpertCardHeader;
+ExpertCardRoot.Content = ExpertCardContent;
+ExpertCardRoot.Footer  = ExpertCardFooter;
 
 export const ExpertCard = ExpertCardRoot;

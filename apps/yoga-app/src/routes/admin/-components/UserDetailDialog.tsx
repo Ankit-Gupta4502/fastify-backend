@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Chip } from "@/components/shared/chip";
+import { Chip } from "@/components/shared/Chip";
 import type { AdminUser } from "@yoga-app/shared";
 
 interface Props {

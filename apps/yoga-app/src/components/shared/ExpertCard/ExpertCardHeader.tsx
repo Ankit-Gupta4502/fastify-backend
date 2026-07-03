@@ -1,10 +1,10 @@
 import { Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { InstructorAvatar } from "@/components/shared/InstructorAvatar";
-import { useExpertCard } from "./context";
-import { statusConfig } from "./config";
+import { useExpertCard } from "./expert-card-context";
+import { statusConfig } from "./expert-card-config";
 
-export function Header() {
+export function ExpertCardHeader() {
   const { instructor } = useExpertCard();
   const status = statusConfig[instructor.status];
   const StatusIcon = status.icon;

@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
 import { useAdminUsers } from "@/hooks/use-admin";
-import { UsersTable } from "../-components/users-table";
-import { SectionHeader } from "@/components/shared/section-header";
+import { UsersTable } from "../-components/UsersTable";
+import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Input } from "@/components/ui/input";
 import {
   Select,

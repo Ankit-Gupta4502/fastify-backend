@@ -8,11 +8,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { TableSkeletonRows } from "@/components/shared/table-skeleton-rows";
-import { ErrorCard } from "@/components/shared/error-card";
-import { EmptyState } from "@/components/shared/empty-state";
+import { TableSkeletonRows } from "@/components/shared/TableSkeletonRows";
+import { ErrorCard } from "@/components/shared/ErrorCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { ClipboardList } from "lucide-react";
-import { DemoStatusChip } from "./demo-status-chip";
+import { DemoStatusChip } from "./DemoStatusChip";
 
 const COLUMNS = [
   "User",

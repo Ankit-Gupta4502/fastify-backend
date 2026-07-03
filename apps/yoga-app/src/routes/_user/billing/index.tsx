@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { PlanRecord } from "@yoga-app/shared";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMyPlan, usePlansWithPricing } from "@/hooks/use-plans";
-import { BillingHeader } from "../-components/billing/billing-header";
-import { PlanCard } from "../-components/billing/plan-card";
-import { PrivateSessionCard } from "../-components/billing/private-session-card";
+import { BillingHeader } from "../-components/billing/BillingHeader";
+import { PlanCard } from "../-components/billing/PlanCard";
+import { PrivateSessionCard } from "../-components/billing/PrivateSessionCard";
 
 export const Route = createFileRoute("/_user/billing/")({
   component: BillingPage,

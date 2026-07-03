@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { USER_ROLES } from "@yoga-app/shared";
-import { UserNav } from "./-components/user-nav";
+import { UserNav } from "./-components/UserNav";
 
 export const Route = createFileRoute("/_user")({
   beforeLoad: ({ context }) => {

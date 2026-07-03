@@ -1,8 +1,8 @@
 import { Calendar, Award, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Chip } from "@/components/shared/chip";
+import { Chip } from "@/components/shared/Chip";
 import { useInstructorDetail } from "./context";
-import { SideCard, SideCardLabel } from "./primitives";
+import { SideCard, SideCardLabel } from "./Primitives";
 import { useMyPlan } from "@/hooks/use-plans";
 import { useNavigate } from "@tanstack/react-router";
 

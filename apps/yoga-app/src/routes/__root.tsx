@@ -10,7 +10,7 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { captureUtm } from "@/lib/utm";
 import { PAGE_SEO, ROOT_GLOBAL_META } from "@/lib/seo";
-import Layout from "@/components/rootLayout/Layout";
+import { RootLayout as SiteLayout } from "@/components/shared/RootLayout";
 import { ReactQueryProvider } from "../lib/react-query/query-client";
 import { AuthWrapper } from "@/components/auth/AuthWrapper";
 import { useAuthStore } from "@/store/auth.store";
@@ -82,9 +82,9 @@ function RootLayout() {
   }
 
   return (
-    <Layout>
+    <SiteLayout>
       <Outlet />
-    </Layout>
+    </SiteLayout>
   );
 }
 

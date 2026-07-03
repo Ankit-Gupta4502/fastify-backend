@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
-import { useExpertCard } from "./context";
+import { useExpertCard } from "./expert-card-context";
 
-export function Content() {
+export function ExpertCardContent() {
   const { instructor, accent } = useExpertCard();
 
   return (

@@ -4,11 +4,11 @@ import type { PlanRecord } from "@yoga-app/shared";
 import { calcCustomPriceCents } from "@yoga-app/shared";
 import { useAdminUsers } from "@/hooks/use-admin";
 import { usePlansWithPricing } from "@/hooks/use-plans";
-import { SectionHeader } from "@/components/shared/section-header";
+import { SectionHeader } from "@/components/shared/SectionHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { centsToDisplay } from "@/lib/utils";
-import { SubscriptionsCharts } from "../-components/subscriptions-charts";
-import { SubscribersTable } from "../-components/subscribers-table";
+import { SubscriptionsCharts } from "../-components/SubscriptionsCharts";
+import { SubscribersTable } from "../-components/SubscribersTable";
 
 export const Route = createFileRoute("/admin/subscriptions/")({
   component: AdminSubscriptionsPage,

@@ -1,8 +1,8 @@
 
 import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
-import { Separator } from "../ui/separator";
-import { XIcon } from "../icons";
+import { Separator } from "@/components/ui/separator";
+import { XIcon } from "@/components/icons";
 
 type FooterLink =
   | { label: string; to: "/" | "/pricing" | "/privacy" | "/terms" | "/contact" }
@@ -40,7 +40,7 @@ function scrollToHash(href: string) {
   }
 }
 
-export function Footer() {
+export function RootFooter() {
   const year = new Date().getFullYear();
   return (
     <footer className="border-t border-border/60 bg-secondary/35">

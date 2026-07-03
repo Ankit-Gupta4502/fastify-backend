@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useExpertCard } from "./context";
+import { useExpertCard } from "./expert-card-context";
 
-export function Footer() {
+export function ExpertCardFooter() {
   const { instructor } = useExpertCard();
 
   return (

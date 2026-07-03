@@ -5,7 +5,7 @@ import { useIntersection } from "@/hooks/use-intersection"
 
 // ── Doodle helpers ────────────────────────────────────────────────────────────
 
-import { StarDoodle } from "@/components/shared/doodles"
+import { StarDoodle } from "@/components/shared/Doodles"
 
 // ── Mood ring (Wellness Tracking card) ────────────────────────────────────────
 

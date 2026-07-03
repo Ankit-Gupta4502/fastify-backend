@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function CardSkeleton() {
+export function InstructorSpotlightCardSkeleton() {
   return (
     <div className="flex-none w-64 rounded-3xl border border-border/30 bg-card/50 overflow-hidden">
       <Skeleton className="h-20 w-full rounded-none" />

@@ -1,7 +1,7 @@
 import type { AdminUser, PlanRecord } from "@yoga-app/shared";
 import { calcCustomPriceCents } from "@yoga-app/shared";
-import { Chip } from "@/components/shared/chip";
-import { TableSkeletonRows } from "@/components/shared/table-skeleton-rows";
+import { Chip } from "@/components/shared/Chip";
+import { TableSkeletonRows } from "@/components/shared/TableSkeletonRows";
 import { PLAN_COPY } from "@/lib/plan-copy";
 import { centsToDisplay } from "@/lib/utils";
 

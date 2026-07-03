@@ -5,7 +5,7 @@ import { type LoginBody, type RegisterBody, type ForgotPasswordBody } from "@yog
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { type LoginMode } from "../-hooks/use-login";
+import { type LoginMode } from "@/hooks/use-login";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 import { ForgotPasswordForm } from "./ForgotPasswordForm";

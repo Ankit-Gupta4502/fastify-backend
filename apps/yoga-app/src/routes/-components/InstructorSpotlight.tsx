@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useIntersection } from "@/hooks/use-intersection";
 import { useInstructors } from "@/hooks/use-instructors";
-import { ExpertCard } from "@/components/ExpertCard";
-import { CardSkeleton } from "./CardSkeleton";
+import { ExpertCard } from "@/components/shared/ExpertCard";
+import { InstructorSpotlightCardSkeleton } from "./InstructorSpotlightCardSkeleton";
 
 function InstructorSpotlightRoot() {
   const [sectionRef, isVisible] = useIntersection<HTMLElement>();
@@ -69,7 +69,7 @@ function InstructorSpotlightRoot() {
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {isLoading
-            ? [...Array(4)].map((_, i) => <CardSkeleton key={i} />)
+            ? [...Array(4)].map((_, i) => <InstructorSpotlightCardSkeleton key={i} />)
             : instructors.map((instructor, i) => (
                 <div key={instructor.id} className="snap-start flex-none w-64">
                   <ExpertCard instructor={instructor} index={i} />
@@ -87,6 +87,6 @@ function InstructorSpotlightRoot() {
   );
 }
 
-InstructorSpotlightRoot.CardSkeleton = CardSkeleton;
+InstructorSpotlightRoot.CardSkeleton = InstructorSpotlightCardSkeleton;
 
 export const InstructorSpotlight = InstructorSpotlightRoot;

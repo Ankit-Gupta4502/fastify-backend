@@ -2,9 +2,9 @@ import type { AdminInstructor } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
 import { useApproveInstructor, useUpdateInstructorPriority } from "@/hooks/use-admin";
 import { CheckCircle2, XCircle, ChevronUp, ChevronDown } from "lucide-react";
-import { Chip } from "@/components/shared/chip";
-import { TableSkeletonRows } from "@/components/shared/table-skeleton-rows";
-import { ErrorCard } from "@/components/shared/error-card";
+import { Chip } from "@/components/shared/Chip";
+import { TableSkeletonRows } from "@/components/shared/TableSkeletonRows";
+import { ErrorCard } from "@/components/shared/ErrorCard";
 import { cn } from "@/lib/utils";
 
 interface InstructorsTableProps {

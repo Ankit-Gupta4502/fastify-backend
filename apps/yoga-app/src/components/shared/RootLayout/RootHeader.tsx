@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { User, LogOut, LayoutDashboard, ShieldCheck, Tag, Menu, BookOpen, Home } from "lucide-react";
 import { USER_ROLES } from "@yoga-app/shared";
-import { Button } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
-import { Separator } from "../ui/separator";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +15,7 @@ const NAV_LINKS = [
   { to: "/pricing", label: "Pricing", icon: Tag },
 ] as const;
 
-export function Header() {
+export function RootHeader() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const isInstructor = user?.role === USER_ROLES.INSTRUCTOR;
   const isAdmin = user?.role === USER_ROLES.ADMIN;

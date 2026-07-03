@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import type { AdminDemoRequest } from "@yoga-app/shared";
-import { SectionHeader } from "@/components/shared/section-header";
+import { SectionHeader } from "@/components/shared/SectionHeader";
 import { useAdminDemoRequests } from "@/hooks/use-demo";
 import { useAdminInstructors } from "@/hooks/use-admin";
-import { DemoRequestsTable } from "../-components/demo-requests-table";
-import { ReviewDemoDialog } from "../-components/review-demo-dialog";
+import { DemoRequestsTable } from "../-components/DemoRequestsTable";
+import { ReviewDemoDialog } from "../-components/ReviewDemoDialog";
 
 export const Route = createFileRoute("/admin/demo-requests/")({
   component: AdminDemoRequestsPage,

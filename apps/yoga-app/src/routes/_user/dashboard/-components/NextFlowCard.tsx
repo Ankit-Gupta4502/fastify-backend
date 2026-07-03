@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatCompact, relativeFromNow, userTimezone } from "@/lib/timezone";
-import { Chip } from "@/components/shared/chip";
-import { EmptyState } from "@/components/shared/empty-state";
+import { Chip } from "@/components/shared/Chip";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 
 

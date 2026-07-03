@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useInstructorDetail } from "./context";
-import { ContentSection, ContentHeading } from "./primitives";
+import { ContentSection, ContentHeading } from "./Primitives";
 import { accentColors } from "./config";
 
 export function Expertise() {

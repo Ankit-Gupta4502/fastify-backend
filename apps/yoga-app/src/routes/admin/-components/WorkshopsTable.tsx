@@ -1,8 +1,8 @@
-import { TableSkeletonRows } from "@/components/shared/table-skeleton-rows";
+import { TableSkeletonRows } from "@/components/shared/TableSkeletonRows";
 import { useUpdateWorkshop, useDeleteWorkshop } from "@/hooks/use-workshops";
 import type { AdminWorkshop } from "@yoga-app/shared";
 import { userTimezone } from "@/lib/timezone";
-import { WorkshopRow } from "./workshop-row";
+import { WorkshopRow } from "./WorkshopRow";
 
 interface Props {
   workshops: AdminWorkshop[];

@@ -12,8 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatCompact, relativeFromNow } from "@/lib/timezone";
 import { INSTRUCTOR_IANA, INSTRUCTOR_TIMEZONE_LABEL } from "@/constants/sessions";
-import { Chip } from "@/components/shared/chip";
-import { EmptyState } from "@/components/shared/empty-state";
+import { Chip } from "@/components/shared/Chip";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 interface NextClassCardProps {
   room: InstructorScheduleRoom | undefined;

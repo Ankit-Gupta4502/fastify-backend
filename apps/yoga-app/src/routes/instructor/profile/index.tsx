@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useInstructorProfile } from "@/hooks/use-instructors";
-import { ProfileForm } from "../-components/profile-form";
+import { ProfileForm } from "../-components/ProfileForm";
 
 export const Route = createFileRoute("/instructor/profile/")({
   component: InstructorProfilePage,
