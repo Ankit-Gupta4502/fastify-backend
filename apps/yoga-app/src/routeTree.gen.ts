@@ -29,7 +29,6 @@ import { Route as SessionRoomIdIndexRouteImport } from './routes/session.$roomId
 import { Route as InstructorProfileIndexRouteImport } from './routes/instructor/profile/index'
 import { Route as InstructorEarningsIndexRouteImport } from './routes/instructor/earnings/index'
 import { Route as InstructorDashboardIndexRouteImport } from './routes/instructor/dashboard/index'
-import { Route as InstructorDashboardUpcomingRouteImport } from './routes/instructor/dashboard/upcoming'
 import { Route as ExpertsExpertIdIndexRouteImport } from './routes/experts/$expertId/index'
 import { Route as AdminWorkshopsIndexRouteImport } from './routes/admin/workshops/index'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
@@ -44,6 +43,7 @@ import { Route as UserPrivateSessionsIndexRouteImport } from './routes/_user/pri
 import { Route as UserEditProfileIndexRouteImport } from './routes/_user/edit-profile/index'
 import { Route as UserDashboardIndexRouteImport } from './routes/_user/dashboard/index'
 import { Route as UserBillingIndexRouteImport } from './routes/_user/billing/index'
+import { Route as InstructorDashboardUpcomingRouteImport } from './routes/instructor/dashboard/upcoming'
 import { Route as AdminUsersUserIdRouteImport } from './routes/admin/users/$userId'
 
 const InstructorRouteRoute = InstructorRouteRouteImport.update({
@@ -146,12 +146,6 @@ const InstructorDashboardIndexRoute =
     path: '/dashboard/',
     getParentRoute: () => InstructorRouteRoute,
   } as any)
-const InstructorDashboardUpcomingRoute =
-  InstructorDashboardUpcomingRouteImport.update({
-    id: '/dashboard/upcoming',
-    path: '/dashboard/upcoming',
-    getParentRoute: () => InstructorRouteRoute,
-  } as any)
 const ExpertsExpertIdIndexRoute = ExpertsExpertIdIndexRouteImport.update({
   id: '/experts/$expertId/',
   path: '/experts/$expertId/',
@@ -224,6 +218,12 @@ const UserBillingIndexRoute = UserBillingIndexRouteImport.update({
   path: '/billing/',
   getParentRoute: () => UserRouteRoute,
 } as any)
+const InstructorDashboardUpcomingRoute =
+  InstructorDashboardUpcomingRouteImport.update({
+    id: '/dashboard/upcoming',
+    path: '/dashboard/upcoming',
+    getParentRoute: () => InstructorRouteRoute,
+  } as any)
 const AdminUsersUserIdRoute = AdminUsersUserIdRouteImport.update({
   id: '/users/$userId',
   path: '/users/$userId',
@@ -247,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/terms/': typeof TermsIndexRoute
   '/verify-email/': typeof VerifyEmailIndexRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
+  '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/billing/': typeof UserBillingIndexRoute
   '/dashboard/': typeof UserDashboardIndexRoute
   '/edit-profile/': typeof UserEditProfileIndexRoute
@@ -262,7 +263,6 @@ export interface FileRoutesByFullPath {
   '/admin/workshops/': typeof AdminWorkshopsIndexRoute
   '/experts/$expertId/': typeof ExpertsExpertIdIndexRoute
   '/instructor/dashboard/': typeof InstructorDashboardIndexRoute
-  '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/instructor/earnings/': typeof InstructorEarningsIndexRoute
   '/instructor/profile/': typeof InstructorProfileIndexRoute
   '/session/$roomId/': typeof SessionRoomIdIndexRoute
@@ -283,6 +283,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsIndexRoute
   '/verify-email': typeof VerifyEmailIndexRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
+  '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/billing': typeof UserBillingIndexRoute
   '/dashboard': typeof UserDashboardIndexRoute
   '/edit-profile': typeof UserEditProfileIndexRoute
@@ -298,7 +299,6 @@ export interface FileRoutesByTo {
   '/admin/workshops': typeof AdminWorkshopsIndexRoute
   '/experts/$expertId': typeof ExpertsExpertIdIndexRoute
   '/instructor/dashboard': typeof InstructorDashboardIndexRoute
-  '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/instructor/earnings': typeof InstructorEarningsIndexRoute
   '/instructor/profile': typeof InstructorProfileIndexRoute
   '/session/$roomId': typeof SessionRoomIdIndexRoute
@@ -322,6 +322,7 @@ export interface FileRoutesById {
   '/terms/': typeof TermsIndexRoute
   '/verify-email/': typeof VerifyEmailIndexRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
+  '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/_user/billing/': typeof UserBillingIndexRoute
   '/_user/dashboard/': typeof UserDashboardIndexRoute
   '/_user/edit-profile/': typeof UserEditProfileIndexRoute
@@ -337,7 +338,6 @@ export interface FileRoutesById {
   '/admin/workshops/': typeof AdminWorkshopsIndexRoute
   '/experts/$expertId/': typeof ExpertsExpertIdIndexRoute
   '/instructor/dashboard/': typeof InstructorDashboardIndexRoute
-  '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/instructor/earnings/': typeof InstructorEarningsIndexRoute
   '/instructor/profile/': typeof InstructorProfileIndexRoute
   '/session/$roomId/': typeof SessionRoomIdIndexRoute
@@ -361,6 +361,7 @@ export interface FileRouteTypes {
     | '/terms/'
     | '/verify-email/'
     | '/admin/users/$userId'
+    | '/instructor/dashboard/upcoming'
     | '/billing/'
     | '/dashboard/'
     | '/edit-profile/'
@@ -376,7 +377,6 @@ export interface FileRouteTypes {
     | '/admin/workshops/'
     | '/experts/$expertId/'
     | '/instructor/dashboard/'
-    | '/instructor/dashboard/upcoming'
     | '/instructor/earnings/'
     | '/instructor/profile/'
     | '/session/$roomId/'
@@ -397,6 +397,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/verify-email'
     | '/admin/users/$userId'
+    | '/instructor/dashboard/upcoming'
     | '/billing'
     | '/dashboard'
     | '/edit-profile'
@@ -412,7 +413,6 @@ export interface FileRouteTypes {
     | '/admin/workshops'
     | '/experts/$expertId'
     | '/instructor/dashboard'
-    | '/instructor/dashboard/upcoming'
     | '/instructor/earnings'
     | '/instructor/profile'
     | '/session/$roomId'
@@ -435,6 +435,7 @@ export interface FileRouteTypes {
     | '/terms/'
     | '/verify-email/'
     | '/admin/users/$userId'
+    | '/instructor/dashboard/upcoming'
     | '/_user/billing/'
     | '/_user/dashboard/'
     | '/_user/edit-profile/'
@@ -450,7 +451,6 @@ export interface FileRouteTypes {
     | '/admin/workshops/'
     | '/experts/$expertId/'
     | '/instructor/dashboard/'
-    | '/instructor/dashboard/upcoming'
     | '/instructor/earnings/'
     | '/instructor/profile/'
     | '/session/$roomId/'
@@ -617,13 +617,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InstructorDashboardIndexRouteImport
       parentRoute: typeof InstructorRouteRoute
     }
-    '/instructor/dashboard/upcoming': {
-      id: '/instructor/dashboard/upcoming'
-      path: '/dashboard/upcoming'
-      fullPath: '/instructor/dashboard/upcoming'
-      preLoaderRoute: typeof InstructorDashboardUpcomingRouteImport
-      parentRoute: typeof InstructorRouteRoute
-    }
     '/experts/$expertId/': {
       id: '/experts/$expertId/'
       path: '/experts/$expertId'
@@ -722,6 +715,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserBillingIndexRouteImport
       parentRoute: typeof UserRouteRoute
     }
+    '/instructor/dashboard/upcoming': {
+      id: '/instructor/dashboard/upcoming'
+      path: '/dashboard/upcoming'
+      fullPath: '/instructor/dashboard/upcoming'
+      preLoaderRoute: typeof InstructorDashboardUpcomingRouteImport
+      parentRoute: typeof InstructorRouteRoute
+    }
     '/admin/users/$userId': {
       id: '/admin/users/$userId'
       path: '/users/$userId'
@@ -795,15 +795,15 @@ const DemoRouteRouteWithChildren = DemoRouteRoute._addFileChildren(
 )
 
 interface InstructorRouteRouteChildren {
-  InstructorDashboardIndexRoute: typeof InstructorDashboardIndexRoute
   InstructorDashboardUpcomingRoute: typeof InstructorDashboardUpcomingRoute
+  InstructorDashboardIndexRoute: typeof InstructorDashboardIndexRoute
   InstructorEarningsIndexRoute: typeof InstructorEarningsIndexRoute
   InstructorProfileIndexRoute: typeof InstructorProfileIndexRoute
 }
 
 const InstructorRouteRouteChildren: InstructorRouteRouteChildren = {
-  InstructorDashboardIndexRoute: InstructorDashboardIndexRoute,
   InstructorDashboardUpcomingRoute: InstructorDashboardUpcomingRoute,
+  InstructorDashboardIndexRoute: InstructorDashboardIndexRoute,
   InstructorEarningsIndexRoute: InstructorEarningsIndexRoute,
   InstructorProfileIndexRoute: InstructorProfileIndexRoute,
 }
