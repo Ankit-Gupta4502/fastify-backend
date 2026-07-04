@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, LogOut, AlertTriangle } from "lucide-react";
+import { ArrowLeft, LogOut, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLeaveRoom } from "@/hooks/use-rooms";
@@ -19,6 +19,7 @@ function SessionPage() {
   const router = useRouter();
   const leave = useLeaveRoom();
   const [error, setError] = useState<string | null>(null);
+  const [iframeLoading, setIframeLoading] = useState(true);
 
   const url = hmsPrebuiltUrl(code);
 
@@ -86,12 +87,18 @@ function SessionPage() {
         </div>
       )}
 
-      <div className="flex-1 min-h-0">
+      <div className="relative flex-1 min-h-0">
+        {iframeLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background">
+            <Loader2 className="size-8 animate-spin text-muted-foreground" />
+          </div>
+        )}
         <iframe
           title="Live yoga session"
           src={url}
           allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"
-          className="size-full border-0"
+          className="absolute inset-0 size-full border-0"
+          onLoad={() => setIframeLoading(false)}
         />
       </div>
     </div>
