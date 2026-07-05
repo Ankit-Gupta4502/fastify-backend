@@ -1,10 +1,11 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UpdateGroupRoomBody } from "@yoga-app/shared";
+import type { AdminUsersFilters } from "@/api/admin";
 import { adminApi } from "@/api/admin";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
 export const adminQueryOptions = {
-  users: (filters?: { search?: string; role?: string; plan?: string; status?: string }) =>
+  users: (filters?: AdminUsersFilters) =>
     queryOptions({
       queryKey: queryKeys.admin.users(filters),
       queryFn: () => adminApi.listUsers(filters),
@@ -24,7 +25,7 @@ export const adminQueryOptions = {
     }),
 };
 
-export function useAdminUsers(filters?: { search?: string; role?: string; plan?: string; status?: string }) {
+export function useAdminUsers(filters?: AdminUsersFilters) {
   return useQuery(adminQueryOptions.users(filters));
 }
 

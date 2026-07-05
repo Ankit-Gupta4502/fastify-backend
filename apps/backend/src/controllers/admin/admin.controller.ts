@@ -76,8 +76,19 @@ export class AdminController {
   private getUsers = async (request: FastifyRequest, reply: FastifyReply) => {
     const invalid = validateWithZod(request, reply, { query: listUsersQuerySchema });
     if (invalid) return invalid;
-    const { search, role, plan, status } = request.query as z.infer<typeof listUsersQuerySchema>;
-    const data = await listUsers(drizzle, search, role, plan, status);
+    const { search, role, plan, status, page, pageSize } = request.query as z.infer<
+      typeof listUsersQuerySchema
+    >;
+    const { items, total } = await listUsers(drizzle, search, role, plan, status, page, pageSize);
+    const effectivePage = page ?? 1;
+    const effectivePageSize = pageSize ?? total;
+    const data = {
+      items,
+      total,
+      page: effectivePage,
+      pageSize: effectivePageSize,
+      totalPages: effectivePageSize > 0 ? Math.max(1, Math.ceil(total / effectivePageSize)) : 1,
+    };
     const { statusCode, payload } = successResponse({ message: "Users", data });
     return reply.status(statusCode).send(payload);
   };

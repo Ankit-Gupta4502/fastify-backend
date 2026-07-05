@@ -15,6 +15,8 @@ export async function listUsers(
   role?: string,
   plan?: string,
   status?: SubscriptionStatus,
+  page?: number,
+  pageSize?: number,
 ) {
   let filteredUserIds: string[] | undefined;
   if (plan || status) {
@@ -37,7 +39,9 @@ export async function listUsers(
         ),
       );
     filteredUserIds = [...new Set(subRows.map((r) => r.userId))];
-    if (filteredUserIds.length === 0) return [];
+    if (filteredUserIds.length === 0) {
+      return { items: [], total: 0 };
+    }
   }
 
   const whereClause = and(
@@ -46,7 +50,7 @@ export async function listUsers(
     filteredUserIds ? inArray(user.id, filteredUserIds) : undefined,
   );
 
-  const users = await db
+  const baseQuery = db
     .select({
       id: user.id,
       name: user.name,
@@ -57,6 +61,20 @@ export async function listUsers(
     .from(user)
     .where(whereClause)
     .orderBy(desc(user.createdAt));
+
+  let users: Awaited<typeof baseQuery>;
+  let total: number;
+  if (pageSize) {
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(user)
+      .where(whereClause);
+    total = count;
+    users = await baseQuery.limit(pageSize).offset(((page ?? 1) - 1) * pageSize);
+  } else {
+    users = await baseQuery;
+    total = users.length;
+  }
 
   const userIds = users.map((u) => u.id);
 
@@ -128,24 +146,27 @@ export async function listUsers(
   const prefsByUser = new Map(prefs.map((p) => [p.userId, p]));
   const acqByUser = new Map(acquisitions.map((a) => [a.userId, a]));
 
-  return users.map((u) => ({
-    ...u,
-    planName: currentPlanByUser.get(u.id)?.planName ?? null,
-    status: currentPlanByUser.get(u.id)?.status ?? null,
-    subscriptions: (subsByUser.get(u.id) ?? []).map((s) => ({
-      id: s.id,
-      planName: s.planName,
-      sessionsTotal: s.sessionsTotal,
-      sessionsUsed: s.sessionsUsed,
-      pricePaidCents: s.pricePaidCents,
-      status: s.status,
-      purchasedAt: s.purchasedAt.toISOString(),
-      expiresAt: s.expiresAt?.toISOString() ?? null,
+  return {
+    items: users.map((u) => ({
+      ...u,
+      planName: currentPlanByUser.get(u.id)?.planName ?? null,
+      status: currentPlanByUser.get(u.id)?.status ?? null,
+      subscriptions: (subsByUser.get(u.id) ?? []).map((s) => ({
+        id: s.id,
+        planName: s.planName,
+        sessionsTotal: s.sessionsTotal,
+        sessionsUsed: s.sessionsUsed,
+        pricePaidCents: s.pricePaidCents,
+        status: s.status,
+        purchasedAt: s.purchasedAt.toISOString(),
+        expiresAt: s.expiresAt?.toISOString() ?? null,
+      })),
+      createdAt: u.createdAt.toISOString(),
+      preferences: prefsByUser.get(u.id) ?? null,
+      acquisition: acqByUser.get(u.id) ?? null,
     })),
-    createdAt: u.createdAt.toISOString(),
-    preferences: prefsByUser.get(u.id) ?? null,
-    acquisition: acqByUser.get(u.id) ?? null,
-  }));
+    total,
+  };
 }
 
 export async function listInstructors(db: AppDatabase) {

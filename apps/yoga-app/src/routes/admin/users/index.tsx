@@ -19,13 +19,17 @@ function AdminUsersPage() {
     status,
     setStatus,
     debouncedSearch,
+    page,
+    setPage,
+    pageSize,
     filters,
     hasFilters,
     clearFilters,
   } = useUsersFilters();
 
   const { data, isLoading, error } = useAdminUsers(filters);
-  const users = data?.data ?? [];
+  const users = data?.data?.items ?? [];
+  const total = data?.data?.total ?? 0;
 
   return (
     <div className="space-y-6">
@@ -44,7 +48,16 @@ function AdminUsersPage() {
         onClear={clearFilters}
       />
 
-      <UsersTable users={users} isLoading={isLoading} error={error} search={debouncedSearch} />
+      <UsersTable
+        users={users}
+        isLoading={isLoading}
+        error={error}
+        search={debouncedSearch}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

@@ -33,7 +33,7 @@ export const queryKeys = {
   },
   admin: {
     all: ["admin"] as const,
-    users: (filters?: { search?: string; role?: string; plan?: string }) =>
+    users: (filters?: { search?: string; role?: string; plan?: string; status?: string; page?: number; pageSize?: number }) =>
       [...queryKeys.admin.all, "users", filters ?? {}] as const,
     userDetail: (id: string) => [...queryKeys.admin.all, "users", id] as const,
     instructors: () => [...queryKeys.admin.all, "instructors"] as const,

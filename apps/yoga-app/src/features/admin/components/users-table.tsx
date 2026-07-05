@@ -5,12 +5,17 @@ import { TableSkeletonRows } from "@/shared/components/misc/table-skeleton-rows"
 import { ErrorCard } from "@/shared/components/misc/error-card";
 import type { ChipVariant } from "@/shared/components/misc/chip";
 import { SubscriptionStatusChip } from "@/features/admin/components/subscription-status-chip";
+import { TablePagination } from "@/shared/components/tables/table-pagination";
 
 interface UsersTableProps {
   users: AdminUser[];
   isLoading: boolean;
   error: Error | null;
   search?: string;
+  page: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (page: number) => void;
 }
 
 const ROLE_CHIP_VARIANT: Record<string, ChipVariant> = {
@@ -41,7 +46,16 @@ function SourceBadge({ source }: { source: string | null | undefined }) {
   );
 }
 
-export function UsersTable({ users, isLoading, error, search }: UsersTableProps) {
+export function UsersTable({
+  users,
+  isLoading,
+  error,
+  search,
+  page,
+  pageSize,
+  total,
+  onPageChange,
+}: UsersTableProps) {
   const navigate = useNavigate();
 
   if (error) return <ErrorCard message="Failed to load users." />;
@@ -63,9 +77,8 @@ export function UsersTable({ users, isLoading, error, search }: UsersTableProps)
           {isLoading ? (
             <TableSkeletonRows rows={6} cols={6} />
           ) : (
-            users.map((u) => {
-                const isActive = u.subscriptions.find(u=>u.status==="active")
-           return  (  <tr
+            users.map((u) => (
+              <tr
                 key={u.id}
                 className="hover:bg-secondary/20 transition-colors cursor-pointer"
                 onClick={() => navigate({ to: "/admin/users/$userId", params: { userId: u.id } })}
@@ -83,7 +96,7 @@ export function UsersTable({ users, isLoading, error, search }: UsersTableProps)
                       {u.subscriptions.map((sub) => (
                         <div key={sub.id} className="flex items-center gap-1.5">
                           <span className="capitalize text-muted-foreground">
-                            {isActive?.planName.replace(/_/g, " ")}
+                            {sub.planName.replace(/_/g, " ")}
                           </span>
                           <SubscriptionStatusChip status={sub.status} />
                         </div>
@@ -97,8 +110,8 @@ export function UsersTable({ users, isLoading, error, search }: UsersTableProps)
                 <td className="px-4 py-3 text-muted-foreground">
                   {new Date(u.createdAt).toLocaleDateString()}
                 </td>
-              </tr>)
-            })
+              </tr>
+            ))
           )}
         </tbody>
       </table>
@@ -106,6 +119,9 @@ export function UsersTable({ users, isLoading, error, search }: UsersTableProps)
         <p className="text-center text-muted-foreground text-sm py-10">
           {search ? `No users matching "${search}".` : "No users found."}
         </p>
+      )}
+      {!isLoading && users.length > 0 && (
+        <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={onPageChange} />
       )}
     </div>
   );

@@ -8,19 +8,31 @@ import type {
   CreateGroupRoomBody,
   CreateGroupRoomResult,
   CreateInstructorBody,
+  PaginatedResult,
   UpdateGroupRoomBody,
 } from "@yoga-app/shared";
 import { API_ENDPOINTS } from "@yoga-app/shared";
 import { apiRequest } from "../lib/http";
 
+export interface AdminUsersFilters {
+  search?: string;
+  role?: string;
+  plan?: string;
+  status?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 export const adminApi = {
-  listUsers: (filters?: { search?: string; role?: string; plan?: string; status?: string }) => {
+  listUsers: (filters?: AdminUsersFilters) => {
     const params: Record<string, string> = {};
     if (filters?.search) params.search = filters.search;
     if (filters?.role) params.role = filters.role;
     if (filters?.plan) params.plan = filters.plan;
     if (filters?.status) params.status = filters.status;
-    return apiRequest<AdminUser[]>(API_ENDPOINTS.ADMIN.USERS, {
+    if (filters?.page) params.page = String(filters.page);
+    if (filters?.pageSize) params.pageSize = String(filters.pageSize);
+    return apiRequest<PaginatedResult<AdminUser>>(API_ENDPOINTS.ADMIN.USERS, {
       params: Object.keys(params).length ? params : undefined,
     });
   },

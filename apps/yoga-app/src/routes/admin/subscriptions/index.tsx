@@ -27,7 +27,7 @@ function AdminSubscriptionsPage() {
   const { data: usersData, isLoading: usersLoading } = useAdminUsers();
   const { data: plansData } = usePlansWithPricing();
 
-  const users = usersData?.data ?? [];
+  const users = usersData?.data?.items ?? [];
   const plans = plansData?.data?.plans ?? [];
 
   const regularUsers = users.filter((u) => u.role === "user");
