@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { fromZonedTime } from "date-fns-tz";
 import type { AdminRoom } from "@yoga-app/shared";
+import { ApiRequestError } from "@/lib/http";
 import { useCreateGroupRoom, useUpdateGroupRoom } from "@/hooks/use-admin";
 import { DEFAULT_FORM, type FormState, utcIsoToZonedFields } from "./create-room-dialog-config";
 
@@ -22,6 +23,7 @@ function formFromRoom(room: AdminRoom, tz: string): FormState {
 export function useRoomForm(open: boolean, room: AdminRoom | null, onClose: () => void) {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const createRoom = useCreateGroupRoom();
   const updateRoom = useUpdateGroupRoom();
   const isEditing = room !== null;
@@ -30,13 +32,19 @@ export function useRoomForm(open: boolean, room: AdminRoom | null, onClose: () =
     if (open) {
       setForm(room ? formFromRoom(room, DEFAULT_FORM.tz) : DEFAULT_FORM);
       setError(null);
+      setFieldErrors({});
     } else {
       setForm(DEFAULT_FORM);
       setError(null);
+      setFieldErrors({});
     }
   }, [open, room?.id]);
 
-  const patch = (partial: Partial<FormState>) => setForm((f) => ({ ...f, ...partial }));
+  // Any edit invalidates the previous validation errors — the next submit re-checks everything.
+  const patch = (partial: Partial<FormState>) => {
+    setForm((f) => ({ ...f, ...partial }));
+    setFieldErrors({});
+  };
 
   const { startUtc, endUtc } = useMemo(() => {
     if (!form.date || !form.startTime || !form.endTime) return { startUtc: null, endUtc: null };
@@ -52,10 +60,11 @@ export function useRoomForm(open: boolean, room: AdminRoom | null, onClose: () =
   const handleSubmit = (evt: React.FormEvent) => {
     evt.preventDefault();
     setError(null);
+    setFieldErrors({});
 
-    if (!form.instructorId) return setError("Please select an instructor.");
+    if (!form.instructorId) return setFieldErrors({ instructorId: "Please select an instructor." });
     if (!startUtc || !endUtc) return setError("Please fill in date and time.");
-    if (endUtc <= startUtc) return setError("End time must be after start time.");
+    if (endUtc <= startUtc) return setFieldErrors({ scheduledEndUtc: "End time must be after start time." });
 
     const body = {
       instructorId: form.instructorId,
@@ -68,8 +77,15 @@ export function useRoomForm(open: boolean, room: AdminRoom | null, onClose: () =
 
     const mutationOpts = {
       onSuccess: () => onClose(),
-      onError: (err: unknown) =>
-        setError(err instanceof Error ? err.message : `Failed to ${isEditing ? "update" : "create"} class`),
+      onError: (err: unknown) => {
+        // 422s carry a field -> message map — show each error next to its own input
+        // instead of one banner that doesn't say which field is wrong.
+        if (err instanceof ApiRequestError && err.fieldErrors) {
+          setFieldErrors(err.fieldErrors);
+          return;
+        }
+        setError(err instanceof Error ? err.message : `Failed to ${isEditing ? "update" : "create"} class`);
+      },
     };
 
     if (isEditing && room) {
@@ -83,6 +99,7 @@ export function useRoomForm(open: boolean, room: AdminRoom | null, onClose: () =
     form,
     patch,
     error,
+    fieldErrors,
     startUtc,
     endUtc,
     handleSubmit,

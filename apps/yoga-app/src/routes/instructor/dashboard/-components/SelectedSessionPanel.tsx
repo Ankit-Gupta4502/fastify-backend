@@ -14,7 +14,7 @@ interface SelectedSessionPanelProps {
 
 export function SelectedSessionPanel({ room, joiningId, onJoin, onClose }: SelectedSessionPanelProps) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-5 flex items-start justify-between gap-4">
+    <div className="flex items-start justify-between gap-3">
       <div className="space-y-1.5 min-w-0">
         <p className="font-bold text-sm capitalize">{room.type} session</p>
         <p className="text-xs text-muted-foreground">
@@ -28,36 +28,37 @@ export function SelectedSessionPanel({ room, joiningId, onJoin, onClose }: Selec
         {room.adminNote && (
           <p className="text-xs text-muted-foreground italic mt-1">Note from admin: {room.adminNote}</p>
         )}
-      </div>
 
-      <div className="flex items-center gap-2 shrink-0">
         <Button
           size="sm"
           variant={room.canJoinLive ? "default" : "outline"}
           disabled={!room.canJoinLive || joiningId === room.id}
           className={cn(
-            "rounded-full",
+            "rounded-full mt-2",
             room.canJoinLive && room.status === "active" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "",
           )}
           onClick={() => room.canJoinLive && onJoin(room)}
         >
           {joiningId === room.id
             ? "Opening…"
-            : room.status === "active"
-              ? "Rejoin"
-              : room.canJoinLive
-                ? "Open"
-                : "Upcoming"}
+            : room.meetLink
+              ? room.status === "active" ? "Rejoin Meet" : "Open Meet"
+              : room.status === "active"
+                ? "Rejoin"
+                : room.canJoinLive
+                  ? "Open"
+                  : "Upcoming"}
         </Button>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-full hover:bg-muted"
-          aria-label="Close"
-        >
-          <X className="size-4" />
-        </button>
       </div>
+
+      <button
+        type="button"
+        onClick={onClose}
+        className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-full hover:bg-muted shrink-0"
+        aria-label="Close"
+      >
+        <X className="size-4" />
+      </button>
     </div>
   );
 }

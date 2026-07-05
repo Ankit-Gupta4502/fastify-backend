@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { PAGE_SEO } from "@/lib/seo";
 import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
@@ -24,6 +24,7 @@ export const Route = createFileRoute("/pricing/")({
 });
 
 function PricingPage() {
+  const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const plans = usePlansWithPricing();
   const myPlan = useMyPlan(isAuthenticated);
@@ -80,7 +81,11 @@ function PricingPage() {
     setSuccess(null);
     setPendingCard("group");
     checkout.mutate({ planId: plan.id, country }, {
-      onSuccess: () => { setPendingCard(null); setSuccess(`You're now on ${PLAN_COPY[plan.name]?.title ?? plan.name}!`); },
+      onSuccess: () => {
+        setPendingCard(null);
+        setSuccess(`You're now on ${PLAN_COPY[plan.name]?.title ?? plan.name}!`);
+        router.navigate({ to: "/rooms" });
+      },
       onError: (err) => { setPendingCard(null); setError(err instanceof Error ? err.message : "Payment failed"); },
     });
   };
@@ -91,7 +96,11 @@ function PricingPage() {
     setPendingCard(planName);
     const title = specializedPlanConfig[planName]?.title ?? planName;
     customCheckout.mutate({ sessionCount: sessions, planName, country }, {
-      onSuccess: () => { setPendingCard(null); setSuccess(`${title} activated — ${sessions} sessions/mo`); },
+      onSuccess: () => {
+        setPendingCard(null);
+        setSuccess(`${title} activated — ${sessions} sessions/mo`);
+        router.navigate({ to: "/private-sessions" });
+      },
       onError: (err) => { setPendingCard(null); setError(err instanceof Error ? err.message : "Payment failed"); },
     });
   };
@@ -101,7 +110,11 @@ function PricingPage() {
     setSuccess(null);
     setPendingCard("private");
     customCheckout.mutate({ sessionCount, planName: "private", country }, {
-      onSuccess: () => { setPendingCard(null); setSuccess(`Private plan activated — ${sessionCount} sessions/mo`); },
+      onSuccess: () => {
+        setPendingCard(null);
+        setSuccess(`Private plan activated — ${sessionCount} sessions/mo`);
+        router.navigate({ to: "/private-sessions" });
+      },
       onError: (err) => { setPendingCard(null); setError(err instanceof Error ? err.message : "Payment failed"); },
     });
   };

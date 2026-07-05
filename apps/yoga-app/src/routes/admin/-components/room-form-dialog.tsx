@@ -21,7 +21,7 @@ interface RoomFormDialogProps {
 }
 
 export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFormDialogProps) {
-  const { form, patch, error, startUtc, endUtc, handleSubmit, isEditing, isPending } = useRoomForm(
+  const { form, patch, error, fieldErrors, startUtc, endUtc, handleSubmit, isEditing, isPending } = useRoomForm(
     open,
     room,
     () => onOpenChange(false),
@@ -41,11 +41,11 @@ export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFo
 
         <form onSubmit={handleSubmit} className="space-y-5 pt-2">
           {/* Instructor */}
-          <Field label="Instructor">
+          <Field label="Instructor" error={fieldErrors.instructorId}>
             <select
               value={form.instructorId}
               onChange={(e) => patch({ instructorId: e.target.value })}
-              className="input"
+              className={cn("input", fieldErrors.instructorId && "border-destructive")}
               required
             >
               <option value="">Select instructor…</option>
@@ -59,14 +59,14 @@ export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFo
           </Field>
 
           {/* Class name */}
-          <Field label="Class name (optional)">
+          <Field label="Class name (optional)" error={fieldErrors.name}>
             <input
               type="text"
               value={form.name}
               onChange={(e) => patch({ name: e.target.value })}
               placeholder="e.g. Sunrise Vinyasa Flow"
               maxLength={100}
-              className="input"
+              className={cn("input", fieldErrors.name && "border-destructive")}
             />
           </Field>
 
@@ -103,28 +103,28 @@ export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFo
                 required
               />
             </Field>
-            <Field label="Start time">
+            <Field label="Start time" error={fieldErrors.scheduledStartUtc}>
               <input
                 type="time"
                 value={form.startTime}
                 onChange={(e) => patch({ startTime: e.target.value })}
-                className="input"
+                className={cn("input", fieldErrors.scheduledStartUtc && "border-destructive")}
                 required
               />
             </Field>
-            <Field label="End time">
+            <Field label="End time" error={fieldErrors.scheduledEndUtc}>
               <input
                 type="time"
                 value={form.endTime}
                 onChange={(e) => patch({ endTime: e.target.value })}
-                className="input"
+                className={cn("input", fieldErrors.scheduledEndUtc && "border-destructive")}
                 required
               />
             </Field>
           </div>
 
           {/* Google Meet link */}
-          <Field label="Google Meet link (optional)">
+          <Field label="Google Meet link (optional)" error={fieldErrors.meetLink}>
             <div className="relative">
               <Video className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
               <input
@@ -132,13 +132,13 @@ export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFo
                 value={form.meetLink}
                 onChange={(e) => patch({ meetLink: e.target.value })}
                 placeholder="https://meet.google.com/xxx-yyyy-zzz"
-                className="input pl-9"
+                className={cn("input pl-9", fieldErrors.meetLink && "border-destructive")}
               />
             </div>
           </Field>
 
           {/* Capacity */}
-          <Field label={`Capacity: ${form.capacity} spots`}>
+          <Field label={`Capacity: ${form.capacity} spots`} error={fieldErrors.capacity}>
             <input
               type="range"
               min={2}
@@ -193,10 +193,12 @@ function Field({
   label,
   children,
   className,
+  error,
 }: {
   label: string;
   children: React.ReactNode;
   className?: string;
+  error?: string;
 }) {
   return (
     <div className={cn("space-y-1.5", className)}>
@@ -204,6 +206,7 @@ function Field({
         {label}
       </label>
       {children}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

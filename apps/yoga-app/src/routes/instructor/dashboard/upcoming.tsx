@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { useInstructorSchedule } from "@/hooks/use-rooms";
 import { useJoinLiveRoom } from "@/hooks/use-join-live-room";
 import { useScheduleFilters } from "@/hooks/use-schedule-filters";
@@ -19,26 +20,26 @@ function UpcomingSessionsPage() {
   const { filters, setFilter, resetFilters, hasActiveFilters, filteredRooms } = useScheduleFilters(rooms);
 
   const [view, setView] = useState<ScheduleView>("list");
+  const isCalendar = view === "calendar";
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-12">
-      <div className="space-y-1">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary">Instructor Console</p>
-        <h1 className="text-3xl font-serif font-bold tracking-tight">Upcoming Sessions</h1>
-        <p className="text-muted-foreground">
-          Search, filter, and browse your full schedule as a list or on a calendar.
-        </p>
-      </div>
-
-      <ScheduleFilters
-        filters={filters}
-        setFilter={setFilter}
-        hasActiveFilters={hasActiveFilters}
-        onReset={resetFilters}
-        resultCount={filteredRooms.length}
-      />
-
+    <div
+      className={cn(
+        "max-w-6xl mx-auto flex flex-col gap-6",
+        isCalendar ? "h-[calc(100dvh-8rem)]" : "pb-12",
+      )}
+    >
       <ScheduleViewToggle view={view} onChange={setView} />
+
+      {!isCalendar && (
+        <ScheduleFilters
+          filters={filters}
+          setFilter={setFilter}
+          hasActiveFilters={hasActiveFilters}
+          onReset={resetFilters}
+          resultCount={filteredRooms.length}
+        />
+      )}
 
       {joinError && (
         <div className="rounded-xl border border-destructive/40 bg-destructive/5 text-destructive px-4 py-3 text-sm">
@@ -55,7 +56,8 @@ function UpcomingSessionsPage() {
         />
       ) : (
         <ScheduleCalendarView
-          rooms={filteredRooms}
+          className="flex-1 min-h-0"
+          rooms={rooms}
           isLoading={schedule.isLoading}
           joiningId={joiningId}
           onJoin={handleJoin}

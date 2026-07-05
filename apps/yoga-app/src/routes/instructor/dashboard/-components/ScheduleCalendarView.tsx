@@ -5,6 +5,7 @@ import { enUS } from "date-fns/locale/en-US";
 import { Lock, Users } from "lucide-react";
 import type { InstructorScheduleRoom } from "@yoga-app/shared";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { INSTRUCTOR_TIMEZONE_LABEL } from "@/constants/sessions";
 import { SelectedSessionPanel } from "./SelectedSessionPanel";
@@ -53,10 +54,12 @@ interface ScheduleCalendarViewProps {
   isLoading: boolean;
   joiningId: string | null;
   onJoin: (room: InstructorScheduleRoom) => void;
+  className?: string;
 }
 
-export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin }: ScheduleCalendarViewProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin, className }: ScheduleCalendarViewProps) {
+  const [selectedRoom, setSelectedRoom] = useState<InstructorScheduleRoom | null>(null);
+  const [anchorPos, setAnchorPos] = useState<{ x: number; y: number } | null>(null);
 
   const events = useMemo<ScheduleEvent[]>(
     () =>
@@ -70,15 +73,21 @@ export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin }: Sc
     [rooms],
   );
 
-  const selectedRoom = rooms.find((r) => r.id === selectedId) ?? null;
+  // Anchor the popover at the click point rather than the event element —
+  // events can be tiny slivers in month view, which makes a poor anchor.
+  const handleSelectEvent = (event: ScheduleEvent, e: React.SyntheticEvent<HTMLElement>) => {
+    const { clientX, clientY } = e as unknown as MouseEvent;
+    setAnchorPos({ x: clientX, y: clientY });
+    setSelectedRoom(event.resource);
+  };
 
   if (isLoading) {
-    return <Skeleton className="h-175 rounded-2xl" />;
+    return <Skeleton className={cn("rounded-2xl", className ?? "h-175")} />;
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+    <div className={cn("flex flex-col gap-4 min-h-0", className)}>
+      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground shrink-0">
         <span className="font-medium">All times in {INSTRUCTOR_TIMEZONE_LABEL}</span>
         <div className="flex items-center gap-3">
           {(
@@ -100,18 +109,18 @@ export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin }: Sc
         </div>
       </div>
 
-      <div className={cn("rounded-2xl border border-border/60 bg-card p-3 md:p-4")}>
+      <div className="flex-1 min-h-0 rounded-2xl border border-border/60 bg-card p-3 md:p-4">
         <Calendar
           className="instructor-calendar"
           localizer={localizer}
           events={events}
           startAccessor="start"
           endAccessor="end"
-          style={{ height: 640 }}
+          style={{ height: "100%" }}
           views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
           defaultView={Views.WEEK}
           popup
-          onSelectEvent={(event) => setSelectedId(event.id)}
+          onSelectEvent={handleSelectEvent}
           eventPropGetter={(event) => {
             const colors = STATUS_COLORS[event.resource.status];
             return {
@@ -126,14 +135,27 @@ export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin }: Sc
         />
       </div>
 
-      {selectedRoom && (
-        <SelectedSessionPanel
-          room={selectedRoom}
-          joiningId={joiningId}
-          onJoin={onJoin}
-          onClose={() => setSelectedId(null)}
-        />
-      )}
+      <Popover open={!!selectedRoom} onOpenChange={(open) => !open && setSelectedRoom(null)}>
+        <PopoverAnchor asChild>
+          <span
+            className="fixed pointer-events-none"
+            style={{ left: anchorPos?.x ?? 0, top: anchorPos?.y ?? 0, width: 1, height: 1 }}
+          />
+        </PopoverAnchor>
+        <PopoverContent className="w-80" onOpenAutoFocus={(e) => e.preventDefault()}>
+          {selectedRoom && (
+            <SelectedSessionPanel
+              room={selectedRoom}
+              joiningId={joiningId}
+              onJoin={(room) => {
+                onJoin(room);
+                setSelectedRoom(null);
+              }}
+              onClose={() => setSelectedRoom(null)}
+            />
+          )}
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
