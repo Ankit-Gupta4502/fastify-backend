@@ -63,8 +63,9 @@ export function UsersTable({ users, isLoading, error, search }: UsersTableProps)
           {isLoading ? (
             <TableSkeletonRows rows={6} cols={6} />
           ) : (
-            users.map((u) => (
-              <tr
+            users.map((u) => {
+                const isActive = u.subscriptions.find(u=>u.status==="active")
+           return  (  <tr
                 key={u.id}
                 className="hover:bg-secondary/20 transition-colors cursor-pointer"
                 onClick={() => navigate({ to: "/admin/users/$userId", params: { userId: u.id } })}
@@ -82,7 +83,7 @@ export function UsersTable({ users, isLoading, error, search }: UsersTableProps)
                       {u.subscriptions.map((sub) => (
                         <div key={sub.id} className="flex items-center gap-1.5">
                           <span className="capitalize text-muted-foreground">
-                            {sub.planName.replace(/_/g, " ")}
+                            {isActive?.planName.replace(/_/g, " ")}
                           </span>
                           <SubscriptionStatusChip status={sub.status} />
                         </div>
@@ -96,8 +97,8 @@ export function UsersTable({ users, isLoading, error, search }: UsersTableProps)
                 <td className="px-4 py-3 text-muted-foreground">
                   {new Date(u.createdAt).toLocaleDateString()}
                 </td>
-              </tr>
-            ))
+              </tr>)
+            })
           )}
         </tbody>
       </table>
