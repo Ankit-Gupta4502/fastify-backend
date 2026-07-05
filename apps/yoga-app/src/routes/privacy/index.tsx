@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PAGE_SEO } from "@/lib/seo";
+import { PAGE_SEO } from "@/shared/lib/seo";
 import { Shield } from "lucide-react";
 
 export const Route = createFileRoute("/privacy/")({

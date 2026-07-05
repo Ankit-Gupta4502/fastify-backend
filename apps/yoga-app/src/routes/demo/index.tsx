@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { PAGE_SEO } from "@/lib/seo";
+import { PAGE_SEO } from "@/shared/lib/seo";
 import { Fragment, useState, useEffect } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, ClockIcon } from "lucide-react";
@@ -13,8 +13,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { useSubmitDemoRequest, useMyDemoRequests } from "@/hooks/use-demo";
+import { cn } from "@/shared/lib/utils";
+import { useSubmitDemoRequest, useMyDemoRequests } from "@/features/demo/hooks/use-demo";
 import type { CreateDemoRequestBody, DemoGender, DemoPurpose } from "@yoga-app/shared";
 import { ApiRequestError } from "@/lib/http";
 

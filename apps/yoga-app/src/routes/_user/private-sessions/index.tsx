@@ -4,9 +4,9 @@ import { Plus, Clock, CheckCircle2, XCircle, User, Calendar, Lock, ShieldAlert, 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMyPrivateRequests, useJoinRoom } from "@/hooks/use-rooms";
-import { useMyPlan } from "@/hooks/use-plans";
-import { BookPrivateSessionDialog } from "../dashboard/-components/BookPrivateSessionDialog";
+import { useMyPrivateRequests, useJoinRoom } from "@/features/booking/hooks/use-rooms";
+import { useMyPlan } from "@/features/payments/hooks/use-plans";
+import { BookPrivateSessionDialog } from "@/features/booking/components/book-private-session-dialog";
 import type { MyPrivateSessionRequest, PrivateSessionRequestStatus } from "@yoga-app/shared";
 
 const JOIN_WINDOW_MS = 3 * 60 * 1000;

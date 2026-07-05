@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
-import { useAdminUsers } from "@/hooks/use-admin";
-import { UsersTable } from "../-components/users-table";
-import { SectionHeader } from "@/components/shared/section-header";
+import { useAdminUsers } from "@/features/admin/hooks/use-admin";
+import { UsersTable } from "@/features/admin/components/users-table";
+import { SectionHeader } from "@/shared/components/misc/section-header";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { PLAN_COPY } from "@/lib/plan-copy";
+import { PLAN_COPY } from "@/features/payments/utils/plan-copy";
 
 export const Route = createFileRoute("/admin/users/")({
   component: AdminUsersPage,

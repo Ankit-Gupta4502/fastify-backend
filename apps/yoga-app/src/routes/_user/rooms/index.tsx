@@ -3,12 +3,12 @@ import { useState, useMemo } from "react";
 import { Sparkles, RefreshCw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { useUpcomingRooms, useEnrolRoom, useJoinRoom } from "@/hooks/use-rooms";
-import { userTimezone } from "@/lib/timezone";
-import { SortTh, type SortKey, type SortDir } from "../-components/rooms/SortTh";
-import { SessionRow } from "../-components/rooms/SessionRow";
-import { SkeletonRow } from "../-components/rooms/SkeletonRow";
+import { cn } from "@/shared/lib/utils";
+import { useUpcomingRooms, useEnrolRoom, useJoinRoom } from "@/features/booking/hooks/use-rooms";
+import { userTimezone } from "@/shared/lib/timezone";
+import { SortTh, type SortKey, type SortDir } from "@/features/booking/components/sort-th";
+import { SessionRow } from "@/features/booking/components/session-row";
+import { SkeletonRow } from "@/features/booking/components/skeleton-row";
 
 export const Route = createFileRoute("/_user/rooms/")({
   component: RoomsPage,

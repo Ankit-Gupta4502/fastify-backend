@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { USER_ROLES } from "@yoga-app/shared";
-import { AdminNav } from "./-components/admin-nav";
+import { AdminNav } from "@/features/admin/components/admin-nav";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: ({ context, location }) => {

@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useAuthStore } from "@/store/auth.store";
-import { NextClassCard } from "../-components/NextClassCard";
-import { useJoinLiveRoom } from "@/hooks/use-join-live-room";
-import { useInstructorSchedule } from "@/hooks/use-rooms";
-import { useInstructorWallet } from "@/hooks/use-instructors";
-import { useInstructorDemoSessions } from "@/hooks/use-demo";
-import { DashboardHeader } from "./-components/DashboardHeader";
-import { DashboardStats } from "./-components/DashboardStats";
-import { EarningsBanner } from "./-components/EarningsBanner";
-import { ViewScheduleBanner } from "./-components/ViewScheduleBanner";
-import { DemoSessionsSection } from "./-components/DemoSessionsSection";
+import { useAuthStore } from "@/features/auth/store/auth.store";
+import { NextClassCard } from "@/features/instructor/components/next-class-card";
+import { useJoinLiveRoom } from "@/features/sessions/hooks/use-join-live-room";
+import { useInstructorSchedule } from "@/features/booking/hooks/use-rooms";
+import { useInstructorWallet } from "@/features/instructor/hooks/use-instructors";
+import { useInstructorDemoSessions } from "@/features/demo/hooks/use-demo";
+import { DashboardHeader } from "@/features/instructor/components/dashboard/dashboard-header";
+import { DashboardStats } from "@/features/instructor/components/dashboard/dashboard-stats";
+import { EarningsBanner } from "@/features/instructor/components/dashboard/earnings-banner";
+import { ViewScheduleBanner } from "@/features/instructor/components/dashboard/view-schedule-banner";
+import { DemoSessionsSection } from "@/features/instructor/components/dashboard/demo-sessions-section";
 
 export const Route = createFileRoute("/instructor/dashboard/")({
   component: InstructorDashboard,

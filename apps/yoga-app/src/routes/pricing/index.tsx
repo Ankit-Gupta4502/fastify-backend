@@ -1,22 +1,22 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { PAGE_SEO } from "@/lib/seo";
+import { PAGE_SEO } from "@/shared/lib/seo";
 import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 
-import { StarDoodle, CircleDoodle, PlusDoodle } from "@/components/shared/doodles";
+import { StarDoodle, CircleDoodle, PlusDoodle } from "@/shared/components/misc/doodles";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
-import { usePlansWithPricing, useMyPlan } from "@/hooks/use-plans";
-import { useCheckout, useCustomCheckout } from "@/hooks/use-checkout";
-import { PLAN_COPY } from "@/lib/plan-copy";
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import { usePlansWithPricing, useMyPlan } from "@/features/payments/hooks/use-plans";
+import { useCheckout, useCustomCheckout } from "@/features/payments/hooks/use-checkout";
+import { PLAN_COPY } from "@/features/payments/utils/plan-copy";
 import type { PlanRecord } from "@yoga-app/shared";
 
-import { MIN_SESSIONS, specializedPlanConfig } from "./-components/pricing-config";
-import { PricingHero } from "./-components/PricingHero";
-import { PricingFeedback } from "./-components/PricingFeedback";
-import { PlansGrid } from "./-components/PlansGrid";
-import { PricingFAQ } from "./-components/PricingFAQ";
-import { TrustSection } from "./-components/TrustSection";
+import { MIN_SESSIONS, specializedPlanConfig } from "@/features/payments/components/pricing/pricing-config";
+import { PricingHero } from "@/features/payments/components/pricing/pricing-hero";
+import { PricingFeedback } from "@/features/payments/components/pricing/pricing-feedback";
+import { PlansGrid } from "@/features/payments/components/pricing/plans-grid";
+import { PricingFAQ } from "@/features/payments/components/pricing/pricing-faq";
+import { TrustSection } from "@/features/payments/components/pricing/trust-section";
 
 export const Route = createFileRoute("/pricing/")({
   head: () => PAGE_SEO.pricing,

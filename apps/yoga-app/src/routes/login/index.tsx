@@ -1,9 +1,9 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 
-import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/components/shared/doodles";
-import { useLogin } from "./-hooks/use-login";
-import { LoginCard } from "./-components/LoginCard";
+import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/shared/components/misc/doodles";
+import { useLogin } from "@/features/auth/hooks/use-login";
+import { LoginCard } from "@/features/auth/components/login/login-card";
 
 export const Route = createFileRoute("/login/")({
   beforeLoad: ({ context }) => {

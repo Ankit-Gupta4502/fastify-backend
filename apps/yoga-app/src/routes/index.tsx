@@ -1,25 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PAGE_SEO } from "@/lib/seo";
+import { PAGE_SEO } from "@/shared/lib/seo";
 import { lazy, Suspense, useEffect } from "react";
-import { useAuthStore } from "@/store/auth.store";
-import { getStoredUtm, clearUtm } from "@/lib/utm";
+import { useAuthStore } from "@/features/auth/store/auth.store";
+import { getStoredUtm, clearUtm } from "@/shared/lib/utm";
 import { userPreferencesApi } from "@/api/user-preferences";
 import { getQueryClient } from "@/lib/react-query/query-client.tsx";
 
 // ── Above-fold: imported directly (no lazy split) ─────────────────────────────
-import { Hero } from "@/components/Home/Hero";
-import { WorkshopChips } from "@/components/Home/WorkshopChips";
+import { Hero } from "@/features/marketing/components/hero";
+import { WorkshopChips } from "@/features/workshops/components/workshop-chips";
 
 // ── Below-fold: code-split with React.lazy ────────────────────────────────────
 // Vercel best practice: split every non-critical section so the initial bundle
 // only includes what the user sees immediately.
-const WorkshopsSection   = lazy(() => import("@/components/Home/WorkshopsSection").then(m => ({ default: m.WorkshopsSection })));
-const LiveScheduleSection = lazy(() => import("@/components/Home/LiveScheduleSection").then(m => ({ default: m.LiveScheduleSection })));
-const QuizSection        = lazy(() => import("@/components/Home/QuizSection").then(m => ({ default: m.QuizSection })));
-const InstructorSpotlight = lazy(() => import("@/components/Home/InstructorSpotlight").then(m => ({ default: m.InstructorSpotlight })));
-const Features           = lazy(() => import("@/components/Home/Features").then(m => ({ default: m.Features })));
-const Process            = lazy(() => import("@/components/Home/Process").then(m => ({ default: m.Process })));
-const Reviews            = lazy(() => import("@/components/Home/Reviews").then(m => ({ default: m.Reviews })));
+const WorkshopsSection   = lazy(() => import("@/features/workshops/components/workshops-section").then(m => ({ default: m.WorkshopsSection })));
+const LiveScheduleSection = lazy(() => import("@/features/marketing/components/live-schedule-section").then(m => ({ default: m.LiveScheduleSection })));
+const QuizSection        = lazy(() => import("@/features/marketing/components/quiz-section").then(m => ({ default: m.QuizSection })));
+const InstructorSpotlight = lazy(() => import("@/features/instructor/components/instructor-spotlight/index").then(m => ({ default: m.InstructorSpotlight })));
+const Features           = lazy(() => import("@/features/marketing/components/features").then(m => ({ default: m.Features })));
+const Process            = lazy(() => import("@/features/marketing/components/process").then(m => ({ default: m.Process })));
+const Reviews            = lazy(() => import("@/features/reviews/components/reviews").then(m => ({ default: m.Reviews })));
 
 // ── Route ─────────────────────────────────────────────────────────────────────
 
@@ -31,9 +31,9 @@ export const Route = createFileRoute("/")({
   loader: async () => {
     const qc = getQueryClient();
 
-    const { roomQueryOptions }    = await import("@/hooks/use-rooms");
-    const { reviewQueryOptions }  = await import("@/hooks/use-reviews");
-    const { instructorQueryOptions } = await import("@/hooks/use-instructors");
+    const { roomQueryOptions }    = await import("@/features/booking/hooks/use-rooms");
+    const { reviewQueryOptions }  = await import("@/features/reviews/hooks/use-reviews");
+    const { instructorQueryOptions } = await import("@/features/instructor/hooks/use-instructors");
 
     // Fire-and-forget: all three run in parallel, results land in cache before
     // the component tree requests them.

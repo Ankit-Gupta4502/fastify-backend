@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { AdminLoginForm } from "./-AdminLoginForm";
-import { useAdminLogin } from "./-use-admin-login";
+import { AdminLoginForm } from "@/features/auth/components/admin-login-form";
+import { useAdminLogin } from "@/features/auth/hooks/use-admin-login";
 
 export const Route = createFileRoute("/admin-login/")({
   beforeLoad: ({ context }) => {

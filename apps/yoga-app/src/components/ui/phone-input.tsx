@@ -6,7 +6,7 @@ import {
 } from "react-international-phone";
 import { useRef, useState, useEffect, useMemo } from "react";
 import { ChevronDown, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 function isoToFlag(iso2: string) {
   return iso2

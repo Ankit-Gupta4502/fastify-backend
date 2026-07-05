@@ -22,8 +22,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { useAdminPrivateRequests, useAssignPrivateRequest, useRejectPrivateRequest, useAdminInstructors } from "@/hooks/use-admin";
+import { cn } from "@/shared/lib/utils";
+import { useAdminPrivateRequests, useAssignPrivateRequest, useRejectPrivateRequest, useAdminInstructors } from "@/features/admin/hooks/use-admin";
 import type { AdminPrivateSessionRequest, PrivateSessionRequestStatus } from "@yoga-app/shared";
 
 type StatusFilter = "pending" | "approved" | "rejected";

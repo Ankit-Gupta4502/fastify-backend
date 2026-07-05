@@ -1,15 +1,15 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { Calendar, Clock, Flame, Wallet } from "lucide-react";
-import { useAuthStore } from "@/store/auth.store";
-import { StatCard } from "@/components/shared/StatCard";
-import { NextFlowCard } from "./-components/NextFlowCard";
-import { PlanCard } from "./-components/PlanCard";
-import { ProfileCard } from "./-components/ProfileCard";
-import { BookPrivateSessionDialog } from "./-components/BookPrivateSessionDialog";
-import { useUpcomingRooms, useEnrolRoom, useJoinRoom } from "@/hooks/use-rooms";
-import { useMyPlan } from "@/hooks/use-plans";
-import { useMyPreferences } from "@/hooks/use-user-preferences";
+import { useAuthStore } from "@/features/auth/store/auth.store";
+import { StatCard } from "@/shared/components/misc/stat-card";
+import { NextFlowCard } from "@/features/dashboard/components/next-flow-card";
+import { PlanCard } from "@/features/dashboard/components/plan-card";
+import { ProfileCard } from "@/features/dashboard/components/profile-card";
+import { BookPrivateSessionDialog } from "@/features/booking/components/book-private-session-dialog";
+import { useUpcomingRooms, useEnrolRoom, useJoinRoom } from "@/features/booking/hooks/use-rooms";
+import { useMyPlan } from "@/features/payments/hooks/use-plans";
+import { useMyPreferences } from "@/shared/hooks/use-user-preferences";
 export const Route = createFileRoute("/_user/dashboard/")({
   component: UserDashboard,
 });

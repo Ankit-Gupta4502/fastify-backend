@@ -3,8 +3,8 @@ import { useState } from "react";
 import { ArrowLeft, LogOut, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useLeaveRoom } from "@/hooks/use-rooms";
-import { hmsPrebuiltUrl } from "@/lib/hms";
+import { useLeaveRoom } from "@/features/booking/hooks/use-rooms";
+import { hmsPrebuiltUrl } from "@/features/sessions/services/hms.service";
 
 export const Route = createFileRoute("/session/$roomId/")({
   validateSearch: (search: Record<string, unknown>) => ({

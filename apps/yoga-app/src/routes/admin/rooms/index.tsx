@@ -3,11 +3,11 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import type { AdminRoom } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
-import { useAdminGroupRooms, useAdminInstructors } from "@/hooks/use-admin";
-import { RoomsTable } from "../-components/rooms-table";
-import { RoomFormDialog } from "../-components/room-form-dialog";
-import { DeleteRoomDialog } from "../-components/delete-room-dialog";
-import { SectionHeader } from "@/components/shared/section-header";
+import { useAdminGroupRooms, useAdminInstructors } from "@/features/admin/hooks/use-admin";
+import { RoomsTable } from "@/features/admin/components/rooms-table";
+import { RoomFormDialog } from "@/features/admin/components/room-form-dialog";
+import { DeleteRoomDialog } from "@/features/admin/components/delete-room-dialog";
+import { SectionHeader } from "@/shared/components/misc/section-header";
 
 export const Route = createFileRoute("/admin/rooms/")({
   component: AdminRoomsPage,

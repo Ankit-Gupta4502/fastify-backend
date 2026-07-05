@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useExpertProfile, instructorQueryOptions } from "@/hooks/use-instructors";
-import { NotFound } from "@/components/shared/not-found";
-import { InstructorDetail } from "../-components/InstructorDetail";
-import { DetailSkeleton } from "../-components/InstructorDetail/Skeleton";
+import { useExpertProfile, instructorQueryOptions } from "@/features/instructor/hooks/use-instructors";
+import { NotFound } from "@/shared/components/misc/not-found";
+import { InstructorDetail } from "@/features/instructor/components/instructor-detail/index";
+import { DetailSkeleton } from "@/features/instructor/components/instructor-detail/skeleton";
 import { getQueryClient } from "@/lib/react-query/query-client";
-import { buildExpertHead } from "@/lib/seo";
+import { buildExpertHead } from "@/shared/lib/seo";
 
 export const Route = createFileRoute("/experts/$expertId/")({
   loader: async ({ params }) => {

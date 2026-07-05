@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { useMyDemoRequests } from "@/hooks/use-demo";
+import { useMyDemoRequests } from "@/features/demo/hooks/use-demo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import type { DemoRequestStatus, MyDemoRequest } from "@yoga-app/shared";
 import { ExternalLink } from "lucide-react";
 

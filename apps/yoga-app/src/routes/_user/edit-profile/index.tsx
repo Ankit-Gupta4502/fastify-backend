@@ -2,9 +2,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMyPreferences, useSavePreferences } from "@/hooks/use-user-preferences";
-import { StepPersonal } from "../-components/edit-profile/StepPersonal";
-import { StepGoals } from "../-components/edit-profile/StepGoals";
+import { useMyPreferences, useSavePreferences } from "@/shared/hooks/use-user-preferences";
+import { StepPersonal } from "@/features/profile/components/edit-profile/step-personal";
+import { StepGoals } from "@/features/profile/components/edit-profile/step-goals";
 import type { OnboardingGender, OnboardingPurpose, SaveUserPreferencesBody } from "@yoga-app/shared";
 
 export const Route = createFileRoute("/_user/edit-profile/")({

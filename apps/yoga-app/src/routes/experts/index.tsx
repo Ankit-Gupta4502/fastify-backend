@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PAGE_SEO } from "@/lib/seo";
+import { PAGE_SEO } from "@/shared/lib/seo";
 import { Sparkles } from "lucide-react";
-import { useInstructors } from "@/hooks/use-instructors";
-import { ExpertCard } from "@/components/ExpertCard";
+import { useInstructors } from "@/features/instructor/hooks/use-instructors";
+import { ExpertCard } from "@/features/instructor/components/expert-card/index";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/empty-state";
+import { EmptyState } from "@/shared/components/misc/empty-state";
 
 export const Route = createFileRoute("/experts/")({
   head: () => PAGE_SEO.experts,

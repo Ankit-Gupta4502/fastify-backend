@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAdminWorkshops } from "@/hooks/use-workshops";
-import { WorkshopsTable } from "../-components/workshops-table";
-import { WorkshopDialog } from "../-components/workshop-dialog";
+import { useAdminWorkshops } from "@/features/workshops/hooks/use-workshops";
+import { WorkshopsTable } from "@/features/admin/components/workshops-table";
+import { WorkshopDialog } from "@/features/admin/components/workshop-dialog";
 import type { AdminWorkshop } from "@yoga-app/shared";
 
 export const Route = createFileRoute("/admin/workshops/")({

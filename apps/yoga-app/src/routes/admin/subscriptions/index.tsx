@@ -2,13 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Users, TrendingUp, UserCheck, Percent } from "lucide-react";
 import type { PlanRecord } from "@yoga-app/shared";
 import { calcCustomPriceCents } from "@yoga-app/shared";
-import { useAdminUsers } from "@/hooks/use-admin";
-import { usePlansWithPricing } from "@/hooks/use-plans";
-import { SectionHeader } from "@/components/shared/section-header";
-import { StatCard } from "@/components/shared/StatCard";
-import { centsToDisplay } from "@/lib/utils";
-import { SubscriptionsCharts } from "../-components/subscriptions-charts";
-import { SubscribersTable } from "../-components/subscribers-table";
+import { useAdminUsers } from "@/features/admin/hooks/use-admin";
+import { usePlansWithPricing } from "@/features/payments/hooks/use-plans";
+import { SectionHeader } from "@/shared/components/misc/section-header";
+import { StatCard } from "@/shared/components/misc/stat-card";
+import { centsToDisplay } from "@/shared/lib/utils";
+import { SubscriptionsCharts } from "@/features/admin/components/subscriptions-charts";
+import { SubscribersTable } from "@/features/admin/components/subscribers-table";
 
 export const Route = createFileRoute("/admin/subscriptions/")({
   component: AdminSubscriptionsPage,

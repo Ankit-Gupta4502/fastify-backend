@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PAGE_SEO } from "@/lib/seo";
+import { PAGE_SEO } from "@/shared/lib/seo";
 import { useState } from "react";
 import { Mail, MessageCircle, Send, CheckCircle2, Instagram, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 export const Route = createFileRoute("/contact/")({
   head: () => PAGE_SEO.contact,

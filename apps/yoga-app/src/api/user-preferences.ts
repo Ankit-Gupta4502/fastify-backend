@@ -1,7 +1,7 @@
 import type { SaveUserPreferencesBody, UserPreferences } from "@yoga-app/shared";
 import { API_ENDPOINTS } from "@yoga-app/shared";
 import { apiRequest } from "../lib/http";
-import type { UtmData } from "../lib/utm";
+import type { UtmData } from "@/shared/lib/utm";
 
 export const userPreferencesApi = {
   get: () =>

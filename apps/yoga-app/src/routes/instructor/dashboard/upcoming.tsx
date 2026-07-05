@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { useInstructorSchedule } from "@/hooks/use-rooms";
-import { useJoinLiveRoom } from "@/hooks/use-join-live-room";
-import { useScheduleFilters } from "@/hooks/use-schedule-filters";
-import { ScheduleList } from "../-components/ScheduleList";
-import { ScheduleFilters } from "./-components/ScheduleFilters";
-import { ScheduleViewToggle, type ScheduleView } from "./-components/ScheduleViewToggle";
-import { ScheduleCalendarView } from "./-components/ScheduleCalendarView";
+import { cn } from "@/shared/lib/utils";
+import { useInstructorSchedule } from "@/features/booking/hooks/use-rooms";
+import { useJoinLiveRoom } from "@/features/sessions/hooks/use-join-live-room";
+import { useScheduleFilters } from "@/features/instructor/hooks/use-schedule-filters";
+import { ScheduleList } from "@/features/instructor/components/schedule-list";
+import { ScheduleFilters } from "@/features/instructor/components/dashboard/schedule-filters";
+import { ScheduleViewToggle, type ScheduleView } from "@/features/instructor/components/dashboard/schedule-view-toggle";
+import { ScheduleCalendarView } from "@/features/instructor/components/dashboard/schedule-calendar-view";
 
 export const Route = createFileRoute("/instructor/dashboard/upcoming")({
   component: UpcomingSessionsPage,

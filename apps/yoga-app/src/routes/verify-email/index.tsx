@@ -3,11 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { z } from "zod";
 
-import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/components/shared/doodles";
+import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/shared/components/misc/doodles";
 import { authApi } from "@/api";
 import { ApiRequestError } from "@/lib/http";
-import { useAuthStore } from "@/store/auth.store";
-import { VerifyEmailCard } from "./-components/VerifyEmailCard";
+import { useAuthStore } from "@/features/auth/store/auth.store";
+import { VerifyEmailCard } from "@/features/auth/components/verify-email-card";
 
 const searchSchema = z.object({ token: z.string().optional() });
 

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, IndianRupee, TrendingUp } from "lucide-react";
-import { useInstructorWallet } from "@/hooks/use-instructors";
+import { useInstructorWallet } from "@/features/instructor/hooks/use-instructors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";

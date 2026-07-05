@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { USER_ROLES } from "@yoga-app/shared";
-import { InstructorSidebar } from "./-components/instructor-sidebar";
-import { InstructorHeader } from "./-components/instructor-header";
+import { InstructorSidebar } from "@/features/instructor/components/instructor-sidebar";
+import { InstructorHeader } from "@/features/instructor/components/instructor-header";
 
 export const Route = createFileRoute("/instructor")({
   beforeLoad: ({ context, location }) => {

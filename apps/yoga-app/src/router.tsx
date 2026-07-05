@@ -1,6 +1,6 @@
 import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
-import type { AuthUser } from './store/auth.store'
+import type { AuthUser } from '@/features/auth/store/auth.store'
 
 export interface RouterContext {
   user: AuthUser | null
