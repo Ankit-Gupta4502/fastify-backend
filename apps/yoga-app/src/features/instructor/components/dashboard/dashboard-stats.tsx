@@ -11,7 +11,7 @@ interface DashboardStatsProps {
 
 export function DashboardStats({ total, live, seats, isLoading }: DashboardStatsProps) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
         label="Upcoming"
         value={String(total)}

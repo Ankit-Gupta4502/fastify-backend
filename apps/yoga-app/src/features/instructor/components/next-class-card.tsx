@@ -1,12 +1,5 @@
 import { Sparkles, TrendingUp } from "lucide-react";
 import type { InstructorScheduleRoom } from "@yoga-app/shared";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/shared/lib/utils";
@@ -24,22 +17,20 @@ interface NextClassCardProps {
 
 export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassCardProps) {
   return (
-    <Card className="border border-border/60 shadow-none bg-card/50 rounded-2xl overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-base">Up next on your mat</CardTitle>
-            <CardDescription className="text-xs">Times are in {INSTRUCTOR_TIMEZONE_LABEL}</CardDescription>
-          </div>
-          {room && (
-            <Chip icon={TrendingUp} size="sm">
-              {relativeFromNow(room.scheduledStartUtc)}
-            </Chip>
-          )}
+    <div className="rounded-2xl border border-border/60 bg-card/50 p-4 sm:p-5 space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold leading-none">Up next on your mat</h2>
+          <p className="text-xs text-muted-foreground mt-1.5">Times are in {INSTRUCTOR_TIMEZONE_LABEL}</p>
         </div>
-      </CardHeader>
+        {room && (
+          <Chip icon={TrendingUp} size="sm">
+            {relativeFromNow(room.scheduledStartUtc)}
+          </Chip>
+        )}
+      </div>
 
-      <CardContent className="pt-4">
+      <div>
         {isLoading ? (
           <Skeleton className="h-24 w-full rounded-2xl" />
         ) : !room ? (
@@ -116,7 +107,7 @@ export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassC
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

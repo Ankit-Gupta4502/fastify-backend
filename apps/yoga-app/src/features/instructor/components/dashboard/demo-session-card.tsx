@@ -8,7 +8,7 @@ interface DemoSessionCardProps {
 
 export function DemoSessionCard({ demo }: DemoSessionCardProps) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card px-5 py-4 space-y-3">
+    <div className="rounded-2xl border border-border/60 bg-card/50 p-4 space-y-3">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="font-semibold text-sm">{demo.userName}</p>
