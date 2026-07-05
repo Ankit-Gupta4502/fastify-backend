@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { and, desc, eq, gt, isNull, lt, or } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, or } from "drizzle-orm";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { requireRole } from "../../middleware/role.middleware";
 import { USER_ROLES } from "../../constants/roles";
@@ -126,9 +126,22 @@ export class PlansController {
       return reply.status(statusCode).send(payload);
     }
 
-    // Active subscriptions = status is 'active' AND either:
-    //   - recurring plan (sessionsTotal IS NULL), or
-    //   - session-based plan with remaining sessions (sessionsUsed < sessionsTotal)
+    // Active subscriptions = anything the user actually paid for, gated purely
+    // by expiresAt — "pending_payment" is the only status excluded outright
+    // (payment never completed, so there's nothing to show).
+    //   - "expired": session-pool plans (private / prenatal_postnatal /
+    //     therapeutic_yoga) auto-flip here the moment sessionsUsed reaches
+    //     sessionsTotal (see session-pool.service.ts). That flip is reversible
+    //     (a refunded session un-expires it) and unrelated to the billing
+    //     period, so the plan should keep showing (0 remaining) until its
+    //     expiresAt actually passes — it should NOT be re-bookable though,
+    //     which is enforced separately by getActiveSubscriptions/booking
+    //     locks requiring status = "active", so leave that logic alone.
+    //   - "cancelled": user cancelled a recurring subscription (Razorpay
+    //     cancel_at_cycle_end — access continues until the paid period ends).
+    //     Cancelling flips status immediately, but expiresAt is untouched, so
+    //     it should keep showing until that period actually ends, not vanish
+    //     the moment they cancel.
     // A user can hold more than one at once (e.g. a group plan plus a private-session add-on).
     const rows = await drizzle
       .select({
@@ -159,14 +172,10 @@ export class PlansController {
       .where(
         and(
           eq(userSubscriptions.userId, me.id),
-          eq(userSubscriptions.status, "active"),
+          inArray(userSubscriptions.status, ["active", "expired", "cancelled"]),
           or(
             isNull(userSubscriptions.expiresAt),
             gt(userSubscriptions.expiresAt, new Date()),
-          ),
-          or(
-            isNull(userSubscriptions.sessionsTotal),
-            lt(userSubscriptions.sessionsUsed, userSubscriptions.sessionsTotal),
           ),
         ),
       )
