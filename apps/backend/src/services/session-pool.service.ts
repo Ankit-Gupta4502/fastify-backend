@@ -443,11 +443,7 @@ export async function leaveRoom(
           // most recently purchased one (which may be a different plan bought later).
           await trx.execute(sql`
             UPDATE "user_subscriptions"
-            SET "sessions_used" = GREATEST("sessions_used" - 1, 0),
-                "status" = CASE
-                  WHEN "status" = 'expired' THEN 'active'
-                  ELSE "status"
-                END
+            SET "sessions_used" = GREATEST("sessions_used" - 1, 0)
             WHERE "id" = (
               SELECT us.id FROM "user_subscriptions" us
               JOIN "plans" p ON p.id = us.plan_id
@@ -607,8 +603,6 @@ export async function bookPrivateSession(
       .update(userSubscriptions)
       .set({
         sessionsUsed: newUsed,
-        // Auto-expire when the last session is consumed
-        status: newUsed >= sub.sessionsTotal ? "expired" : "active",
       })
       .where(eq(userSubscriptions.id, sub.id));
 

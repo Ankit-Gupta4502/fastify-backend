@@ -300,7 +300,6 @@ export async function assignPrivateSessionRequest(
       .update(userSubscriptions)
       .set({
         sessionsUsed: newUsed,
-        status: newUsed >= sub.sessionsTotal ? "expired" : "active",
       })
       .where(eq(userSubscriptions.id, sub.id));
 

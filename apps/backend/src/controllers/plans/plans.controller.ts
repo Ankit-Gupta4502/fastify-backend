@@ -129,14 +129,16 @@ export class PlansController {
     // Active subscriptions = anything the user actually paid for, gated purely
     // by expiresAt — "pending_payment" is the only status excluded outright
     // (payment never completed, so there's nothing to show).
-    //   - "expired": session-pool plans (private / prenatal_postnatal /
-    //     therapeutic_yoga) auto-flip here the moment sessionsUsed reaches
-    //     sessionsTotal (see session-pool.service.ts). That flip is reversible
-    //     (a refunded session un-expires it) and unrelated to the billing
-    //     period, so the plan should keep showing (0 remaining) until its
-    //     expiresAt actually passes — it should NOT be re-bookable though,
-    //     which is enforced separately by getActiveSubscriptions/booking
-    //     locks requiring status = "active", so leave that logic alone.
+    // Note: running out of purchased sessions (sessionsUsed >= sessionsTotal)
+    // does NOT flip status to "expired" — session-pool.service.ts and
+    // private-session-request.service.ts only deduct sessionsUsed, leaving
+    // status alone. Booking eligibility is enforced separately by
+    // getActiveSubscriptions/booking locks checking sessionsUsed < sessionsTotal
+    // directly, so an exhausted plan stays visible here (0 remaining) without
+    // needing special-casing.
+    //   - "expired": set only by the Razorpay webhook on real billing lapse
+    //     (subscription.halted/completed) — kept visible until expiresAt
+    //     actually passes rather than vanishing the instant the webhook fires.
     //   - "cancelled": user cancelled a recurring subscription (Razorpay
     //     cancel_at_cycle_end — access continues until the paid period ends).
     //     Cancelling flips status immediately, but expiresAt is untouched, so
