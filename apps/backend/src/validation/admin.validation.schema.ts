@@ -35,12 +35,12 @@ export const createGroupRoomBodySchema = z
     scheduledStartUtc: z.string().datetime(),
     scheduledEndUtc: z.string().datetime(),
     capacity: z.number().int().min(2).max(50).default(20),
+    // Group classes join via Google Meet only (no 100ms fallback room is
+    // created) — without this the class would be permanently unjoinable.
     meetLink: z
       .string()
       .url()
-      .refine((v) => v.startsWith("https://"), { message: "meetLink must use https" })
-      .optional()
-      .nullable(),
+      .refine((v) => v.startsWith("https://"), { message: "meetLink must use https" }),
   })
   .refine((v) => new Date(v.scheduledEndUtc) > new Date(v.scheduledStartUtc), {
     message: "scheduledEndUtc must be after scheduledStartUtc",
@@ -62,12 +62,13 @@ export const updateGroupRoomBodySchema = z
     scheduledStartUtc: z.string().datetime().optional(),
     scheduledEndUtc: z.string().datetime().optional(),
     capacity: z.number().int().min(2).max(50).optional(),
+    // Not nullable here — a group room without a meetLink is permanently
+    // unjoinable, so admins can update it but never clear it back to empty.
     meetLink: z
       .string()
       .url()
       .refine((v) => v.startsWith("https://"), { message: "meetLink must use https" })
-      .optional()
-      .nullable(),
+      .optional(),
   })
   .refine((v) => Object.keys(v).length > 0, {
     message: "At least one field must be provided",

@@ -203,7 +203,7 @@ export async function createGroupRoom(
     scheduledStartUtc: Date;
     scheduledEndUtc: Date;
     capacity: number;
-    meetLink?: string | null;
+    meetLink: string;
   },
 ) {
   const [instructor] = await db
@@ -242,7 +242,7 @@ export async function createGroupRoom(
       capacity: params.capacity,
       scheduledStart: params.scheduledStartUtc,
       scheduledEnd: params.scheduledEndUtc,
-      meetLink: params.meetLink ?? null,
+      meetLink: params.meetLink,
     })
     .returning();
 
@@ -251,7 +251,7 @@ export async function createGroupRoom(
     scheduledStart: params.scheduledStartUtc,
     instructorId: params.instructorId,
     instructorName: instructor?.name ?? "your instructor",
-    meetLink: params.meetLink ?? null,
+    meetLink: params.meetLink,
   }).catch((err) => console.error("group room notification failed", err));
 
   return { roomId: inserted.id };
@@ -266,7 +266,7 @@ export async function updateGroupRoom(
     scheduledStartUtc?: Date;
     scheduledEndUtc?: Date;
     capacity?: number;
-    meetLink?: string | null;
+    meetLink?: string;
   },
 ) {
   const [existing] = await db

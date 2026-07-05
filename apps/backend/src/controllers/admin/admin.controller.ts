@@ -260,7 +260,7 @@ export class AdminController {
         scheduledStartUtc: new Date(body.scheduledStartUtc),
         scheduledEndUtc: new Date(body.scheduledEndUtc),
         capacity: body.capacity,
-        meetLink: body.meetLink ?? null,
+        meetLink: body.meetLink,
       });
 
       const { statusCode, payload } = successResponse({

@@ -21,11 +21,14 @@ interface RoomFormDialogProps {
 }
 
 export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFormDialogProps) {
-  const { form, patch, error, fieldErrors, startUtc, endUtc, handleSubmit, isEditing, isPending } = useRoomForm(
+  const { form, error, startUtc, endUtc, handleSubmit, isEditing, isPending } = useRoomForm(
     open,
     room,
     () => onOpenChange(false),
   );
+  const { register, watch, setValue, formState: { errors } } = form;
+  const tz = watch("tz");
+  const capacity = watch("capacity");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -41,12 +44,10 @@ export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFo
 
         <form onSubmit={handleSubmit} className="space-y-5 pt-2">
           {/* Instructor */}
-          <Field label="Instructor" error={fieldErrors.instructorId}>
+          <Field label="Instructor" error={errors.instructorId?.message}>
             <select
-              value={form.instructorId}
-              onChange={(e) => patch({ instructorId: e.target.value })}
-              className={cn("input", fieldErrors.instructorId && "border-destructive")}
-              required
+              className={cn("input", errors.instructorId && "border-destructive")}
+              {...register("instructorId")}
             >
               <option value="">Select instructor…</option>
               {instructors.map((ins) => (
@@ -59,28 +60,27 @@ export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFo
           </Field>
 
           {/* Class name */}
-          <Field label="Class name (optional)" error={fieldErrors.name}>
+          <Field label="Class name (optional)" error={errors.name?.message}>
             <input
               type="text"
-              value={form.name}
-              onChange={(e) => patch({ name: e.target.value })}
               placeholder="e.g. Sunrise Vinyasa Flow"
               maxLength={100}
-              className={cn("input", fieldErrors.name && "border-destructive")}
+              className={cn("input", errors.name && "border-destructive")}
+              {...register("name")}
             />
           </Field>
 
           {/* Timezone selector */}
           <Field label="Input timezone (US)">
             <div className="flex flex-wrap gap-2">
-              {US_TIMEZONES.map(({ label, tz }) => (
+              {US_TIMEZONES.map(({ label, tz: zone }) => (
                 <button
-                  key={tz}
+                  key={zone}
                   type="button"
-                  onClick={() => patch({ tz })}
+                  onClick={() => setValue("tz", zone, { shouldValidate: true })}
                   className={cn(
                     "px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors",
-                    form.tz === tz
+                    tz === zone
                       ? "bg-primary text-primary-foreground border-primary"
                       : "border-border text-muted-foreground hover:border-primary/60 hover:text-foreground",
                   )}
@@ -91,61 +91,66 @@ export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFo
             </div>
           </Field>
 
-          {/* Date + times */}
-          <div className="grid grid-cols-3 gap-3">
-            <Field label="Date" className="col-span-3 sm:col-span-1">
+          {/* Start date + time */}
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Start date" error={errors.date?.message}>
               <input
                 type="date"
-                value={form.date}
                 min={new Date().toISOString().slice(0, 10)}
-                onChange={(e) => patch({ date: e.target.value })}
-                className="input"
-                required
+                className={cn("input", errors.date && "border-destructive")}
+                {...register("date")}
               />
             </Field>
-            <Field label="Start time" error={fieldErrors.scheduledStartUtc}>
+            <Field label="Start time" error={errors.startTime?.message}>
               <input
                 type="time"
-                value={form.startTime}
-                onChange={(e) => patch({ startTime: e.target.value })}
-                className={cn("input", fieldErrors.scheduledStartUtc && "border-destructive")}
-                required
+                className={cn("input", errors.startTime && "border-destructive")}
+                {...register("startTime")}
               />
             </Field>
-            <Field label="End time" error={fieldErrors.scheduledEndUtc}>
+          </div>
+
+          {/* End date + time */}
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="End date" error={errors.endDate?.message}>
+              <input
+                type="date"
+                min={new Date().toISOString().slice(0, 10)}
+                className={cn("input", errors.endDate && "border-destructive")}
+                {...register("endDate")}
+              />
+            </Field>
+            <Field label="End time" error={errors.endTime?.message}>
               <input
                 type="time"
-                value={form.endTime}
-                onChange={(e) => patch({ endTime: e.target.value })}
-                className={cn("input", fieldErrors.scheduledEndUtc && "border-destructive")}
-                required
+                className={cn("input", errors.endTime && "border-destructive")}
+                {...register("endTime")}
               />
             </Field>
           </div>
 
           {/* Google Meet link */}
-          <Field label="Google Meet link (optional)" error={fieldErrors.meetLink}>
+          <Field label="Google Meet link" error={errors.meetLink?.message}>
             <div className="relative">
               <Video className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
               <input
                 type="url"
-                value={form.meetLink}
-                onChange={(e) => patch({ meetLink: e.target.value })}
                 placeholder="https://meet.google.com/xxx-yyyy-zzz"
-                className={cn("input pl-9", fieldErrors.meetLink && "border-destructive")}
+                className={cn("input pl-9", errors.meetLink && "border-destructive")}
+                required
+                {...register("meetLink")}
               />
             </div>
           </Field>
 
           {/* Capacity */}
-          <Field label={`Capacity: ${form.capacity} spots`} error={fieldErrors.capacity}>
+          <Field label={`Capacity: ${capacity} spots`} error={errors.capacity?.message}>
             <input
               type="range"
               min={2}
               max={50}
-              value={form.capacity}
-              onChange={(e) => patch({ capacity: Number(e.target.value) })}
               className="w-full accent-primary"
+              {...register("capacity", { valueAsNumber: true })}
             />
             <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
               <span>2</span><span>50</span>

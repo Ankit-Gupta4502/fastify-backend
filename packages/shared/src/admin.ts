@@ -62,7 +62,8 @@ export interface CreateGroupRoomBody {
   scheduledStartUtc: string;
   scheduledEndUtc: string;
   capacity: number;
-  meetLink?: string | null;
+  // Required — group classes join via Google Meet only, no 100ms fallback room.
+  meetLink: string;
 }
 
 export interface CreateGroupRoomResult {
@@ -75,7 +76,7 @@ export interface UpdateGroupRoomBody {
   scheduledStartUtc?: string;
   scheduledEndUtc?: string;
   capacity?: number;
-  meetLink?: string | null;
+  meetLink?: string;
 }
 
 export type PrivateSessionRequestStatus = "pending" | "approved" | "rejected";

@@ -13,28 +13,6 @@ export const PREVIEW_ZONES = [
   { label: "Your local time", tz: Intl.DateTimeFormat().resolvedOptions().timeZone },
 ] as const;
 
-export interface FormState {
-  instructorId: string;
-  name: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  capacity: number;
-  tz: string;
-  meetLink: string;
-}
-
-export const DEFAULT_FORM: FormState = {
-  instructorId: "",
-  name: "",
-  date: "",
-  startTime: "07:00",
-  endTime: "08:00",
-  capacity: 20,
-  tz: "America/New_York",
-  meetLink: "",
-};
-
 export function formatInZone(utcDate: Date, tz: string) {
   return tzFormat(toZonedTime(utcDate, tz), "EEE, MMM d · h:mm a", { timeZone: tz });
 }
