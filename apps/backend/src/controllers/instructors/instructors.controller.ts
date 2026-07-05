@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { and, arrayContains, desc, eq, gt, inArray } from "drizzle-orm";
+import { and, arrayContains, desc, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { requireRole } from "../../middleware/role.middleware";
@@ -177,7 +177,6 @@ export class InstructorsController {
             ROOM_STATUS.ACTIVE,
             ROOM_STATUS.FULL,
           ]),
-          gt(rooms.scheduledEnd, new Date()),
         ),
       )
       .orderBy(rooms.scheduledStart);
@@ -186,11 +185,13 @@ export class InstructorsController {
     const data = rows.map((r) => {
       const canJoinFrom = r.scheduledStartUtc.getTime() - LIVE_JOIN_WINDOW_MS;
       const canJoinLive = serverNow >= canJoinFrom && serverNow < r.scheduledEndUtc.getTime();
+      const isExpired = serverNow >= r.scheduledEndUtc.getTime();
       return {
         ...r,
         scheduledStart: formatForInstructor(r.scheduledStartUtc),
         scheduledEnd: formatForInstructor(r.scheduledEndUtc),
         canJoinLive,
+        isExpired,
       };
     });
 

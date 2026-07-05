@@ -36,7 +36,7 @@ export type PreferredSlot = z.infer<typeof preferredSlotSchema>;
 
 export const roomsSwaggerSchemas = {
   listUpcomingGroup: {
-    description: "List upcoming group rooms — shows rooms until their scheduled end time",
+    description: "List upcoming group rooms — includes past-ended rooms, flagged via isExpired",
     tags: ["Rooms"] as string[],
     security: [{ cookieAuth: [] }],
   },

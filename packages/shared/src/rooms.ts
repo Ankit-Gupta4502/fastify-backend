@@ -30,6 +30,8 @@ export interface UpcomingRoom {
   isEnrolled: boolean;
   /** Server-computed: true when the live-join window is open (15 min before start until end) */
   canJoinLive: boolean;
+  /** Server-computed: true when scheduledEndUtc is in the past */
+  isExpired: boolean;
   meetLink: string | null;
   instructor: {
     id: string;
@@ -92,6 +94,8 @@ export interface InstructorScheduleRoom {
   scheduledEnd: string;
   /** Server-computed: true when the live-join window is open (15 min before start until end) */
   canJoinLive: boolean;
+  /** Server-computed: true when scheduledEndUtc is in the past */
+  isExpired: boolean;
   meetLink: string | null;
   adminNote: string | null;
 }

@@ -76,6 +76,7 @@ export type UpcomingRoom = {
   scheduledStartUtc: Date;
   scheduledEndUtc: Date;
   isEnrolled: boolean;
+  isExpired: boolean;
   meetLink: string | null;
   instructor: {
     id: string;
@@ -119,17 +120,17 @@ export async function listUpcomingGroupRooms(
       and(
         eq(rooms.type, ROOM_TYPE.GROUP),
         inArray(rooms.status, [ROOM_STATUS.IDLE, ROOM_STATUS.ACTIVE, ROOM_STATUS.FULL]),
-        gt(rooms.scheduledEnd, new Date()),
       ),
     )
     .orderBy(rooms.scheduledStart)
-    .limit(20);
+ 
 
   const serverNow = Date.now();
 
   return rows.map((r) => {
     const canJoinFrom = r.scheduledStartUtc.getTime() - LIVE_JOIN_WINDOW_MS;
     const canJoinLive = serverNow >= canJoinFrom && serverNow < r.scheduledEndUtc.getTime();
+    const isExpired = serverNow >= r.scheduledEndUtc.getTime();
 
     return {
       id: r.id,
@@ -142,6 +143,7 @@ export async function listUpcomingGroupRooms(
       scheduledStart: formatForAudience(r.scheduledStartUtc, audience),
       isEnrolled: r.enrolledUserId !== null,
       canJoinLive,
+      isExpired,
       meetLink: r.enrolledUserId !== null ? (r.meetLink ?? null) : null,
       instructor: {
         id: r.instructorId,

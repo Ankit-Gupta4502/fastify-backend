@@ -23,12 +23,13 @@ function InstructorDashboard() {
   const { joiningId, joinError, handleJoin } = useJoinLiveRoom();
 
   const rooms = schedule.data?.data ?? [];
+  const activeRooms = rooms.filter((r) => !r.isExpired);
   const demos = demoSessions.data?.data ?? [];
 
-  const total = rooms.length;
-  const live = rooms.filter((r) => r.status === "active").length;
-  const seats = rooms.reduce((sum, r) => sum + r.currentOccupancy, 0);
-  const nextRoom = rooms.find((r) => r.status !== "active") ?? rooms[0];
+  const total = activeRooms.length;
+  const live = activeRooms.filter((r) => r.status === "active").length;
+  const seats = activeRooms.reduce((sum, r) => sum + r.currentOccupancy, 0);
+  const nextRoom = activeRooms.find((r) => r.status !== "active") ?? activeRooms[0];
   const balanceInr = wallet.data?.data?.balanceInr ?? 0;
 
   return (

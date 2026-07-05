@@ -69,17 +69,19 @@ export function ScheduleList({ rooms, isLoading, joiningId, onJoin }: ScheduleLi
               <Button
                 size="sm"
                 variant={room.canJoinLive ? "default" : "outline"}
-                disabled={!room.canJoinLive || joiningId === room.id}
+                disabled={!room.canJoinLive || room.isExpired || joiningId === room.id}
                 className={cn(
                   "rounded-full shrink-0",
                   room.canJoinLive && room.status === "active"
                     ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                     : "",
                 )}
-                onClick={() => room.canJoinLive && onJoin(room)}
+                onClick={() => room.canJoinLive && !room.isExpired && onJoin(room)}
               >
                 {joiningId === room.id
                   ? "Opening…"
+                  : room.isExpired
+                  ? "Ended"
                   : room.status === "active"
                   ? "Rejoin"
                   : room.canJoinLive

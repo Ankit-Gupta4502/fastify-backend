@@ -17,6 +17,7 @@ export function SessionRow({ room, tz, acting, onEnrol, onJoinLive }: SessionRow
   const full = room.spotsLeft <= 0 || room.status === "full";
   const live = room.canJoinLive;
   const isActive = room.status === "active";
+  const expired = room.isExpired;
 
   return (
     <tr className="border-b border-border/40 last:border-0 hover:bg-secondary/20 transition-colors group">
@@ -52,6 +53,7 @@ export function SessionRow({ room, tz, acting, onEnrol, onJoinLive }: SessionRow
         <span className={cn(
           "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full",
           isActive ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+            : expired ? "bg-secondary text-muted-foreground"
             : full ? "bg-secondary text-muted-foreground"
             : room.isEnrolled ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
             : "bg-primary/10 text-primary",
@@ -59,16 +61,19 @@ export function SessionRow({ room, tz, acting, onEnrol, onJoinLive }: SessionRow
           <span className={cn(
             "size-1.5 rounded-full",
             isActive ? "bg-emerald-500 animate-pulse"
+              : expired ? "bg-muted-foreground/40"
               : full ? "bg-muted-foreground/40"
               : room.isEnrolled ? "bg-blue-500"
               : "bg-primary/40",
           )} />
-          {isActive ? "Live" : full ? "Full" : room.isEnrolled ? "Enrolled" : "Upcoming"}
+          {isActive ? "Live" : expired ? "Ended" : full ? "Full" : room.isEnrolled ? "Enrolled" : "Upcoming"}
         </span>
       </td>
 
       <td className="px-4 py-3.5 text-right">
-        {room.isEnrolled ? (
+        {expired ? (
+          <span className="text-xs text-muted-foreground">Session ended</span>
+        ) : room.isEnrolled ? (
           live && room.meetLink ? (
             <a
               href={room.meetLink}

@@ -32,22 +32,24 @@ export function SelectedSessionPanel({ room, joiningId, onJoin, onClose }: Selec
         <Button
           size="sm"
           variant={room.canJoinLive ? "default" : "outline"}
-          disabled={!room.canJoinLive || joiningId === room.id}
+          disabled={!room.canJoinLive || room.isExpired || joiningId === room.id}
           className={cn(
             "rounded-full mt-2",
             room.canJoinLive && room.status === "active" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "",
           )}
-          onClick={() => room.canJoinLive && onJoin(room)}
+          onClick={() => room.canJoinLive && !room.isExpired && onJoin(room)}
         >
           {joiningId === room.id
             ? "Opening…"
-            : room.meetLink
-              ? room.status === "active" ? "Rejoin Meet" : "Open Meet"
-              : room.status === "active"
-                ? "Rejoin"
-                : room.canJoinLive
-                  ? "Open"
-                  : "Upcoming"}
+            : room.isExpired
+              ? "Ended"
+              : room.meetLink
+                ? room.status === "active" ? "Rejoin Meet" : "Open Meet"
+                : room.status === "active"
+                  ? "Rejoin"
+                  : room.canJoinLive
+                    ? "Open"
+                    : "Upcoming"}
         </Button>
       </div>
 

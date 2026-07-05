@@ -31,6 +31,7 @@ function UserDashboard() {
   const [bookPrivateOpen, setBookPrivateOpen] = useState(false);
 
   const rooms = upcoming.data?.data ?? [];
+  const activeRooms = rooms.filter((r) => !r.isExpired);
   // A user can hold more than one active plan at once — the recurring plan
   // (e.g. group_live) drives the weekly-quota stats shown here; fall back to
   // whichever plan is active if there's no recurring one (e.g. private-only).
@@ -109,7 +110,7 @@ function UserDashboard() {
         />
         <StatCard
           label="Upcoming"
-          value={String(rooms.length)}
+          value={String(activeRooms.length)}
           icon={Clock}
           accent="text-blue-500"
           bg="bg-blue-50 dark:bg-blue-500/10"
@@ -126,7 +127,7 @@ function UserDashboard() {
       {/* Hero + plan card */}
       <div className="grid lg:grid-cols-3 gap-8">
         <NextFlowCard
-          room={rooms[0]}
+          room={activeRooms[0]}
           isLoading={upcoming.isLoading}
           actingId={actingId}
           onEnrol={handleEnrol}

@@ -77,7 +77,9 @@ export function NextFlowCard({
               </div>
             </div>
 
-            {room.isEnrolled ? (
+            {room.isExpired ? (
+              <span className="text-sm text-muted-foreground shrink-0">Session ended</span>
+            ) : room.isEnrolled ? (
               room.canJoinLive && room.meetLink ? (
                 <a
                   href={room.meetLink}
