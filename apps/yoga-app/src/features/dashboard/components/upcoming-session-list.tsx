@@ -58,7 +58,11 @@ export function UpcomingSessionList({
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-bold text-sm truncate">{room.instructor.name}</p>
-                      {room.isEnrolled && <Chip variant="info">Enrolled</Chip>}
+                      {room.isCancelled ? (
+                        <Chip variant="muted">Cancelled</Chip>
+                      ) : (
+                        room.isEnrolled && <Chip variant="info">Enrolled</Chip>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {formatCompact(room.scheduledStartUtc, timezone)} · {room.currentOccupancy}/{room.capacity}
@@ -66,7 +70,14 @@ export function UpcomingSessionList({
                   </div>
                 </div>
 
-                {room.isEnrolled ? (
+                {room.isCancelled ? (
+                  <span
+                    className="text-xs text-muted-foreground shrink-0"
+                    title="This class was cancelled by admin"
+                  >
+                    Cancelled by admin
+                  </span>
+                ) : room.isEnrolled ? (
                   live && room.meetLink ? (
                     <a
                       href={room.meetLink}

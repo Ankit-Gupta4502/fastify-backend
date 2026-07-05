@@ -10,6 +10,7 @@ import {
   Star,
   CreditCard,
   UserRound,
+  MessageCircle,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ const navItems = [
   { label: "Private Sessions", to: "/admin/private-sessions", icon: UserRound },
   { label: "Workshops", to: "/admin/workshops", icon: BookOpen },
   { label: "Reviews", to: "/admin/reviews", icon: Star },
+  { label: "Contact Queries", to: "/admin/contact-queries", icon: MessageCircle },
 ] as const;
 
 export function AdminNav() {

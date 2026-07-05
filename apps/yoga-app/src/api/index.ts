@@ -86,6 +86,7 @@ export const systemApi = {
 };
 
 export { roomsApi } from "./rooms";
+export { contactApi } from "./contact";
 export { adminApi } from "./admin";
 export { uploadsApi } from "./uploads";
 export { instructorsApi } from "./instructors";

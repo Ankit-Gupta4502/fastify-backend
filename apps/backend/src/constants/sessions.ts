@@ -25,6 +25,7 @@ export const ROOM_STATUS = {
   ACTIVE: "active",
   FULL: "full",
   ENDED: "ended",
+  CANCELLED: "cancelled",
 } as const;
 
 export type RoomStatus = (typeof ROOM_STATUS)[keyof typeof ROOM_STATUS];

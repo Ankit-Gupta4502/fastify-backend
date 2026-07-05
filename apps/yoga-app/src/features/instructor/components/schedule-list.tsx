@@ -42,7 +42,9 @@ export function ScheduleList({ rooms, isLoading, joiningId, onJoin }: ScheduleLi
                 <div
                   className={cn(
                     "size-10 rounded-full flex items-center justify-center shrink-0 border border-border/50",
-                    room.status === "active"
+                    room.isCancelled
+                      ? "bg-destructive/10 text-destructive"
+                      : room.status === "active"
                       ? "bg-accent/20 text-accent"
                       : "bg-background text-primary",
                   )}
@@ -54,14 +56,20 @@ export function ScheduleList({ rooms, isLoading, joiningId, onJoin }: ScheduleLi
                   <p className="text-xs text-muted-foreground">
                     {formatCompact(room.scheduledStartUtc, INSTRUCTOR_IANA)} •{" "}
                     {room.currentOccupancy}/{room.capacity} seats •{" "}
-                    <span className="uppercase tracking-widest font-bold">
+                    <span className={cn("uppercase tracking-widest font-bold", room.isCancelled && "text-destructive")}>
                       {room.status}
                     </span>
                   </p>
-                  {room.adminNote && (
-                    <p className="text-xs text-muted-foreground italic mt-1">
-                      Note from admin: {room.adminNote}
+                  {room.isCancelled ? (
+                    <p className="text-xs text-destructive italic mt-1">
+                      This class was cancelled by admin
                     </p>
+                  ) : (
+                    room.adminNote && (
+                      <p className="text-xs text-muted-foreground italic mt-1">
+                        Note from admin: {room.adminNote}
+                      </p>
+                    )
                   )}
                 </div>
               </div>
@@ -69,7 +77,8 @@ export function ScheduleList({ rooms, isLoading, joiningId, onJoin }: ScheduleLi
               <Button
                 size="sm"
                 variant={room.canJoinLive ? "default" : "outline"}
-                disabled={!room.canJoinLive || room.isExpired || joiningId === room.id}
+                disabled={room.isCancelled || !room.canJoinLive || room.isExpired || joiningId === room.id}
+                title={room.isCancelled ? "This class was cancelled by admin" : undefined}
                 className={cn(
                   "rounded-full shrink-0",
                   room.canJoinLive && room.status === "active"
@@ -78,7 +87,9 @@ export function ScheduleList({ rooms, isLoading, joiningId, onJoin }: ScheduleLi
                 )}
                 onClick={() => room.canJoinLive && !room.isExpired && onJoin(room)}
               >
-                {joiningId === room.id
+                {room.isCancelled
+                  ? "Cancelled"
+                  : joiningId === room.id
                   ? "Opening…"
                   : room.isExpired
                   ? "Ended"

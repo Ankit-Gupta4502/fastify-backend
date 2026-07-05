@@ -67,3 +67,5 @@ export {
 export { userPreferences } from "../models/user-preferences";
 export { userAcquisition } from "../models/user-acquisition";
 export { privateSessionRequests } from "../models/private-session-requests";
+
+export { contactQueries, contactQueryStatusEnum } from "../models/contact";

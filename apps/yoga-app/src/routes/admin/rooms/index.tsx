@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAdminGroupRooms, useAdminInstructors } from "@/features/admin/hooks/use-admin";
 import { RoomsTable } from "@/features/admin/components/rooms-table";
 import { RoomFormDialog } from "@/features/admin/components/room-form-dialog";
-import { DeleteRoomDialog } from "@/features/admin/components/delete-room-dialog";
+import { CancelRoomDialog } from "@/features/admin/components/cancel-room-dialog";
 import { SectionHeader } from "@/shared/components/misc/section-header";
 
 export const Route = createFileRoute("/admin/rooms/")({
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/admin/rooms/")({
 function AdminRoomsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<AdminRoom | null>(null);
-  const [deletingRoom, setDeletingRoom] = useState<AdminRoom | null>(null);
+  const [cancellingRoom, setCancellingRoom] = useState<AdminRoom | null>(null);
   const { data: roomsData, isLoading, error } = useAdminGroupRooms();
   const { data: instructorsData } = useAdminInstructors();
   const rooms = roomsData?.data ?? [];
@@ -55,7 +55,7 @@ function AdminRoomsPage() {
           setEditingRoom(room);
           setFormOpen(true);
         }}
-        onDelete={(room) => setDeletingRoom(room)}
+        onCancel={(room) => setCancellingRoom(room)}
       />
 
       <RoomFormDialog
@@ -65,7 +65,7 @@ function AdminRoomsPage() {
         room={editingRoom}
       />
 
-      <DeleteRoomDialog room={deletingRoom} onOpenChange={(open) => !open && setDeletingRoom(null)} />
+      <CancelRoomDialog room={cancellingRoom} onOpenChange={(open) => !open && setCancellingRoom(null)} />
     </div>
   );
 }

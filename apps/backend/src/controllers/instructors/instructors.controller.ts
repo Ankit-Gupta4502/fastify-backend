@@ -176,6 +176,7 @@ export class InstructorsController {
             ROOM_STATUS.IDLE,
             ROOM_STATUS.ACTIVE,
             ROOM_STATUS.FULL,
+            ROOM_STATUS.CANCELLED,
           ]),
         ),
       )
@@ -184,7 +185,10 @@ export class InstructorsController {
     const serverNow = Date.now();
     const data = rows.map((r) => {
       const canJoinFrom = r.scheduledStartUtc.getTime() - LIVE_JOIN_WINDOW_MS;
-      const canJoinLive = serverNow >= canJoinFrom && serverNow < r.scheduledEndUtc.getTime();
+      const canJoinLive =
+        r.status !== ROOM_STATUS.CANCELLED &&
+        serverNow >= canJoinFrom &&
+        serverNow < r.scheduledEndUtc.getTime();
       const isExpired = serverNow >= r.scheduledEndUtc.getTime();
       return {
         ...r,
@@ -192,6 +196,7 @@ export class InstructorsController {
         scheduledEnd: formatForInstructor(r.scheduledEndUtc),
         canJoinLive,
         isExpired,
+        isCancelled: r.status === ROOM_STATUS.CANCELLED,
       };
     });
 

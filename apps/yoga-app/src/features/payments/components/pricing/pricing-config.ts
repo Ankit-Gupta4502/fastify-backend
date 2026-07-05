@@ -20,13 +20,13 @@ export const planMeta: Record<string, {
 }> = {
   group_live: {
     icon: Users,
-    badge: "Most Popular",
     gradient: "from-sky-500/10 via-blue-400/5 to-transparent",
     iconBg: "bg-sky-500/12 text-sky-500",
     shimmer: "from-transparent via-sky-400/50 to-transparent",
   },
   private: {
     icon: Lock,
+    badge: "Most Popular",
     gradient: "from-primary/12 via-primary/5 to-transparent",
     iconBg: "bg-primary/12 text-primary",
     shimmer: "from-transparent via-primary/50 to-transparent",

@@ -26,6 +26,7 @@ export const listUsersQuerySchema = z.object({
   search: z.string().optional(),
   role: z.enum(["user", "instructor", "admin"]).optional(),
   plan: z.string().optional(),
+  status: z.enum(["pending_payment", "active", "expired", "cancelled"]).optional(),
 });
 
 export const createGroupRoomBodySchema = z

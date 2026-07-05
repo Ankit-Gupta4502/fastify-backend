@@ -4,6 +4,7 @@ import { Chip } from "@/shared/components/misc/chip";
 import { TableSkeletonRows } from "@/shared/components/misc/table-skeleton-rows";
 import { PLAN_COPY } from "@/features/payments/utils/plan-copy";
 import { centsToDisplay } from "@/shared/lib/utils";
+import { SubscriptionStatusChip } from "@/features/admin/components/subscription-status-chip";
 
 function getPlanLabel(planName: string): string {
   if (planName.startsWith("custom_private_")) {
@@ -47,6 +48,9 @@ export function SubscribersTable({ users, plans, isLoading }: SubscribersTablePr
               Plan
             </th>
             <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+              Status
+            </th>
+            <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
               Price / mo
             </th>
             <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">
@@ -56,7 +60,7 @@ export function SubscribersTable({ users, plans, isLoading }: SubscribersTablePr
         </thead>
         <tbody className="divide-y divide-border/40">
           {isLoading ? (
-            <TableSkeletonRows rows={5} cols={5} />
+            <TableSkeletonRows rows={5} cols={6} />
           ) : (
             subscribers.map((u) => {
               const priceCents = getPlanPriceCents(u.planName!, plans);
@@ -68,6 +72,9 @@ export function SubscribersTable({ users, plans, isLoading }: SubscribersTablePr
                     <Chip variant="primary" size="sm">
                       {getPlanLabel(u.planName!)}
                     </Chip>
+                  </td>
+                  <td className="px-4 py-3">
+                    {u.status && <SubscriptionStatusChip status={u.status} />}
                   </td>
                   <td className="px-4 py-3 font-medium">
                     {priceCents ? centsToDisplay(priceCents) : "—"}

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Check, ArrowRight, Loader2, Lock, Minus, Plus, BadgeCheck } from "lucide-react";
+import { Check, ArrowRight, Loader2, Lock, Minus, Plus, BadgeCheck, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { usePlanPrice } from "@/features/payments/hooks/use-plan-price";
@@ -42,9 +42,24 @@ export function PrivatePricingCard({ sessionCount, onSessionCountChange, pricePe
 
   return (
     <div className="relative">
-<div className="group relative flex flex-col overflow-hidden rounded-4xl border transition-all duration-500 hover:-translate-y-1.5 bg-card border-primary/30 shadow-2xl shadow-primary/10 sketch-border-lg">
+      {/* Floating badge above card */}
+      {!isActive && (
+        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap bg-primary text-primary-foreground shadow-primary/25">
+          <Sparkles className="size-2.5" />
+          Most Popular
+        </div>
+      )}
+
+      <div className="group relative flex flex-col overflow-hidden rounded-4xl border transition-all duration-500 hover:-translate-y-1.5 bg-card border-primary/30 shadow-2xl shadow-primary/10 sketch-border-lg">
         <div className="absolute inset-x-0 top-0 h-48 bg-linear-to-b from-primary/12 via-primary/5 to-transparent pointer-events-none" />
         <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent pointer-events-none" />
+
+        {isActive && (
+          <div className="absolute top-5 right-5 z-10 flex items-center gap-1 bg-emerald-500 text-white text-[9px] font-bold uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg shadow-emerald-500/25">
+            <BadgeCheck className="size-2.5" />
+            Current Plan
+          </div>
+        )}
 
         <div className="relative pt-7 pb-3 px-7 space-y-4">
           <div className="flex items-center gap-3">

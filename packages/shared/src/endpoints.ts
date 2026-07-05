@@ -57,7 +57,7 @@ export const API_ENDPOINTS = {
     UPDATE_INSTRUCTOR_PRIORITY: (id: string) => `/admin/instructors/${id}/priority`,
     GROUP_ROOMS: "/admin/rooms/group",
     UPDATE_GROUP_ROOM: (id: string) => `/admin/rooms/group/${id}`,
-    DELETE_GROUP_ROOM: (id: string) => `/admin/rooms/group/${id}`,
+    CANCEL_GROUP_ROOM: (id: string) => `/admin/rooms/group/${id}`,
     PRIVATE_REQUESTS: (status?: "pending" | "approved" | "rejected") =>
       `/admin/rooms/private-requests${status ? `?status=${status}` : ""}`,
     ASSIGN_PRIVATE_REQUEST: (id: string) => `/admin/rooms/private-requests/${id}/assign`,
@@ -74,6 +74,11 @@ export const API_ENDPOINTS = {
     ADMIN_CREATE: "/admin/workshops",
     ADMIN_UPDATE: (id: string) => `/admin/workshops/${id}`,
     ADMIN_DELETE: (id: string) => `/admin/workshops/${id}`,
+  },
+  CONTACT: {
+    SUBMIT: "/contact",
+    ADMIN_LIST: "/admin/contact-queries",
+    ADMIN_RESOLVE: (id: string) => `/admin/contact-queries/${id}/resolve`,
   },
   DEMO: {
     CREATE_REQUEST: "/demo/request",

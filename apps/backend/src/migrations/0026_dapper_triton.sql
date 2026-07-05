@@ -1,0 +1,1 @@
+ALTER TYPE "public"."room_status" ADD VALUE 'cancelled';

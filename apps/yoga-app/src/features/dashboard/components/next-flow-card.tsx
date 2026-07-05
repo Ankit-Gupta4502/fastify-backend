@@ -40,7 +40,7 @@ export function NextFlowCard({
             <CardTitle className="text-xl">Your next flow</CardTitle>
             <CardDescription>Upcoming sessions</CardDescription>
           </div>
-          {room && (
+          {room && !room.isCancelled && (
             <Chip variant="info" icon={TrendingUp} size="md">
               {relativeFromNow(room.scheduledStartUtc)}
             </Chip>
@@ -67,7 +67,11 @@ export function NextFlowCard({
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-2xl font-serif font-bold">{room.instructor.name}</h3>
-                {room.isEnrolled && <Chip variant="info">Enrolled</Chip>}
+                {room.isCancelled ? (
+                  <Chip variant="destructive">Cancelled by admin</Chip>
+                ) : (
+                  room.isEnrolled && <Chip variant="info">Enrolled</Chip>
+                )}
               </div>
               <p className="text-sm text-muted-foreground">{formatCompact(room.scheduledStartUtc, timezone)}</p>
               <div className="flex flex-wrap gap-1.5">
@@ -77,7 +81,11 @@ export function NextFlowCard({
               </div>
             </div>
 
-            {room.isExpired ? (
+            {room.isCancelled ? (
+              <span className="text-sm text-muted-foreground shrink-0" title="This class was cancelled by admin">
+                Cancelled by admin
+              </span>
+            ) : room.isExpired ? (
               <span className="text-sm text-muted-foreground shrink-0">Session ended</span>
             ) : room.isEnrolled ? (
               room.canJoinLive && room.meetLink ? (

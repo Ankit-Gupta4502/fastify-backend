@@ -8,29 +8,29 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useDeleteGroupRoom } from "@/features/admin/hooks/use-admin";
+import { useCancelGroupRoom } from "@/features/admin/hooks/use-admin";
 import { useState } from "react";
 
-interface DeleteRoomDialogProps {
+interface CancelRoomDialogProps {
   room: AdminRoom | null;
   onOpenChange: (open: boolean) => void;
 }
 
-export function DeleteRoomDialog({ room, onOpenChange }: DeleteRoomDialogProps) {
+export function CancelRoomDialog({ room, onOpenChange }: CancelRoomDialogProps) {
   const [error, setError] = useState<string | null>(null);
-  const deleteRoom = useDeleteGroupRoom();
+  const cancelRoom = useCancelGroupRoom();
 
   const handleOpenChange = (open: boolean) => {
     if (!open) setError(null);
     onOpenChange(open);
   };
 
-  const handleDelete = () => {
+  const handleCancel = () => {
     if (!room) return;
     setError(null);
-    deleteRoom.mutate(room.id, {
+    cancelRoom.mutate(room.id, {
       onSuccess: () => onOpenChange(false),
-      onError: (err) => setError(err instanceof Error ? err.message : "Failed to delete class"),
+      onError: (err) => setError(err instanceof Error ? err.message : "Failed to cancel class"),
     });
   };
 
@@ -38,9 +38,10 @@ export function DeleteRoomDialog({ room, onOpenChange }: DeleteRoomDialogProps) 
     <Dialog open={room !== null} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md rounded-3xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Delete live session?</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Cancel live session?</DialogTitle>
           <DialogDescription>
-            {room && `${room.instructorName}'s class on ${new Date(room.scheduledStart).toLocaleString("en-US", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" })} UTC will be permanently removed.`}
+            {room &&
+              `${room.instructorName}'s class on ${new Date(room.scheduledStart).toLocaleString("en-US", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" })} UTC will be cancelled. It will no longer be shown to other users, but the instructor and anyone already enrolled will still see it marked as cancelled by admin.`}
           </DialogDescription>
         </DialogHeader>
 
@@ -52,16 +53,16 @@ export function DeleteRoomDialog({ room, onOpenChange }: DeleteRoomDialogProps) 
 
         <DialogFooter>
           <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)}>
-            Cancel
+            Keep class
           </Button>
           <Button
             type="button"
             variant="destructive"
             className="rounded-xl"
-            disabled={deleteRoom.isPending}
-            onClick={handleDelete}
+            disabled={cancelRoom.isPending}
+            onClick={handleCancel}
           >
-            {deleteRoom.isPending ? "Deleting…" : "Delete"}
+            {cancelRoom.isPending ? "Cancelling…" : "Cancel class"}
           </Button>
         </DialogFooter>
       </DialogContent>

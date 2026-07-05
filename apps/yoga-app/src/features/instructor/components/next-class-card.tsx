@@ -63,19 +63,35 @@ export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassC
                 {room.currentOccupancy}/{room.capacity} seats
               </p>
               <div className="flex items-center gap-2 text-xs">
-                <span className="size-2 rounded-full bg-primary" />
-                <span className="font-bold uppercase tracking-widest text-muted-foreground">
+                <span className={cn("size-2 rounded-full", room.isCancelled ? "bg-destructive" : "bg-primary")} />
+                <span className={cn("font-bold uppercase tracking-widest", room.isCancelled ? "text-destructive" : "text-muted-foreground")}>
                   {room.status}
                 </span>
               </div>
-              {room.adminNote && (
-                <p className="text-sm text-muted-foreground italic bg-muted/40 rounded-xl px-3 py-2">
-                  Note from admin: {room.adminNote}
+              {room.isCancelled ? (
+                <p className="text-sm text-destructive italic bg-destructive/5 rounded-xl px-3 py-2">
+                  This class was cancelled by admin
                 </p>
+              ) : (
+                room.adminNote && (
+                  <p className="text-sm text-muted-foreground italic bg-muted/40 rounded-xl px-3 py-2">
+                    Note from admin: {room.adminNote}
+                  </p>
+                )
               )}
             </div>
 
-            {room.canJoinLive ? (
+            {room.isCancelled ? (
+              <Button
+                size="lg"
+                variant="outline"
+                disabled
+                title="This class was cancelled by admin"
+                className="rounded-full px-8 font-bold shrink-0 opacity-60"
+              >
+                Cancelled
+              </Button>
+            ) : room.canJoinLive ? (
               <Button
                 size="lg"
                 disabled={joiningId === room.id}

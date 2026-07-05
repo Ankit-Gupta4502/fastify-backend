@@ -57,4 +57,8 @@ export const queryKeys = {
     adminDetail: (id: string) => [...queryKeys.demo.all, "admin-detail", id] as const,
     instructorSessions: () => [...queryKeys.demo.all, "instructor-sessions"] as const,
   },
+  contact: {
+    all: ["contact"] as const,
+    adminList: () => [...queryKeys.contact.all, "admin-list"] as const,
+  },
 } as const;

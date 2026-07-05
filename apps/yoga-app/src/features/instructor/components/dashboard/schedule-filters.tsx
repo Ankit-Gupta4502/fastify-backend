@@ -54,6 +54,7 @@ export function ScheduleFilters({ filters, setFilter, hasActiveFilters, onReset,
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="full">Full</SelectItem>
             <SelectItem value="ended">Ended</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
           </SelectContent>
         </Select>
       </div>

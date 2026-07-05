@@ -1,33 +1,49 @@
-import { and, asc, desc, eq, ilike, inArray, isNull, lt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import type { AppDatabase } from "../types/database.types";
 import { user, plans, rooms, roomUsers, instructorDetails, userSubscriptions, userPreferences, userAcquisition, privateSessionRequests } from "../schema/schema";
+import type { subscriptionStatusEnum } from "../models/user-subscription";
 import { auth } from "../lib/auth";
 import { USER_ROLES } from "../constants/roles";
 import { ROOM_STATUS, ROOM_TYPE } from "../constants/sessions";
 import { notifyEligibleGroupUsers } from "./room-notification.service";
 
-export async function listUsers(db: AppDatabase, search?: string, role?: string, plan?: string) {
-  let planUserIds: string[] | undefined;
-  if (plan) {
-    const planRows = await db
+type SubscriptionStatus = (typeof subscriptionStatusEnum.enumValues)[number];
+
+export async function listUsers(
+  db: AppDatabase,
+  search?: string,
+  role?: string,
+  plan?: string,
+  status?: SubscriptionStatus,
+) {
+  let filteredUserIds: string[] | undefined;
+  if (plan || status) {
+    const subRows = await db
       .select({ userId: userSubscriptions.userId })
       .from(userSubscriptions)
       .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
       .where(
         and(
-          eq(plans.name, plan),
-          eq(userSubscriptions.status, "active"),
-          or(isNull(userSubscriptions.sessionsTotal), lt(userSubscriptions.sessionsUsed, userSubscriptions.sessionsTotal)),
+          plan ? eq(plans.name, plan) : undefined,
+          // Explicit status filter means "literally this status" — no extra
+          // relevance gating. Without one, fall back to the "currently
+          // relevant" definition used for the derived planName below.
+          status
+            ? eq(userSubscriptions.status, status)
+            : and(
+                inArray(userSubscriptions.status, ["active", "expired", "cancelled"]),
+                or(isNull(userSubscriptions.expiresAt), gt(userSubscriptions.expiresAt, new Date())),
+              ),
         ),
       );
-    planUserIds = planRows.map((r) => r.userId);
-    if (planUserIds.length === 0) return [];
+    filteredUserIds = [...new Set(subRows.map((r) => r.userId))];
+    if (filteredUserIds.length === 0) return [];
   }
 
   const whereClause = and(
     search ? or(ilike(user.name, `%${search}%`), ilike(user.email, `%${search}%`)) : undefined,
     role ? eq(user.role, role) : undefined,
-    planUserIds ? inArray(user.id, planUserIds) : undefined,
+    filteredUserIds ? inArray(user.id, filteredUserIds) : undefined,
   );
 
   const users = await db
@@ -42,18 +58,43 @@ export async function listUsers(db: AppDatabase, search?: string, role?: string,
     .where(whereClause)
     .orderBy(desc(user.createdAt));
 
-  const activeSubs = await db
-    .select({ userId: userSubscriptions.userId, planName: plans.name })
-    .from(userSubscriptions)
-    .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
-    .where(
-      and(
-        eq(userSubscriptions.status, "active"),
-        or(isNull(userSubscriptions.sessionsTotal), lt(userSubscriptions.sessionsUsed, userSubscriptions.sessionsTotal)),
-      ),
-    );
-
   const userIds = users.map((u) => u.id);
+
+  const subscriptionRows = userIds.length
+    ? await db
+        .select({
+          id: userSubscriptions.id,
+          userId: userSubscriptions.userId,
+          planName: plans.name,
+          sessionsTotal: userSubscriptions.sessionsTotal,
+          sessionsUsed: userSubscriptions.sessionsUsed,
+          pricePaidCents: userSubscriptions.pricePaidCents,
+          status: userSubscriptions.status,
+          purchasedAt: userSubscriptions.purchasedAt,
+          expiresAt: userSubscriptions.expiresAt,
+        })
+        .from(userSubscriptions)
+        .innerJoin(plans, eq(userSubscriptions.planId, plans.id))
+        .where(inArray(userSubscriptions.userId, userIds))
+        .orderBy(desc(userSubscriptions.purchasedAt))
+    : [];
+
+  const subsByUser = new Map<string, typeof subscriptionRows>();
+  for (const sub of subscriptionRows) {
+    const list = subsByUser.get(sub.userId);
+    if (list) list.push(sub);
+    else subsByUser.set(sub.userId, [sub]);
+  }
+
+  // Single "current plan" pick for consumers that only care about one plan
+  // (subscriber counts/revenue charts) — most-recently-purchased subscription
+  // that isn't pending_payment and hasn't passed its expiry.
+  const currentPlanByUser = new Map<string, { planName: string; status: string }>();
+  for (const sub of subscriptionRows) {
+    if (currentPlanByUser.has(sub.userId)) continue;
+    const isCurrent = sub.status !== "pending_payment" && (sub.expiresAt === null || sub.expiresAt > new Date());
+    if (isCurrent) currentPlanByUser.set(sub.userId, { planName: sub.planName, status: sub.status });
+  }
 
   const prefs = userIds.length
     ? await db
@@ -84,16 +125,23 @@ export async function listUsers(db: AppDatabase, search?: string, role?: string,
         .where(inArray(userAcquisition.userId, userIds))
     : [];
 
-  const planNameByUser = new Map<string, string>();
-  for (const sub of activeSubs) {
-    if (!planNameByUser.has(sub.userId)) planNameByUser.set(sub.userId, sub.planName);
-  }
   const prefsByUser = new Map(prefs.map((p) => [p.userId, p]));
   const acqByUser = new Map(acquisitions.map((a) => [a.userId, a]));
 
   return users.map((u) => ({
     ...u,
-    planName: planNameByUser.get(u.id) ?? null,
+    planName: currentPlanByUser.get(u.id)?.planName ?? null,
+    status: currentPlanByUser.get(u.id)?.status ?? null,
+    subscriptions: (subsByUser.get(u.id) ?? []).map((s) => ({
+      id: s.id,
+      planName: s.planName,
+      sessionsTotal: s.sessionsTotal,
+      sessionsUsed: s.sessionsUsed,
+      pricePaidCents: s.pricePaidCents,
+      status: s.status,
+      purchasedAt: s.purchasedAt.toISOString(),
+      expiresAt: s.expiresAt?.toISOString() ?? null,
+    })),
     createdAt: u.createdAt.toISOString(),
     preferences: prefsByUser.get(u.id) ?? null,
     acquisition: acqByUser.get(u.id) ?? null,
@@ -280,6 +328,9 @@ export async function updateGroupRoom(
   if (existing.status === ROOM_STATUS.ENDED) {
     throw new Error("ROOM_ENDED");
   }
+  if (existing.status === ROOM_STATUS.CANCELLED) {
+    throw new Error("ROOM_CANCELLED");
+  }
 
   const instructorId = params.instructorId ?? existing.instructorId;
   const scheduledStart = params.scheduledStartUtc ?? existing.scheduledStart;
@@ -332,7 +383,11 @@ export async function updateGroupRoom(
   return { roomId };
 }
 
-export async function deleteGroupRoom(db: AppDatabase, roomId: string) {
+// Soft-cancel — the room row (and any bookings on it) is kept so enrolled
+// students and the instructor still see it on their own schedules, just
+// disabled with a "cancelled by admin" state. It simply stops being offered
+// to everyone else.
+export async function cancelGroupRoom(db: AppDatabase, roomId: string) {
   const [existing] = await db
     .select()
     .from(rooms)
@@ -341,11 +396,14 @@ export async function deleteGroupRoom(db: AppDatabase, roomId: string) {
   if (!existing) {
     throw new Error("ROOM_NOT_FOUND");
   }
-  if (existing.currentOccupancy > 0) {
-    throw new Error("ROOM_HAS_BOOKINGS");
+  if (existing.status === ROOM_STATUS.ENDED) {
+    throw new Error("ROOM_ENDED");
+  }
+  if (existing.status === ROOM_STATUS.CANCELLED) {
+    throw new Error("ROOM_ALREADY_CANCELLED");
   }
 
-  await db.delete(rooms).where(eq(rooms.id, roomId));
+  await db.update(rooms).set({ status: ROOM_STATUS.CANCELLED }).where(eq(rooms.id, roomId));
 }
 
 // ─── Admin: get single user detail ───────────────────────────────────────────

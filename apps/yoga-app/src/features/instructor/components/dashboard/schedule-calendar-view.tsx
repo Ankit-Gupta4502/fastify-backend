@@ -34,6 +34,7 @@ const STATUS_COLORS: Record<InstructorScheduleRoom["status"], { bg: string; text
   idle: { bg: "var(--primary)", text: "var(--primary-foreground)" },
   full: { bg: "#f59e0b", text: "#ffffff" }, // amber-500
   ended: { bg: "var(--muted)", text: "var(--muted-foreground)" },
+  cancelled: { bg: "var(--destructive)", text: "#ffffff" },
 };
 
 function EventContent({ event }: EventProps<ScheduleEvent>) {
@@ -96,6 +97,7 @@ export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin, clas
               ["Active", "active"],
               ["Full", "full"],
               ["Ended", "ended"],
+              ["Cancelled", "cancelled"],
             ] as const
           ).map(([label, status]) => (
             <span key={status} className="flex items-center gap-1.5">
@@ -127,7 +129,7 @@ export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin, clas
               style: {
                 backgroundColor: colors.bg,
                 color: colors.text,
-                opacity: event.resource.status === "ended" ? 0.6 : 1,
+                opacity: event.resource.status === "ended" || event.resource.isCancelled ? 0.6 : 1,
               },
             };
           }}

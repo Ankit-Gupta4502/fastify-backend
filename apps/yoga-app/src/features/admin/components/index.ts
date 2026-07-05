@@ -1,6 +1,8 @@
 export * from "./admin-nav";
+export * from "./cancel-room-dialog";
+export * from "./contact-queries-table";
+export * from "./contact-status-chip";
 export * from "./create-room-dialog-config";
-export * from "./delete-room-dialog";
 export * from "./demo-requests-table";
 export * from "./demo-status-chip";
 export * from "./instructor-combobox";
@@ -10,6 +12,7 @@ export * from "./room-form-dialog";
 export * from "./room-form-schema";
 export * from "./rooms-table";
 export * from "./subscribers-table";
+export * from "./subscription-status-chip";
 export * from "./subscriptions-charts";
 export * from "./use-review-demo-dialog";
 export * from "./use-room-form";

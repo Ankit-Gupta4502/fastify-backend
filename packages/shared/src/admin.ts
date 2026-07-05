@@ -21,6 +21,8 @@ export interface AdminUser {
   email: string;
   role: string;
   planName: string | null;
+  status: string | null;
+  subscriptions: AdminUserSubscription[];
   createdAt: string;
   preferences: AdminUserPreferences | null;
   acquisition: AdminUserAcquisition | null;
@@ -135,7 +137,6 @@ export interface AdminUserPrivateRequest {
 }
 
 export interface AdminUserDetail extends AdminUser {
-  subscriptions: AdminUserSubscription[];
   rooms: AdminUserRoom[];
   privateRequests: AdminUserPrivateRequest[];
 }

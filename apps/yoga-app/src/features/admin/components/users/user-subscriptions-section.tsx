@@ -1,30 +1,5 @@
-import { CheckCircle2, XCircle, Clock } from "lucide-react";
 import type { AdminUserSubscription } from "@yoga-app/shared";
-
-function statusBadge(status: string) {
-  if (status === "active") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
-        <CheckCircle2 className="size-3" />
-        Active
-      </span>
-    );
-  }
-  if (status === "expired" || status === "cancelled") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground">
-        <XCircle className="size-3" />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
-      <Clock className="size-3" />
-      {status.replace("_", " ")}
-    </span>
-  );
-}
+import { SubscriptionStatusChip } from "@/features/admin/components/subscription-status-chip";
 
 export function UserSubscriptionsSection({ subscriptions }: { subscriptions: AdminUserSubscription[] }) {
   if (subscriptions.length === 0) {
@@ -49,7 +24,7 @@ export function UserSubscriptionsSection({ subscriptions }: { subscriptions: Adm
                 )}
               </p>
             </div>
-            {statusBadge(sub.status)}
+            <SubscriptionStatusChip status={sub.status} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

@@ -4,6 +4,7 @@ import { Chip } from "@/shared/components/misc/chip";
 import { TableSkeletonRows } from "@/shared/components/misc/table-skeleton-rows";
 import { ErrorCard } from "@/shared/components/misc/error-card";
 import type { ChipVariant } from "@/shared/components/misc/chip";
+import { SubscriptionStatusChip } from "@/features/admin/components/subscription-status-chip";
 
 interface UsersTableProps {
   users: AdminUser[];
@@ -73,8 +74,21 @@ export function UsersTable({ users, isLoading, error, search }: UsersTableProps)
                 <td className="px-4 py-3">
                   <Chip variant={ROLE_CHIP_VARIANT[u.role] ?? "muted"}>{u.role}</Chip>
                 </td>
-                <td className="px-4 py-3 text-muted-foreground capitalize">
-                  {u.planName?.replace("_", " ") ?? "—"}
+                <td className="px-4 py-3">
+                  {u.subscriptions.length === 0 ? (
+                    <span className="text-muted-foreground">—</span>
+                  ) : (
+                    <div className="flex flex-col gap-1.5">
+                      {u.subscriptions.map((sub) => (
+                        <div key={sub.id} className="flex items-center gap-1.5">
+                          <span className="capitalize text-muted-foreground">
+                            {sub.planName.replace(/_/g, " ")}
+                          </span>
+                          <SubscriptionStatusChip status={sub.status} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <SourceBadge source={u.acquisition?.utmSource} />

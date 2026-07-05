@@ -1,4 +1,4 @@
-export type RoomStatus = "idle" | "active" | "full" | "ended";
+export type RoomStatus = "idle" | "active" | "full" | "ended" | "cancelled";
 
 /** Safe public shape — no enrolment state, no HMS tokens */
 export interface PublicRoomPreview {
@@ -32,6 +32,8 @@ export interface UpcomingRoom {
   canJoinLive: boolean;
   /** Server-computed: true when scheduledEndUtc is in the past */
   isExpired: boolean;
+  /** True when an admin cancelled this class — kept visible only to the enrolled/instructor audience, disabled everywhere else */
+  isCancelled: boolean;
   meetLink: string | null;
   instructor: {
     id: string;
@@ -96,6 +98,8 @@ export interface InstructorScheduleRoom {
   canJoinLive: boolean;
   /** Server-computed: true when scheduledEndUtc is in the past */
   isExpired: boolean;
+  /** True when an admin cancelled this class */
+  isCancelled: boolean;
   meetLink: string | null;
   adminNote: string | null;
 }

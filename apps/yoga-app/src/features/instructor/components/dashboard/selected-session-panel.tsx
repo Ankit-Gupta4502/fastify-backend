@@ -23,33 +23,42 @@ export function SelectedSessionPanel({ room, joiningId, onJoin, onClose }: Selec
         </p>
         <p className="text-xs text-muted-foreground">
           {room.currentOccupancy}/{room.capacity} seats •{" "}
-          <span className="uppercase tracking-widest font-bold">{room.status}</span>
+          <span className={cn("uppercase tracking-widest font-bold", room.isCancelled && "text-destructive")}>
+            {room.status}
+          </span>
         </p>
-        {room.adminNote && (
-          <p className="text-xs text-muted-foreground italic mt-1">Note from admin: {room.adminNote}</p>
+        {room.isCancelled ? (
+          <p className="text-xs text-destructive italic mt-1">This class was cancelled by admin</p>
+        ) : (
+          room.adminNote && (
+            <p className="text-xs text-muted-foreground italic mt-1">Note from admin: {room.adminNote}</p>
+          )
         )}
 
         <Button
           size="sm"
           variant={room.canJoinLive ? "default" : "outline"}
-          disabled={!room.canJoinLive || room.isExpired || joiningId === room.id}
+          disabled={room.isCancelled || !room.canJoinLive || room.isExpired || joiningId === room.id}
+          title={room.isCancelled ? "This class was cancelled by admin" : undefined}
           className={cn(
             "rounded-full mt-2",
             room.canJoinLive && room.status === "active" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "",
           )}
           onClick={() => room.canJoinLive && !room.isExpired && onJoin(room)}
         >
-          {joiningId === room.id
-            ? "Opening…"
-            : room.isExpired
-              ? "Ended"
-              : room.meetLink
-                ? room.status === "active" ? "Rejoin Meet" : "Open Meet"
-                : room.status === "active"
-                  ? "Rejoin"
-                  : room.canJoinLive
-                    ? "Open"
-                    : "Upcoming"}
+          {room.isCancelled
+            ? "Cancelled"
+            : joiningId === room.id
+              ? "Opening…"
+              : room.isExpired
+                ? "Ended"
+                : room.meetLink
+                  ? room.status === "active" ? "Rejoin Meet" : "Open Meet"
+                  : room.status === "active"
+                    ? "Rejoin"
+                    : room.canJoinLive
+                      ? "Open"
+                      : "Upcoming"}
         </Button>
       </div>
 

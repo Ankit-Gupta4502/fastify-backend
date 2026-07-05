@@ -1,6 +1,6 @@
 import type { AdminRoom } from "@yoga-app/shared";
 import { cn } from "@/shared/lib/utils";
-import { Video, Pencil, Trash2 } from "lucide-react";
+import { Video, Pencil, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableSkeletonRows } from "@/shared/components/misc/table-skeleton-rows";
 import { ErrorCard } from "@/shared/components/misc/error-card";
@@ -10,22 +10,24 @@ interface RoomsTableProps {
   isLoading: boolean;
   error: Error | null;
   onEdit: (room: AdminRoom) => void;
-  onDelete: (room: AdminRoom) => void;
+  onCancel: (room: AdminRoom) => void;
 }
 
 const STATUS_STYLES: Record<string, string> = {
   idle: "text-sky-600",
   active: "text-emerald-600",
   closed: "text-muted-foreground",
+  cancelled: "text-destructive",
 };
 
 const STATUS_DOT: Record<string, string> = {
   idle: "bg-sky-500",
   active: "bg-emerald-500",
   closed: "bg-muted-foreground/50",
+  cancelled: "bg-destructive",
 };
 
-export function RoomsTable({ rooms, isLoading, error, onEdit, onDelete }: RoomsTableProps) {
+export function RoomsTable({ rooms, isLoading, error, onEdit, onCancel }: RoomsTableProps) {
   if (error) return <ErrorCard message="Failed to load rooms." />;
 
   return (
@@ -96,12 +98,13 @@ export function RoomsTable({ rooms, isLoading, error, onEdit, onDelete }: RoomsT
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-1">
+                  <div className="flex items-center justify-end gap-1" title={room.status === "cancelled" ? "This class was cancelled by admin" : undefined}>
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon-sm"
                       className="rounded-lg"
+                      disabled={room.status === "cancelled"}
                       onClick={() => onEdit(room)}
                     >
                       <Pencil className="size-3.5" />
@@ -112,10 +115,11 @@ export function RoomsTable({ rooms, isLoading, error, onEdit, onDelete }: RoomsT
                       variant="ghost"
                       size="icon-sm"
                       className="rounded-lg text-destructive hover:text-destructive"
-                      onClick={() => onDelete(room)}
+                      disabled={room.status === "cancelled"}
+                      onClick={() => onCancel(room)}
                     >
-                      <Trash2 className="size-3.5" />
-                      <span className="sr-only">Delete</span>
+                      <Ban className="size-3.5" />
+                      <span className="sr-only">Cancel class</span>
                     </Button>
                   </div>
                 </td>

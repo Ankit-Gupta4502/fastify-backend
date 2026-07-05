@@ -77,6 +77,7 @@ export type UpcomingRoom = {
   scheduledEndUtc: Date;
   isEnrolled: boolean;
   isExpired: boolean;
+  isCancelled: boolean;
   meetLink: string | null;
   instructor: {
     id: string;
@@ -119,39 +120,47 @@ export async function listUpcomingGroupRooms(
     .where(
       and(
         eq(rooms.type, ROOM_TYPE.GROUP),
-        inArray(rooms.status, [ROOM_STATUS.IDLE, ROOM_STATUS.ACTIVE, ROOM_STATUS.FULL]),
+        inArray(rooms.status, [ROOM_STATUS.IDLE, ROOM_STATUS.ACTIVE, ROOM_STATUS.FULL, ROOM_STATUS.CANCELLED]),
       ),
     )
     .orderBy(rooms.scheduledStart)
- 
+
 
   const serverNow = Date.now();
 
-  return rows.map((r) => {
-    const canJoinFrom = r.scheduledStartUtc.getTime() - LIVE_JOIN_WINDOW_MS;
-    const canJoinLive = serverNow >= canJoinFrom && serverNow < r.scheduledEndUtc.getTime();
-    const isExpired = serverNow >= r.scheduledEndUtc.getTime();
+  return rows
+    // A cancelled class stops being offered to everyone else — only the
+    // people already enrolled in it still see it (disabled) on their list.
+    .filter((r) => r.status !== ROOM_STATUS.CANCELLED || r.enrolledUserId !== null)
+    .map((r) => {
+      const canJoinFrom = r.scheduledStartUtc.getTime() - LIVE_JOIN_WINDOW_MS;
+      const canJoinLive =
+        r.status !== ROOM_STATUS.CANCELLED &&
+        serverNow >= canJoinFrom &&
+        serverNow < r.scheduledEndUtc.getTime();
+      const isExpired = serverNow >= r.scheduledEndUtc.getTime();
 
-    return {
-      id: r.id,
-      status: r.status,
-      capacity: r.capacity,
-      currentOccupancy: r.currentOccupancy,
-      spotsLeft: r.capacity - r.currentOccupancy,
-      scheduledStartUtc: r.scheduledStartUtc,
-      scheduledEndUtc: r.scheduledEndUtc,
-      scheduledStart: formatForAudience(r.scheduledStartUtc, audience),
-      isEnrolled: r.enrolledUserId !== null,
-      canJoinLive,
-      isExpired,
-      meetLink: r.enrolledUserId !== null ? (r.meetLink ?? null) : null,
-      instructor: {
-        id: r.instructorId,
-        name: r.instructorName,
-        specialty: r.specialty ?? [],
-      },
-    };
-  });
+      return {
+        id: r.id,
+        status: r.status,
+        capacity: r.capacity,
+        currentOccupancy: r.currentOccupancy,
+        spotsLeft: r.capacity - r.currentOccupancy,
+        scheduledStartUtc: r.scheduledStartUtc,
+        scheduledEndUtc: r.scheduledEndUtc,
+        scheduledStart: formatForAudience(r.scheduledStartUtc, audience),
+        isEnrolled: r.enrolledUserId !== null,
+        canJoinLive,
+        isExpired,
+        isCancelled: r.status === ROOM_STATUS.CANCELLED,
+        meetLink: r.enrolledUserId !== null ? (r.meetLink ?? null) : null,
+        instructor: {
+          id: r.instructorId,
+          name: r.instructorName,
+          specialty: r.specialty ?? [],
+        },
+      };
+    });
 }
 
 // ─── Enrol (reserve spot in group room) ──────────────────────────────────────
@@ -300,6 +309,10 @@ export async function enterLiveRoom(
 
     if (!room) {
       throw new SessionPoolError("ROOM_NOT_FOUND", "Room not found", 404);
+    }
+
+    if (room.status === ROOM_STATUS.CANCELLED) {
+      throw new SessionPoolError("ROOM_CANCELLED", "This class was cancelled by the admin.", 409);
     }
 
     const now = Date.now();

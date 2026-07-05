@@ -14,11 +14,12 @@ import { API_ENDPOINTS } from "@yoga-app/shared";
 import { apiRequest } from "../lib/http";
 
 export const adminApi = {
-  listUsers: (filters?: { search?: string; role?: string; plan?: string }) => {
+  listUsers: (filters?: { search?: string; role?: string; plan?: string; status?: string }) => {
     const params: Record<string, string> = {};
     if (filters?.search) params.search = filters.search;
     if (filters?.role) params.role = filters.role;
     if (filters?.plan) params.plan = filters.plan;
+    if (filters?.status) params.status = filters.status;
     return apiRequest<AdminUser[]>(API_ENDPOINTS.ADMIN.USERS, {
       params: Object.keys(params).length ? params : undefined,
     });
@@ -63,8 +64,8 @@ export const adminApi = {
       data: body,
     }),
 
-  deleteGroupRoom: (id: string) =>
-    apiRequest<null>(API_ENDPOINTS.ADMIN.DELETE_GROUP_ROOM(id), {
+  cancelGroupRoom: (id: string) =>
+    apiRequest<null>(API_ENDPOINTS.ADMIN.CANCEL_GROUP_ROOM(id), {
       method: "DELETE",
     }),
 

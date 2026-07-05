@@ -4,7 +4,7 @@ import { adminApi } from "@/api/admin";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
 export const adminQueryOptions = {
-  users: (filters?: { search?: string; role?: string; plan?: string }) =>
+  users: (filters?: { search?: string; role?: string; plan?: string; status?: string }) =>
     queryOptions({
       queryKey: queryKeys.admin.users(filters),
       queryFn: () => adminApi.listUsers(filters),
@@ -24,7 +24,7 @@ export const adminQueryOptions = {
     }),
 };
 
-export function useAdminUsers(filters?: { search?: string; role?: string; plan?: string }) {
+export function useAdminUsers(filters?: { search?: string; role?: string; plan?: string; status?: string }) {
   return useQuery(adminQueryOptions.users(filters));
 }
 
@@ -99,10 +99,10 @@ export function useUpdateGroupRoom() {
   });
 }
 
-export function useDeleteGroupRoom() {
+export function useCancelGroupRoom() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => adminApi.deleteGroupRoom(id),
+    mutationFn: (id: string) => adminApi.cancelGroupRoom(id),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.admin.groupRooms() });
       void qc.invalidateQueries({ queryKey: queryKeys.rooms.all });

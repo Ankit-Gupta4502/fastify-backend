@@ -12,7 +12,7 @@ import {
   listGroupRooms,
   createGroupRoom,
   updateGroupRoom,
-  deleteGroupRoom,
+  cancelGroupRoom,
   approveInstructor,
   createInstructor,
   updateInstructorPriority,
@@ -64,7 +64,7 @@ export class AdminController {
         router.get("/rooms/group", { preHandler }, this.getGroupRooms);
         router.post("/rooms/group", { preHandler }, this.createGroupRoom);
         router.patch("/rooms/group/:id", { preHandler }, this.updateGroupRoom);
-        router.delete("/rooms/group/:id", { preHandler }, this.deleteGroupRoom);
+        router.delete("/rooms/group/:id", { preHandler }, this.cancelGroupRoom);
         router.get("/rooms/private-requests", { preHandler }, this.getPrivateRequests);
         router.patch("/rooms/private-requests/:id/assign", { preHandler }, this.assignPrivateRequest);
         router.patch("/rooms/private-requests/:id/reject", { preHandler }, this.rejectPrivateRequest);
@@ -76,8 +76,8 @@ export class AdminController {
   private getUsers = async (request: FastifyRequest, reply: FastifyReply) => {
     const invalid = validateWithZod(request, reply, { query: listUsersQuerySchema });
     if (invalid) return invalid;
-    const { search, role, plan } = request.query as z.infer<typeof listUsersQuerySchema>;
-    const data = await listUsers(drizzle, search, role, plan);
+    const { search, role, plan, status } = request.query as z.infer<typeof listUsersQuerySchema>;
+    const data = await listUsers(drizzle, search, role, plan, status);
     const { statusCode, payload } = successResponse({ message: "Users", data });
     return reply.status(statusCode).send(payload);
   };
@@ -329,6 +329,14 @@ export class AdminController {
         });
         return reply.status(statusCode).send(payload);
       }
+      if (err instanceof Error && err.message === "ROOM_CANCELLED") {
+        const { statusCode, payload } = errorResponse({
+          message: "This class has been cancelled and can no longer be edited",
+          statusCode: 409,
+          error: "ROOM_CANCELLED",
+        });
+        return reply.status(statusCode).send(payload);
+      }
       if (err instanceof Error && err.message === "CAPACITY_BELOW_OCCUPANCY") {
         const { statusCode, payload } = errorResponse({
           message: "Capacity cannot be lower than the current number of bookings",
@@ -357,15 +365,15 @@ export class AdminController {
     }
   };
 
-  private deleteGroupRoom = async (request: FastifyRequest, reply: FastifyReply) => {
+  private cancelGroupRoom = async (request: FastifyRequest, reply: FastifyReply) => {
     const invalidParams = validateWithZod(request, reply, { params: roomIdParamsSchema });
     if (invalidParams) return invalidParams;
 
     const { id } = request.params as z.infer<typeof roomIdParamsSchema>;
 
     try {
-      await deleteGroupRoom(drizzle, id);
-      const { statusCode, payload } = successResponse({ message: "Group room deleted", data: null });
+      await cancelGroupRoom(drizzle, id);
+      const { statusCode, payload } = successResponse({ message: "Class cancelled", data: null });
       return reply.status(statusCode).send(payload);
     } catch (err) {
       if (err instanceof Error && err.message === "ROOM_NOT_FOUND") {
@@ -376,11 +384,19 @@ export class AdminController {
         });
         return reply.status(statusCode).send(payload);
       }
-      if (err instanceof Error && err.message === "ROOM_HAS_BOOKINGS") {
+      if (err instanceof Error && err.message === "ROOM_ENDED") {
         const { statusCode, payload } = errorResponse({
-          message: "Cannot delete a class that already has bookings",
+          message: "This class has already ended and can no longer be cancelled",
           statusCode: 409,
-          error: "ROOM_HAS_BOOKINGS",
+          error: "ROOM_ENDED",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      if (err instanceof Error && err.message === "ROOM_ALREADY_CANCELLED") {
+        const { statusCode, payload } = errorResponse({
+          message: "This class has already been cancelled",
+          statusCode: 409,
+          error: "ROOM_ALREADY_CANCELLED",
         });
         return reply.status(statusCode).send(payload);
       }
