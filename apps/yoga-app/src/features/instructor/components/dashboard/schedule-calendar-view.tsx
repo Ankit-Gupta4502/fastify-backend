@@ -111,7 +111,7 @@ export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin, clas
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 rounded-2xl border border-border/60 bg-card p-3 md:p-4">
+      <div className="flex-1 min-h-0 rounded-2xl border border-border/60 bg-card p-3 md:p-4 shadow-sm">
         <Calendar
           className="instructor-calendar"
           localizer={localizer}
@@ -120,7 +120,7 @@ export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin, clas
           endAccessor="end"
           style={{ height: "100%" }}
           views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
-          defaultView={Views.WEEK}
+          defaultView={Views.MONTH}
           popup
           onSelectEvent={handleSelectEvent}
           eventPropGetter={(event) => {
