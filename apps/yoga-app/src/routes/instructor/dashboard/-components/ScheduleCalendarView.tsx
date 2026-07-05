@@ -52,7 +52,7 @@ interface ScheduleCalendarViewProps {
   rooms: InstructorScheduleRoom[];
   isLoading: boolean;
   joiningId: string | null;
-  onJoin: (roomId: string) => void;
+  onJoin: (room: InstructorScheduleRoom) => void;
 }
 
 export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin }: ScheduleCalendarViewProps) {

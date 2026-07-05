@@ -58,6 +58,18 @@ export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFo
             </select>
           </Field>
 
+          {/* Class name */}
+          <Field label="Class name (optional)">
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => patch({ name: e.target.value })}
+              placeholder="e.g. Sunrise Vinyasa Flow"
+              maxLength={100}
+              className="input"
+            />
+          </Field>
+
           {/* Timezone selector */}
           <Field label="Input timezone (US)">
             <div className="flex flex-wrap gap-2">

@@ -31,6 +31,7 @@ export const listUsersQuerySchema = z.object({
 export const createGroupRoomBodySchema = z
   .object({
     instructorId: z.string().uuid(),
+    name: z.string().trim().min(1).max(100).optional().nullable(),
     scheduledStartUtc: z.string().datetime(),
     scheduledEndUtc: z.string().datetime(),
     capacity: z.number().int().min(2).max(50).default(20),
@@ -57,6 +58,7 @@ export const roomIdParamsSchema = z.object({
 export const updateGroupRoomBodySchema = z
   .object({
     instructorId: z.string().uuid().optional(),
+    name: z.string().trim().min(1).max(100).optional().nullable(),
     scheduledStartUtc: z.string().datetime().optional(),
     scheduledEndUtc: z.string().datetime().optional(),
     capacity: z.number().int().min(2).max(50).optional(),

@@ -47,6 +47,7 @@ export interface AdminRoom {
   id: string;
   instructorId: string;
   instructorName: string;
+  name: string | null;
   scheduledStart: string;
   scheduledEnd: string;
   capacity: number;
@@ -57,6 +58,7 @@ export interface AdminRoom {
 
 export interface CreateGroupRoomBody {
   instructorId: string;
+  name?: string | null;
   scheduledStartUtc: string;
   scheduledEndUtc: string;
   capacity: number;
@@ -69,6 +71,7 @@ export interface CreateGroupRoomResult {
 
 export interface UpdateGroupRoomBody {
   instructorId?: string;
+  name?: string | null;
   scheduledStartUtc?: string;
   scheduledEndUtc?: string;
   capacity?: number;

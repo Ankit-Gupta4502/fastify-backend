@@ -10,7 +10,7 @@ interface ScheduleListProps {
   rooms: InstructorScheduleRoom[];
   isLoading: boolean;
   joiningId: string | null;
-  onJoin: (roomId: string) => void;
+  onJoin: (room: InstructorScheduleRoom) => void;
 }
 
 export function ScheduleList({ rooms, isLoading, joiningId, onJoin }: ScheduleListProps) {
@@ -76,7 +76,7 @@ export function ScheduleList({ rooms, isLoading, joiningId, onJoin }: ScheduleLi
                     ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                     : "",
                 )}
-                onClick={() => room.canJoinLive && onJoin(room.id)}
+                onClick={() => room.canJoinLive && onJoin(room)}
               >
                 {joiningId === room.id
                   ? "Opening…"

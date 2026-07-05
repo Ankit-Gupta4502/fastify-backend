@@ -38,6 +38,7 @@ export const rooms = pgTable(
     originalInstructorId: uuid("original_instructor_id").references(
       () => user.id,
     ),
+    name: text("name"),
     capacity: integer("capacity").notNull().default(20),
     currentOccupancy: integer("current_occupancy").notNull().default(0),
     scheduledStart: timestamp("scheduled_start", {

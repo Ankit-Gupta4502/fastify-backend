@@ -8,7 +8,7 @@ import { INSTRUCTOR_IANA } from "@/constants/sessions";
 interface SelectedSessionPanelProps {
   room: InstructorScheduleRoom;
   joiningId: string | null;
-  onJoin: (roomId: string) => void;
+  onJoin: (room: InstructorScheduleRoom) => void;
   onClose: () => void;
 }
 
@@ -39,7 +39,7 @@ export function SelectedSessionPanel({ room, joiningId, onJoin, onClose }: Selec
             "rounded-full",
             room.canJoinLive && room.status === "active" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "",
           )}
-          onClick={() => room.canJoinLive && onJoin(room.id)}
+          onClick={() => room.canJoinLive && onJoin(room)}
         >
           {joiningId === room.id
             ? "Opening…"

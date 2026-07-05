@@ -256,6 +256,7 @@ export class AdminController {
     try {
       const data = await createGroupRoom(drizzle, {
         instructorId: body.instructorId,
+        name: body.name ?? null,
         scheduledStartUtc: new Date(body.scheduledStartUtc),
         scheduledEndUtc: new Date(body.scheduledEndUtc),
         capacity: body.capacity,
@@ -302,6 +303,7 @@ export class AdminController {
     try {
       const data = await updateGroupRoom(drizzle, id, {
         instructorId: body.instructorId,
+        name: body.name,
         scheduledStartUtc: body.scheduledStartUtc ? new Date(body.scheduledStartUtc) : undefined,
         scheduledEndUtc: body.scheduledEndUtc ? new Date(body.scheduledEndUtc) : undefined,
         capacity: body.capacity,

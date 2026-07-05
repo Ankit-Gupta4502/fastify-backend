@@ -1,1 +1,1 @@
-{"root":["./src/api.ts","./src/auth.ts","./src/constants.ts","./src/index.ts"],"errors":true,"version":"5.9.3"}
+{"root":["./src/admin.ts","./src/api.ts","./src/auth.ts","./src/constants.ts","./src/demo.ts","./src/endpoints.ts","./src/index.ts","./src/instructors.ts","./src/payments.ts","./src/plans.ts","./src/reviews.ts","./src/rooms.ts","./src/user-preferences.ts","./src/workshops.ts"],"version":"5.9.3"}

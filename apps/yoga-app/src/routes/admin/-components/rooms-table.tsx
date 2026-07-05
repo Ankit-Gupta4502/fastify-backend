@@ -33,6 +33,7 @@ export function RoomsTable({ rooms, isLoading, error, onEdit, onDelete }: RoomsT
       <table className="w-full text-sm">
         <thead className="bg-secondary/40">
           <tr>
+            <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Class</th>
             <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Instructor</th>
             <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Starts (UTC)</th>
             <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Ends (UTC)</th>
@@ -44,10 +45,13 @@ export function RoomsTable({ rooms, isLoading, error, onEdit, onDelete }: RoomsT
         </thead>
         <tbody className="divide-y divide-border/40">
           {isLoading ? (
-            <TableSkeletonRows rows={4} cols={7} />
+            <TableSkeletonRows rows={4} cols={8} />
           ) : (
             rooms.map((room) => (
               <tr key={room.id} className="hover:bg-secondary/20 transition-colors">
+                <td className="px-4 py-3 font-medium">
+                  {room.name ?? <span className="text-muted-foreground/50 font-normal">—</span>}
+                </td>
                 <td className="px-4 py-3 font-medium">{room.instructorName}</td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {new Date(room.scheduledStart).toLocaleString("en-US", {

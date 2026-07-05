@@ -15,6 +15,7 @@ export const PREVIEW_ZONES = [
 
 export interface FormState {
   instructorId: string;
+  name: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -25,6 +26,7 @@ export interface FormState {
 
 export const DEFAULT_FORM: FormState = {
   instructorId: "",
+  name: "",
   date: "",
   startTime: "07:00",
   endTime: "08:00",

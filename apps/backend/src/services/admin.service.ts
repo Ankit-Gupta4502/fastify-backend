@@ -3,7 +3,6 @@ import type { AppDatabase } from "../types/database.types";
 import { user, plans, rooms, roomUsers, instructorDetails, userSubscriptions, userPreferences, userAcquisition, privateSessionRequests } from "../schema/schema";
 import { auth } from "../lib/auth";
 import { USER_ROLES } from "../constants/roles";
-import { createHmsRoom } from "./hms.service";
 import { ROOM_STATUS, ROOM_TYPE } from "../constants/sessions";
 import { notifyEligibleGroupUsers } from "./room-notification.service";
 
@@ -176,6 +175,7 @@ export async function listGroupRooms(db: AppDatabase) {
       id: rooms.id,
       instructorId: rooms.instructorId,
       instructorName: user.name,
+      name: rooms.name,
       scheduledStart: rooms.scheduledStart,
       scheduledEnd: rooms.scheduledEnd,
       capacity: rooms.capacity,
@@ -199,6 +199,7 @@ export async function createGroupRoom(
   db: AppDatabase,
   params: {
     instructorId: string;
+    name?: string | null;
     scheduledStartUtc: Date;
     scheduledEndUtc: Date;
     capacity: number;
@@ -230,20 +231,18 @@ export async function createGroupRoom(
     throw new Error("INSTRUCTOR_BUSY");
   }
 
-  const hms = await createHmsRoom(false);
-
+  // Group classes join via Google Meet, not 100ms — no hms room is created.
   const [inserted] = await db
     .insert(rooms)
     .values({
       type: ROOM_TYPE.GROUP,
       status: ROOM_STATUS.IDLE,
       instructorId: params.instructorId,
+      name: params.name ?? null,
       capacity: params.capacity,
       scheduledStart: params.scheduledStartUtc,
       scheduledEnd: params.scheduledEndUtc,
       meetLink: params.meetLink ?? null,
-      hmsRoomId: hms.hmsRoomId,
-      hmsRoomCode: hms.hmsRoomCode,
     })
     .returning();
 
@@ -263,6 +262,7 @@ export async function updateGroupRoom(
   roomId: string,
   params: {
     instructorId?: string;
+    name?: string | null;
     scheduledStartUtc?: Date;
     scheduledEndUtc?: Date;
     capacity?: number;
@@ -321,6 +321,7 @@ export async function updateGroupRoom(
     .update(rooms)
     .set({
       instructorId,
+      name: params.name !== undefined ? params.name : existing.name,
       scheduledStart,
       scheduledEnd,
       capacity,

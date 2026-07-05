@@ -9,6 +9,7 @@ function formFromRoom(room: AdminRoom, tz: string): FormState {
   const { time: endTime } = utcIsoToZonedFields(room.scheduledEnd, tz);
   return {
     instructorId: room.instructorId,
+    name: room.name ?? "",
     date,
     startTime,
     endTime,
@@ -58,6 +59,7 @@ export function useRoomForm(open: boolean, room: AdminRoom | null, onClose: () =
 
     const body = {
       instructorId: form.instructorId,
+      name: form.name.trim() || null,
       scheduledStartUtc: startUtc.toISOString(),
       scheduledEndUtc: endUtc.toISOString(),
       capacity: form.capacity,

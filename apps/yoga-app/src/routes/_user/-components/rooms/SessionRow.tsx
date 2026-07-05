@@ -1,4 +1,4 @@
-import { Users, Clock } from "lucide-react";
+import { Users, Clock, Video } from "lucide-react";
 import type { UpcomingRoom } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -69,19 +69,31 @@ export function SessionRow({ room, tz, acting, onEnrol, onJoinLive }: SessionRow
 
       <td className="px-4 py-3.5 text-right">
         {room.isEnrolled ? (
-          <Button
-            size="sm"
-            disabled={!live || acting}
-            onClick={() => onJoinLive(room.id)}
-            className={cn(
-              "rounded-full px-5 font-bold",
-              live
-                ? "opacity-100 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md"
-                : "opacity-60 group-hover:opacity-80",
-            )}
-          >
-            {acting ? "Joining…" : live ? "Join Live" : "Enrolled ✓"}
-          </Button>
+          live && room.meetLink ? (
+            <a
+              href={room.meetLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-colors"
+            >
+              <Video className="size-3.5" />
+              Join Meet
+            </a>
+          ) : (
+            <Button
+              size="sm"
+              disabled={!live || acting}
+              onClick={() => onJoinLive(room.id)}
+              className={cn(
+                "rounded-full px-5 font-bold",
+                live
+                  ? "opacity-100 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md"
+                  : "opacity-60 group-hover:opacity-80",
+              )}
+            >
+              {acting ? "Joining…" : live ? "Join Live" : "Enrolled ✓"}
+            </Button>
+          )
         ) : (
           <Button
             size="sm"

@@ -19,7 +19,7 @@ interface NextClassCardProps {
   room: InstructorScheduleRoom | undefined;
   isLoading: boolean;
   joiningId: string | null;
-  onJoin: (roomId: string) => void;
+  onJoin: (room: InstructorScheduleRoom) => void;
 }
 
 export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassCardProps) {
@@ -79,13 +79,17 @@ export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassC
               <Button
                 size="lg"
                 disabled={joiningId === room.id}
-                onClick={() => onJoin(room.id)}
+                onClick={() => onJoin(room)}
                 className={cn(
                   "rounded-full px-8 font-bold shrink-0",
                   "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20",
                 )}
               >
-                {joiningId === room.id ? "Opening…" : room.status === "active" ? "Rejoin Studio" : "Open Studio"}
+                {joiningId === room.id
+                  ? "Opening…"
+                  : room.meetLink
+                    ? room.status === "active" ? "Rejoin Meet" : "Open Meet"
+                    : room.status === "active" ? "Rejoin Studio" : "Open Studio"}
               </Button>
             ) : (
               <Button
