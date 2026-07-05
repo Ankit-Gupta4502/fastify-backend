@@ -1,13 +1,13 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn, centsToDisplay, paiseToDisplay } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { PlanRecord } from "@yoga-app/shared";
+import { usePlanPrice } from "@/hooks/use-plan-price";
 
 import {
   MIN_SESSIONS,
+  PRICE_DISCOUNT_CENTS,
   PRICE_DISCOUNT_INR_PAISE,
   specializedPlanConfig,
-  calcPrivatePrice,
-  calcSpecializedPrice,
 } from "./pricing-config";
 import { PricingCard } from "./PricingCard";
 import { PrivatePricingCard } from "./PrivatePricingCard";
@@ -66,6 +66,21 @@ export function PlansGrid({
   onPrivateSubscribe,
   onSpecializedSubscribe,
 }: PlansGridProps) {
+  const { display: privateFromPrice } = usePlanPrice({
+    isIndia,
+    priceCents: privatePlan?.pricePerSessionCents,
+    priceInrPaise: privatePlan?.pricePerSessionInrPaise,
+    quantity: MIN_SESSIONS,
+    discountCents: PRICE_DISCOUNT_CENTS,
+    discountInrPaise: PRICE_DISCOUNT_INR_PAISE,
+  });
+  const { display: therapeuticFromPrice } = usePlanPrice({
+    isIndia,
+    priceCents: therapeuticPlan?.pricePerSessionCents,
+    priceInrPaise: therapeuticPlan?.pricePerSessionInrPaise,
+    quantity: MIN_SESSIONS,
+  });
+
   return (
     <div className="px-4 space-y-6">
       {isLoading ? (
@@ -117,9 +132,9 @@ export function PlansGrid({
       )}
 
       <p className="text-center text-xs text-muted-foreground">
-        <span className="font-semibold text-foreground/60">Private 1:1</span> — from {isIndia && privatePlan?.pricePerSessionInrPaise ? paiseToDisplay(MIN_SESSIONS * privatePlan.pricePerSessionInrPaise - PRICE_DISCOUNT_INR_PAISE) : centsToDisplay(calcPrivatePrice(MIN_SESSIONS))}/mo.{" "}
+        <span className="font-semibold text-foreground/60">Private 1:1</span> — from {privateFromPrice}/mo.{" "}
         <span className="font-semibold text-foreground/60">Prenatal & Postnatal</span> and{" "}
-        <span className="font-semibold text-foreground/60">Therapeutic Yoga</span> — from {isIndia && therapeuticPlan?.pricePerSessionInrPaise ? paiseToDisplay(MIN_SESSIONS * therapeuticPlan.pricePerSessionInrPaise) : centsToDisplay(calcSpecializedPrice(MIN_SESSIONS))}/mo.
+        <span className="font-semibold text-foreground/60">Therapeutic Yoga</span> — from {therapeuticFromPrice}/mo.
       </p>
     </div>
   );

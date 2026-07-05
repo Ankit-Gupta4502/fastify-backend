@@ -1,4 +1,5 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { UpdateGroupRoomBody } from "@yoga-app/shared";
 import { adminApi } from "../api/admin";
 import { queryKeys } from "../lib/react-query/query-keys";
 
@@ -79,6 +80,29 @@ export function useCreateGroupRoom() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: adminApi.createGroupRoom,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.groupRooms() });
+      void qc.invalidateQueries({ queryKey: queryKeys.rooms.all });
+    },
+  });
+}
+
+export function useUpdateGroupRoom() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateGroupRoomBody }) =>
+      adminApi.updateGroupRoom(id, body),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.groupRooms() });
+      void qc.invalidateQueries({ queryKey: queryKeys.rooms.all });
+    },
+  });
+}
+
+export function useDeleteGroupRoom() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminApi.deleteGroupRoom(id),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.admin.groupRooms() });
       void qc.invalidateQueries({ queryKey: queryKeys.rooms.all });

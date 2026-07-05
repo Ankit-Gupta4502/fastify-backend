@@ -1,6 +1,6 @@
 import { toZonedTime, format as tzFormat } from "date-fns-tz";
 import { Video } from "lucide-react";
-import type { AdminInstructor } from "@yoga-app/shared";
+import type { AdminInstructor, AdminRoom } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,16 +11,19 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { US_TIMEZONES, PREVIEW_ZONES, formatInZone } from "./create-room-dialog-config";
-import { useCreateRoomForm } from "./use-create-room-form";
+import { useRoomForm } from "./use-room-form";
 
-interface CreateRoomDialogProps {
+interface RoomFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   instructors: AdminInstructor[];
+  room: AdminRoom | null;
 }
 
-export function CreateRoomDialog({ open, onOpenChange, instructors }: CreateRoomDialogProps) {
-  const { form, patch, error, startUtc, endUtc, handleSubmit, isPending } = useCreateRoomForm(
+export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFormDialogProps) {
+  const { form, patch, error, startUtc, endUtc, handleSubmit, isEditing, isPending } = useRoomForm(
+    open,
+    room,
     () => onOpenChange(false),
   );
 
@@ -28,7 +31,9 @@ export function CreateRoomDialog({ open, onOpenChange, instructors }: CreateRoom
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg rounded-3xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Schedule live session</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            {isEditing ? "Edit live session" : "Schedule live session"}
+          </DialogTitle>
           <DialogDescription>
             Enter times in a US timezone — we'll show you how it converts for users worldwide.
           </DialogDescription>
@@ -163,7 +168,7 @@ export function CreateRoomDialog({ open, onOpenChange, instructors }: CreateRoom
               Cancel
             </Button>
             <Button type="submit" className="rounded-xl" disabled={isPending}>
-              {isPending ? "Creating…" : "Create class"}
+              {isPending ? (isEditing ? "Saving…" : "Creating…") : isEditing ? "Save changes" : "Create class"}
             </Button>
           </div>
         </form>

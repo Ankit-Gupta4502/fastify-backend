@@ -50,6 +50,41 @@ export const createGroupRoomBodySchema = z
     path: ["scheduledStartUtc"],
   });
 
+export const roomIdParamsSchema = z.object({
+  id: z.string().uuid("Invalid room id"),
+});
+
+export const updateGroupRoomBodySchema = z
+  .object({
+    instructorId: z.string().uuid().optional(),
+    scheduledStartUtc: z.string().datetime().optional(),
+    scheduledEndUtc: z.string().datetime().optional(),
+    capacity: z.number().int().min(2).max(50).optional(),
+    meetLink: z
+      .string()
+      .url()
+      .refine((v) => v.startsWith("https://"), { message: "meetLink must use https" })
+      .optional()
+      .nullable(),
+  })
+  .refine((v) => Object.keys(v).length > 0, {
+    message: "At least one field must be provided",
+  })
+  .refine(
+    (v) =>
+      !v.scheduledStartUtc ||
+      !v.scheduledEndUtc ||
+      new Date(v.scheduledEndUtc) > new Date(v.scheduledStartUtc),
+    {
+      message: "scheduledEndUtc must be after scheduledStartUtc",
+      path: ["scheduledEndUtc"],
+    },
+  )
+  .refine((v) => !v.scheduledStartUtc || new Date(v.scheduledStartUtc) > new Date(), {
+    message: "scheduledStartUtc must be in the future",
+    path: ["scheduledStartUtc"],
+  });
+
 export const privateRequestIdParamsSchema = z.object({
   id: z.string().uuid("Invalid request id"),
 });
@@ -73,6 +108,8 @@ export type CreateInstructorBody = z.infer<typeof createInstructorBodySchema>;
 export type InstructorIdParams = z.infer<typeof instructorIdParamsSchema>;
 export type UserIdParams = z.infer<typeof userIdParamsSchema>;
 export type CreateGroupRoomBody = z.infer<typeof createGroupRoomBodySchema>;
+export type RoomIdParams = z.infer<typeof roomIdParamsSchema>;
+export type UpdateGroupRoomBody = z.infer<typeof updateGroupRoomBodySchema>;
 export type PrivateRequestIdParams = z.infer<typeof privateRequestIdParamsSchema>;
 export type PrivateRequestsQuery = z.infer<typeof privateRequestsQuerySchema>;
 export type AssignPrivateRequestBody = z.infer<typeof assignPrivateRequestBodySchema>;

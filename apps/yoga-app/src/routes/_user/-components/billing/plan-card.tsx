@@ -20,8 +20,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { cn, centsToDisplay } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useCancelSubscription } from "@/hooks/use-checkout";
+import { usePlanPrice } from "@/hooks/use-plan-price";
 
 
 
@@ -33,13 +34,16 @@ interface PlanCardProps {
   readOnly?: boolean;
   expiresAt?: string | null;
   subscriptionId?: string | null;
+  isIndia?: boolean;
 }
 
-export function PlanCard({ plan, isActive, isPending, onSubscribe, readOnly, expiresAt, subscriptionId }: PlanCardProps) {
+export function PlanCard({ plan, isActive, isPending, onSubscribe, readOnly, expiresAt, subscriptionId, isIndia }: PlanCardProps) {
   const copy = PLAN_COPY[plan.name] ?? { title: plan.name, tagline: "", perks: [] };
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const cancel = useCancelSubscription();
+
+  const { display: priceDisplay } = usePlanPrice({ isIndia, priceCents: plan.priceCents, priceInrPaise: plan.priceInrPaise });
 
   const displayName = plan.name.replace(/_/g, " ");
   const expiryDate = expiresAt
@@ -74,7 +78,7 @@ export function PlanCard({ plan, isActive, isPending, onSubscribe, readOnly, exp
         <CardTitle className="text-2xl font-bold tracking-tight">{copy.title}</CardTitle>
         <CardDescription className="pt-2">{copy.tagline}</CardDescription>
         <div className="pt-6 flex items-baseline justify-center gap-1">
-          <span className="text-5xl font-serif font-bold">{centsToDisplay(plan.priceCents)}</span>
+          <span className="text-5xl font-serif font-bold">{priceDisplay}</span>
           <span className="text-muted-foreground font-medium">/mo</span>
         </div>
       </CardHeader>

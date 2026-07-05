@@ -36,3 +36,11 @@ export const DEFAULT_FORM: FormState = {
 export function formatInZone(utcDate: Date, tz: string) {
   return tzFormat(toZonedTime(utcDate, tz), "EEE, MMM d · h:mm a", { timeZone: tz });
 }
+
+export function utcIsoToZonedFields(utcIso: string, tz: string) {
+  const zoned = toZonedTime(new Date(utcIso), tz);
+  return {
+    date: tzFormat(zoned, "yyyy-MM-dd", { timeZone: tz }),
+    time: tzFormat(zoned, "HH:mm", { timeZone: tz }),
+  };
+}

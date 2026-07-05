@@ -30,10 +30,12 @@ export class SessionPoolError extends Error {
   }
 }
 
-// ─── Helper: fetch active subscription ───────────────────────────────────────
+// ─── Helper: fetch active subscriptions ──────────────────────────────────────
+// A user can hold more than one active subscription at once (e.g. a recurring
+// group plan plus a private-session add-on) — see PlansController#myPlan.
 
-async function getActiveSubscription(db: AppDatabase, userId: string) {
-  const [sub] = await db
+async function getActiveSubscriptions(db: AppDatabase, userId: string) {
+  return db
     .select({
       id: userSubscriptions.id,
       planId: userSubscriptions.planId,
@@ -59,10 +61,7 @@ async function getActiveSubscription(db: AppDatabase, userId: string) {
         ),
       ),
     )
-    .orderBy(desc(userSubscriptions.purchasedAt))
-    .limit(1);
-
-  return sub ?? null;
+    .orderBy(desc(userSubscriptions.purchasedAt));
 }
 
 // ─── List upcoming group rooms ────────────────────────────────────────────────
@@ -169,18 +168,19 @@ export async function enrollRoom(
 
     // 1. Subscription + quota check — skipped for instructors/admins attending as observers.
     if (!isPrivilegedRole) {
-      const sub = await getActiveSubscription(trx as AppDatabase, params.userId);
+      const subs = await getActiveSubscriptions(trx as AppDatabase, params.userId);
 
-      if (!sub) {
+      if (subs.length === 0) {
         throw new SessionPoolError("NO_ACTIVE_PLAN", "An active plan is required to book sessions", 403);
       }
 
-      // Group rooms require weekly (non-private) plans
-      if (sub.billingInterval === "month" || sub.allowsPrivate) {
-        throw new SessionPoolError("PLAN_NOT_ALLOWED", "Your plan does not include group live sessions", 403);
-      }
+      // Both recurring group plans and private-session plans grant access to
+      // group live sessions. The recurring group plan (if held) governs the
+      // weekly cap; private-only plan holders have no weekly cap here since
+      // their quota lives in their purchased session pool instead.
+      const groupSub = subs.find((s) => s.billingInterval === "week" && !s.allowsPrivate) ?? subs[0];
 
-      // 2. Weekly quota check (group plans use the user-level weekly counter)
+      // 2. Weekly quota check (only enforced when a recurring group plan applies)
       const [quotaRow] = await trx
         .select({
           usedWeek: user.sessionsUsedThisWeek,
@@ -189,12 +189,12 @@ export async function enrollRoom(
         .where(eq(user.id, params.userId));
 
       const used = quotaRow?.usedWeek ?? 0;
-      const limit = sub.sessionsPerWeek;
+      const limit = groupSub.sessionsPerWeek;
       if (limit !== null && used >= limit) {
         throw new SessionPoolError("QUOTA_EXCEEDED", "Weekly session quota exceeded", 429);
       }
 
-      subBillingInterval = sub.billingInterval;
+      subBillingInterval = groupSub.billingInterval;
     }
 
     // 3. Guard against double enrolment

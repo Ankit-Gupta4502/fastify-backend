@@ -2,7 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { Check, ArrowRight, Loader2, Minus, Plus, BadgeCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { cn, centsToDisplay, paiseToDisplay } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { usePlanPrice } from "@/hooks/use-plan-price";
 import { MIN_SESSIONS } from "./pricing-config";
 import type { SpecializedPlanConfigEntry } from "./pricing-config";
 
@@ -34,16 +35,13 @@ export function SpecializedPricingCard({
   activeSessions,
   onSubscribe,
 }: SpecializedPricingCardProps) {
-  const ratePerSession = pricePerSessionCents ?? 2000;
-  const ratePerSessionInr = pricePerSessionInrPaise ?? 170000; // ₹1700 fallback while loading
-  const priceCents = sessionCount * ratePerSession;
-  const basePriceCents = MIN_SESSIONS * ratePerSession;
-  const priceInrPaise = sessionCount * ratePerSessionInr;
-  const basePriceInrPaise = MIN_SESSIONS * ratePerSessionInr;
-
-  const priceDisplay = isIndia ? paiseToDisplay(priceInrPaise) : centsToDisplay(priceCents);
-  const basePriceDisplay = isIndia ? paiseToDisplay(basePriceInrPaise) : centsToDisplay(basePriceCents);
-  const rateDisplay = isIndia ? paiseToDisplay(ratePerSessionInr) : centsToDisplay(ratePerSession);
+  const { display: priceDisplay } = usePlanPrice({
+    isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise, quantity: sessionCount,
+  });
+  const { display: basePriceDisplay } = usePlanPrice({
+    isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise, quantity: MIN_SESSIONS,
+  });
+  const { display: rateDisplay } = usePlanPrice({ isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise });
   const PlanIcon = config.icon;
 
   return (

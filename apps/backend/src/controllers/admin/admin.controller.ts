@@ -11,6 +11,8 @@ import {
   listInstructors,
   listGroupRooms,
   createGroupRoom,
+  updateGroupRoom,
+  deleteGroupRoom,
   approveInstructor,
   createInstructor,
   updateInstructorPriority,
@@ -29,6 +31,8 @@ import {
   listUsersQuerySchema,
   userIdParamsSchema,
   createGroupRoomBodySchema,
+  roomIdParamsSchema,
+  updateGroupRoomBodySchema,
   privateRequestIdParamsSchema,
   privateRequestsQuerySchema,
   assignPrivateRequestBodySchema,
@@ -59,6 +63,8 @@ export class AdminController {
         router.patch("/instructors/:id/priority", { preHandler }, this.updatePriority);
         router.get("/rooms/group", { preHandler }, this.getGroupRooms);
         router.post("/rooms/group", { preHandler }, this.createGroupRoom);
+        router.patch("/rooms/group/:id", { preHandler }, this.updateGroupRoom);
+        router.delete("/rooms/group/:id", { preHandler }, this.deleteGroupRoom);
         router.get("/rooms/private-requests", { preHandler }, this.getPrivateRequests);
         router.patch("/rooms/private-requests/:id/assign", { preHandler }, this.assignPrivateRequest);
         router.patch("/rooms/private-requests/:id/reject", { preHandler }, this.rejectPrivateRequest);
@@ -276,6 +282,103 @@ export class AdminController {
           message: "Instructor already has a session in this time window",
           statusCode: 409,
           error: "INSTRUCTOR_BUSY",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      throw err;
+    }
+  };
+
+  private updateGroupRoom = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalidParams = validateWithZod(request, reply, { params: roomIdParamsSchema });
+    if (invalidParams) return invalidParams;
+
+    const invalidBody = validateWithZod(request, reply, { body: updateGroupRoomBodySchema });
+    if (invalidBody) return invalidBody;
+
+    const { id } = request.params as z.infer<typeof roomIdParamsSchema>;
+    const body = request.body as z.infer<typeof updateGroupRoomBodySchema>;
+
+    try {
+      const data = await updateGroupRoom(drizzle, id, {
+        instructorId: body.instructorId,
+        scheduledStartUtc: body.scheduledStartUtc ? new Date(body.scheduledStartUtc) : undefined,
+        scheduledEndUtc: body.scheduledEndUtc ? new Date(body.scheduledEndUtc) : undefined,
+        capacity: body.capacity,
+        meetLink: body.meetLink,
+      });
+
+      const { statusCode, payload } = successResponse({ message: "Group room updated", data });
+      return reply.status(statusCode).send(payload);
+    } catch (err) {
+      if (err instanceof Error && err.message === "ROOM_NOT_FOUND") {
+        const { statusCode, payload } = errorResponse({
+          message: "Room not found",
+          statusCode: 404,
+          error: "ROOM_NOT_FOUND",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      if (err instanceof Error && err.message === "ROOM_ENDED") {
+        const { statusCode, payload } = errorResponse({
+          message: "This class has already ended and can no longer be edited",
+          statusCode: 409,
+          error: "ROOM_ENDED",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      if (err instanceof Error && err.message === "CAPACITY_BELOW_OCCUPANCY") {
+        const { statusCode, payload } = errorResponse({
+          message: "Capacity cannot be lower than the current number of bookings",
+          statusCode: 409,
+          error: "CAPACITY_BELOW_OCCUPANCY",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      if (err instanceof Error && err.message === "INSTRUCTOR_NOT_FOUND") {
+        const { statusCode, payload } = errorResponse({
+          message: "Instructor not found",
+          statusCode: 404,
+          error: "INSTRUCTOR_NOT_FOUND",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      if (err instanceof Error && err.message === "INSTRUCTOR_BUSY") {
+        const { statusCode, payload } = errorResponse({
+          message: "Instructor already has a session in this time window",
+          statusCode: 409,
+          error: "INSTRUCTOR_BUSY",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      throw err;
+    }
+  };
+
+  private deleteGroupRoom = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalidParams = validateWithZod(request, reply, { params: roomIdParamsSchema });
+    if (invalidParams) return invalidParams;
+
+    const { id } = request.params as z.infer<typeof roomIdParamsSchema>;
+
+    try {
+      await deleteGroupRoom(drizzle, id);
+      const { statusCode, payload } = successResponse({ message: "Group room deleted", data: null });
+      return reply.status(statusCode).send(payload);
+    } catch (err) {
+      if (err instanceof Error && err.message === "ROOM_NOT_FOUND") {
+        const { statusCode, payload } = errorResponse({
+          message: "Room not found",
+          statusCode: 404,
+          error: "ROOM_NOT_FOUND",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      if (err instanceof Error && err.message === "ROOM_HAS_BOOKINGS") {
+        const { statusCode, payload } = errorResponse({
+          message: "Cannot delete a class that already has bookings",
+          statusCode: 409,
+          error: "ROOM_HAS_BOOKINGS",
         });
         return reply.status(statusCode).send(payload);
       }

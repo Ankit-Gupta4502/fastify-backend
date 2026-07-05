@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Check, ArrowRight, Loader2, Lock, Minus, Plus, BadgeCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { centsToDisplay, paiseToDisplay } from "@/lib/utils";
+import { usePlanPrice } from "@/hooks/use-plan-price";
 import {
   MIN_SESSIONS,
   PRICE_DISCOUNT_CENTS,
@@ -29,17 +29,16 @@ const privatePerks = [
 ];
 
 export function PrivatePricingCard({ sessionCount, onSessionCountChange, pricePerSessionCents, pricePerSessionInrPaise, isAuthenticated, isPending, isActive, isIndia, activeSessions, onSubscribe }: PrivatePricingCardProps) {
-  const ratePerSession = pricePerSessionCents ?? 2000;
-  const ratePerSessionInr = pricePerSessionInrPaise ?? 170000; // ₹1700 fallback while loading
-  const priceCents = sessionCount * ratePerSession - PRICE_DISCOUNT_CENTS;
-  const basePriceCents = MIN_SESSIONS * ratePerSession - PRICE_DISCOUNT_CENTS;
-  const priceInrPaise = sessionCount * ratePerSessionInr - PRICE_DISCOUNT_INR_PAISE;
-  const basePriceInrPaise = MIN_SESSIONS * ratePerSessionInr - PRICE_DISCOUNT_INR_PAISE;
-
-  const priceDisplay = isIndia ? paiseToDisplay(priceInrPaise) : centsToDisplay(priceCents);
-  const basePriceDisplay = isIndia ? paiseToDisplay(basePriceInrPaise) : centsToDisplay(basePriceCents);
-  const rateDisplay = isIndia ? paiseToDisplay(ratePerSessionInr) : centsToDisplay(ratePerSession);
-  const discountDisplay = isIndia ? paiseToDisplay(PRICE_DISCOUNT_INR_PAISE) : centsToDisplay(PRICE_DISCOUNT_CENTS);
+  const { display: priceDisplay } = usePlanPrice({
+    isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise,
+    quantity: sessionCount, discountCents: PRICE_DISCOUNT_CENTS, discountInrPaise: PRICE_DISCOUNT_INR_PAISE,
+  });
+  const { display: basePriceDisplay } = usePlanPrice({
+    isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise,
+    quantity: MIN_SESSIONS, discountCents: PRICE_DISCOUNT_CENTS, discountInrPaise: PRICE_DISCOUNT_INR_PAISE,
+  });
+  const { display: rateDisplay } = usePlanPrice({ isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise });
+  const { display: discountDisplay } = usePlanPrice({ isIndia, priceCents: PRICE_DISCOUNT_CENTS, priceInrPaise: PRICE_DISCOUNT_INR_PAISE });
 
   return (
     <div className="relative">

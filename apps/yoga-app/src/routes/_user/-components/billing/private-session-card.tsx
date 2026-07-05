@@ -18,16 +18,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { cn, centsToDisplay } from "@/lib/utils";
-import { PRICE_PER_SESSION_CENTS, MIN_SESSIONS, calcCustomPriceCents } from "@yoga-app/shared";
+import { cn } from "@/lib/utils";
+import {
+  PRICE_DISCOUNT_CENTS,
+  PRICE_DISCOUNT_INR_PAISE,
+  MIN_SESSIONS,
+} from "@yoga-app/shared";
 import { useCancelSubscription } from "@/hooks/use-checkout";
+import { usePlanPrice } from "@/hooks/use-plan-price";
 import { PLAN_COPY } from "@/lib/plan-copy";
-
-// "private" sessions get a small volume discount; the other session-based
-// plans (prenatal/therapeutic) are billed at a flat per-session rate.
-function calcPrice(planName: string, sessions: number) {
-  return planName === "private" ? calcCustomPriceCents(sessions) : sessions * PRICE_PER_SESSION_CENTS;
-}
 
 interface PrivateSessionCardProps {
   planName?: string;
@@ -40,6 +39,9 @@ interface PrivateSessionCardProps {
   readOnly?: boolean;
   expiresAt?: string | null;
   subscriptionId?: string | null;
+  isIndia?: boolean;
+  pricePerSessionCents?: number | null;
+  pricePerSessionInrPaise?: number | null;
 }
 
 export function PrivateSessionCard({
@@ -53,9 +55,26 @@ export function PrivateSessionCard({
   readOnly,
   expiresAt,
   subscriptionId,
+  isIndia,
+  pricePerSessionCents,
+  pricePerSessionInrPaise,
 }: PrivateSessionCardProps) {
   const copy = PLAN_COPY[planName] ?? { title: "Private 1:1", tagline: "Personalised sessions with your chosen instructor.", perks: [] };
-  const priceCents = calcPrice(planName, readOnly && activeSessions ? activeSessions : sessionCount);
+  const sessions = readOnly && activeSessions ? activeSessions : sessionCount;
+  // "private" sessions get a small volume discount; the other session-based
+  // plans (prenatal/therapeutic) are billed at a flat per-session rate.
+  const discountCents = planName === "private" ? PRICE_DISCOUNT_CENTS : 0;
+  const discountInrPaise = planName === "private" ? PRICE_DISCOUNT_INR_PAISE : 0;
+
+  const { display: priceDisplay } = usePlanPrice({
+    isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise,
+    quantity: sessions, discountCents, discountInrPaise,
+  });
+  const { display: basePriceDisplay } = usePlanPrice({
+    isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise,
+    quantity: MIN_SESSIONS, discountCents, discountInrPaise,
+  });
+  const { display: rateDisplay } = usePlanPrice({ isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise });
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const cancel = useCancelSubscription();
@@ -119,12 +138,12 @@ export function PrivateSessionCard({
         )}
 
         <div className="pt-4 flex items-baseline justify-center gap-1">
-          <span className="text-5xl font-serif font-bold">{centsToDisplay(priceCents)}</span>
+          <span className="text-5xl font-serif font-bold">{priceDisplay}</span>
           <span className="text-muted-foreground font-medium">/mo</span>
         </div>
         {!readOnly && sessionCount > MIN_SESSIONS && (
           <p className="text-xs text-muted-foreground pt-1">
-            {centsToDisplay(calcPrice(planName, MIN_SESSIONS))}/mo base · +{centsToDisplay(PRICE_PER_SESSION_CENTS)} per extra session
+            {basePriceDisplay}/mo base · +{rateDisplay} per extra session
           </p>
         )}
         {readOnly && activeSessions !== null && (

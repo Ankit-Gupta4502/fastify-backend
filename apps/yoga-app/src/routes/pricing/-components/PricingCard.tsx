@@ -2,9 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { Check, ArrowRight, Loader2, Sparkles, BadgeCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { cn, centsToDisplay, paiseToDisplay } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { PLAN_COPY } from "@/lib/plan-copy";
 import type { PlanRecord } from "@yoga-app/shared";
+import { usePlanPrice } from "@/hooks/use-plan-price";
 import { planMeta } from "./pricing-config";
 
 export interface PricingCardProps {
@@ -28,8 +29,7 @@ export function PricingCard({ plan, isAuthenticated, isPending, isActive, isIndi
   const billingNote = plan.billingInterval === "week" ? "Billed weekly · Cancel any time" : "Billed monthly · Cancel any time";
   const isGroupPlan = plan.name === "group_live";
   const PlanIcon = meta.icon;
-  const showInr = isIndia && plan.priceInrPaise != null;
-  const priceDisplay = showInr ? paiseToDisplay(plan.priceInrPaise!) : centsToDisplay(plan.priceCents);
+  const { display: priceDisplay } = usePlanPrice({ isIndia, priceCents: plan.priceCents, priceInrPaise: plan.priceInrPaise });
 
   return (
     <div className="relative flex flex-col">

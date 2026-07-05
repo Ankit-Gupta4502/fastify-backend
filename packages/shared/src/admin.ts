@@ -67,6 +67,14 @@ export interface CreateGroupRoomResult {
   roomId: string;
 }
 
+export interface UpdateGroupRoomBody {
+  instructorId?: string;
+  scheduledStartUtc?: string;
+  scheduledEndUtc?: string;
+  capacity?: number;
+  meetLink?: string | null;
+}
+
 export type PrivateSessionRequestStatus = "pending" | "approved" | "rejected";
 
 export interface AdminPrivateSessionRequest {

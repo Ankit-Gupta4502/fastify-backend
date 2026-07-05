@@ -56,6 +56,8 @@ export const API_ENDPOINTS = {
     APPROVE_INSTRUCTOR: (id: string) => `/admin/instructors/${id}/approve`,
     UPDATE_INSTRUCTOR_PRIORITY: (id: string) => `/admin/instructors/${id}/priority`,
     GROUP_ROOMS: "/admin/rooms/group",
+    UPDATE_GROUP_ROOM: (id: string) => `/admin/rooms/group/${id}`,
+    DELETE_GROUP_ROOM: (id: string) => `/admin/rooms/group/${id}`,
     PRIVATE_REQUESTS: (status?: "pending" | "approved" | "rejected") =>
       `/admin/rooms/private-requests${status ? `?status=${status}` : ""}`,
     ASSIGN_PRIVATE_REQUEST: (id: string) => `/admin/rooms/private-requests/${id}/assign`,

@@ -8,6 +8,7 @@ import type {
   CreateGroupRoomBody,
   CreateGroupRoomResult,
   CreateInstructorBody,
+  UpdateGroupRoomBody,
 } from "@yoga-app/shared";
 import { API_ENDPOINTS } from "@yoga-app/shared";
 import { apiRequest } from "../lib/http";
@@ -54,6 +55,17 @@ export const adminApi = {
     apiRequest<CreateGroupRoomResult>(API_ENDPOINTS.ADMIN.GROUP_ROOMS, {
       method: "POST",
       data: body,
+    }),
+
+  updateGroupRoom: (id: string, body: UpdateGroupRoomBody) =>
+    apiRequest<CreateGroupRoomResult>(API_ENDPOINTS.ADMIN.UPDATE_GROUP_ROOM(id), {
+      method: "PATCH",
+      data: body,
+    }),
+
+  deleteGroupRoom: (id: string) =>
+    apiRequest<null>(API_ENDPOINTS.ADMIN.DELETE_GROUP_ROOM(id), {
+      method: "DELETE",
     }),
 
   listPrivateRequests: (status: "pending" | "approved" | "rejected" = "pending") =>

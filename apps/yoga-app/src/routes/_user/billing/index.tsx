@@ -17,6 +17,7 @@ function BillingPage() {
   // plan plus a private-session add-on) — render a card per subscription.
   const activeSubs = myPlan.data?.data ?? [];
   const allPlans = plans.data?.data?.plans ?? [];
+  const isIndia = plans.data?.data?.country === "IN";
 
   const isLoading = plans.isLoading || myPlan.isLoading;
 
@@ -46,11 +47,13 @@ function BillingPage() {
                   plan={planRecord}
                   isActive
                   readOnly
+                  isIndia={isIndia}
                   expiresAt={sub.expiresAt}
                   subscriptionId={sub.subscriptionId}
                 />
               );
             }
+            const planRecord = allPlans.find((p) => p.id === sub.plan.id);
             return (
               <PrivateSessionCard
                 key={sub.subscriptionId}
@@ -62,6 +65,9 @@ function BillingPage() {
                 isPending={false}
                 onSubscribe={() => {}}
                 readOnly
+                isIndia={isIndia}
+                pricePerSessionCents={planRecord?.pricePerSessionCents ?? null}
+                pricePerSessionInrPaise={planRecord?.pricePerSessionInrPaise ?? null}
                 expiresAt={sub.expiresAt}
                 subscriptionId={sub.subscriptionId}
               />

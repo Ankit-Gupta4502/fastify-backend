@@ -258,6 +258,95 @@ export async function createGroupRoom(
   return { roomId: inserted.id };
 }
 
+export async function updateGroupRoom(
+  db: AppDatabase,
+  roomId: string,
+  params: {
+    instructorId?: string;
+    scheduledStartUtc?: Date;
+    scheduledEndUtc?: Date;
+    capacity?: number;
+    meetLink?: string | null;
+  },
+) {
+  const [existing] = await db
+    .select()
+    .from(rooms)
+    .where(and(eq(rooms.id, roomId), eq(rooms.type, ROOM_TYPE.GROUP)));
+
+  if (!existing) {
+    throw new Error("ROOM_NOT_FOUND");
+  }
+  if (existing.status === ROOM_STATUS.ENDED) {
+    throw new Error("ROOM_ENDED");
+  }
+
+  const instructorId = params.instructorId ?? existing.instructorId;
+  const scheduledStart = params.scheduledStartUtc ?? existing.scheduledStart;
+  const scheduledEnd = params.scheduledEndUtc ?? existing.scheduledEnd;
+  const capacity = params.capacity ?? existing.capacity;
+
+  if (capacity < existing.currentOccupancy) {
+    throw new Error("CAPACITY_BELOW_OCCUPANCY");
+  }
+
+  if (params.instructorId) {
+    const [instructor] = await db
+      .select({ name: user.name })
+      .from(user)
+      .where(eq(user.id, instructorId));
+    if (!instructor) {
+      throw new Error("INSTRUCTOR_NOT_FOUND");
+    }
+  }
+
+  const conflict = await db.execute(sql`
+    SELECT 1 FROM "rooms"
+    WHERE "instructor_id" = ${instructorId}
+      AND "id" <> ${roomId}
+      AND "status" <> ${ROOM_STATUS.ENDED}
+      AND tstzrange("scheduled_start", "scheduled_end") &&
+          tstzrange(${scheduledStart.toISOString()}::timestamptz,
+                    ${scheduledEnd.toISOString()}::timestamptz)
+    LIMIT 1
+  `);
+  const conflictRows =
+    (conflict as unknown as { rows?: unknown[] }).rows ??
+    (conflict as unknown as unknown[]);
+  if ((conflictRows as unknown[]).length > 0) {
+    throw new Error("INSTRUCTOR_BUSY");
+  }
+
+  await db
+    .update(rooms)
+    .set({
+      instructorId,
+      scheduledStart,
+      scheduledEnd,
+      capacity,
+      meetLink: params.meetLink !== undefined ? params.meetLink : existing.meetLink,
+    })
+    .where(eq(rooms.id, roomId));
+
+  return { roomId };
+}
+
+export async function deleteGroupRoom(db: AppDatabase, roomId: string) {
+  const [existing] = await db
+    .select()
+    .from(rooms)
+    .where(and(eq(rooms.id, roomId), eq(rooms.type, ROOM_TYPE.GROUP)));
+
+  if (!existing) {
+    throw new Error("ROOM_NOT_FOUND");
+  }
+  if (existing.currentOccupancy > 0) {
+    throw new Error("ROOM_HAS_BOOKINGS");
+  }
+
+  await db.delete(rooms).where(eq(rooms.id, roomId));
+}
+
 // ─── Admin: get single user detail ───────────────────────────────────────────
 
 export async function getUserDetail(db: AppDatabase, userId: string) {
