@@ -33,14 +33,15 @@ function InstructorDashboard() {
   const balanceInr = wallet.data?.data?.balanceInr ?? 0;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 pb-12">
+    <div className="max-w-6xl mx-auto space-y-6 pb-12">
       <DashboardHeader firstName={user?.name?.split(" ")[0]} />
 
       <DashboardStats total={total} live={live} seats={seats} isLoading={schedule.isLoading} />
 
-      <EarningsBanner balanceInr={balanceInr} isLoading={wallet.isLoading} />
-
-      <ViewScheduleBanner upcomingCount={total} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <EarningsBanner balanceInr={balanceInr} isLoading={wallet.isLoading} />
+        <ViewScheduleBanner upcomingCount={total} />
+      </div>
 
       {joinError && (
         <div className="rounded-xl border border-destructive/40 bg-destructive/5 text-destructive px-4 py-3 text-sm">

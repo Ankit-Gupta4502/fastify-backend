@@ -10,6 +10,7 @@ import type {
   CreateInstructorBody,
   PaginatedResult,
   UpdateGroupRoomBody,
+  UpdateInstructorStatsBody,
 } from "@yoga-app/shared";
 import { API_ENDPOINTS } from "@yoga-app/shared";
 import { apiRequest } from "../lib/http";
@@ -59,6 +60,12 @@ export const adminApi = {
     apiRequest<null>(API_ENDPOINTS.ADMIN.UPDATE_INSTRUCTOR_PRIORITY(id), {
       method: "PATCH",
       data: { sortOrder },
+    }),
+
+  updateInstructorStats: (id: string, body: UpdateInstructorStatsBody) =>
+    apiRequest<null>(API_ENDPOINTS.ADMIN.UPDATE_INSTRUCTOR_STATS(id), {
+      method: "PATCH",
+      data: body,
     }),
 
   listGroupRooms: () =>

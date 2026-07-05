@@ -9,6 +9,7 @@ export interface InstructorListItem {
   currentRoomId: string | null;
   profileImageUrl: string | null;
   tagline: string | null;
+  rating: number;
 }
 
 export interface InstructorProfile {
@@ -40,6 +41,8 @@ export interface PublicInstructorProfile {
   videoLinks: string[];
   tags: string[];
   yearsOfExperience: number | null;
+  rating: number;
+  studentsGuided: number;
 }
 
 export interface UpdateProfileBody {

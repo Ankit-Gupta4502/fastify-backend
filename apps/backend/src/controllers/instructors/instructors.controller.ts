@@ -130,6 +130,7 @@ export class InstructorsController {
         currentRoomId: instructorDetails.currentRoomId,
         profileImageUrl: instructorDetails.profileImageUrl,
         tagline: instructorDetails.tagline,
+        rating: instructorDetails.rating,
       })
       .from(user)
       .innerJoin(instructorDetails, eq(instructorDetails.userId, user.id))
@@ -225,6 +226,8 @@ export class InstructorsController {
         videoLinks: instructorDetails.videoLinks,
         tags: instructorDetails.tags,
         yearsOfExperience: instructorDetails.yearsOfExperience,
+        rating: instructorDetails.rating,
+        studentsGuided: instructorDetails.studentsGuided,
       })
       .from(instructorDetails)
       .innerJoin(user, eq(instructorDetails.userId, user.id))

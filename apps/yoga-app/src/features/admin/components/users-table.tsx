@@ -1,11 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
 import type { AdminUser } from "@yoga-app/shared";
 import { Chip } from "@/shared/components/misc/chip";
-import { TableSkeletonRows } from "@/shared/components/misc/table-skeleton-rows";
-import { ErrorCard } from "@/shared/components/misc/error-card";
 import type { ChipVariant } from "@/shared/components/misc/chip";
+import { TableCell } from "@/components/ui/table";
+import { DataTable, type DataTableColumn, TablePagination } from "@/shared/components/tables";
 import { SubscriptionStatusChip } from "@/features/admin/components/subscription-status-chip";
-import { TablePagination } from "@/shared/components/tables/table-pagination";
 
 interface UsersTableProps {
   users: AdminUser[];
@@ -46,6 +45,15 @@ function SourceBadge({ source }: { source: string | null | undefined }) {
   );
 }
 
+const COLUMNS: DataTableColumn[] = [
+  { key: "name", header: "Name" },
+  { key: "email", header: "Email" },
+  { key: "role", header: "Role" },
+  { key: "plan", header: "Plan" },
+  { key: "source", header: "Source" },
+  { key: "joined", header: "Joined" },
+];
+
 export function UsersTable({
   users,
   isLoading,
@@ -58,71 +66,57 @@ export function UsersTable({
 }: UsersTableProps) {
   const navigate = useNavigate();
 
-  if (error) return <ErrorCard message="Failed to load users." />;
-
   return (
-    <div className="rounded-2xl border border-border/60 overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-secondary/40">
-          <tr>
-            <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Name</th>
-            <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Email</th>
-            <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Role</th>
-            <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Plan</th>
-            <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Source</th>
-            <th className="text-left px-4 py-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Joined</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border/40">
-          {isLoading ? (
-            <TableSkeletonRows rows={6} cols={6} />
-          ) : (
-            users.map((u) => (
-              <tr
-                key={u.id}
-                className="hover:bg-secondary/20 transition-colors cursor-pointer"
-                onClick={() => navigate({ to: "/admin/users/$userId", params: { userId: u.id } })}
-              >
-                <td className="px-4 py-3 font-medium">{u.name}</td>
-                <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
-                <td className="px-4 py-3">
-                  <Chip variant={ROLE_CHIP_VARIANT[u.role] ?? "muted"}>{u.role}</Chip>
-                </td>
-                <td className="px-4 py-3">
-                  {u.subscriptions.length === 0 ? (
-                    <span className="text-muted-foreground">—</span>
-                  ) : (
-                    <div className="flex flex-col gap-1.5">
-                      {u.subscriptions.map((sub) => (
-                        <div key={sub.id} className="flex items-center gap-1.5">
-                          <span className="capitalize text-muted-foreground">
-                            {sub.planName.replace(/_/g, " ")}
-                          </span>
-                          <SubscriptionStatusChip status={sub.status} />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  <SourceBadge source={u.acquisition?.utmSource} />
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
-                  {new Date(u.createdAt).toLocaleDateString()}
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-      {!isLoading && users.length === 0 && (
-        <p className="text-center text-muted-foreground text-sm py-10">
-          {search ? `No users matching "${search}".` : "No users found."}
-        </p>
-      )}
-      {!isLoading && users.length > 0 && (
-        <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={onPageChange} />
-      )}
-    </div>
+    <DataTable
+      columns={COLUMNS}
+      data={users}
+      isLoading={isLoading}
+      loadingRows={6}
+      error={error}
+      errorMessage="Failed to load users."
+      emptyMessage={search ? `No users matching "${search}".` : "No users found."}
+      footer={
+        !isLoading && users.length > 0 ? (
+          <TablePagination page={page} pageSize={pageSize} total={total} onPageChange={onPageChange} />
+        ) : null
+      }
+      getRowKey={(u) => u.id}
+      getRowProps={(u) => ({
+        className: "cursor-pointer",
+        onClick: () => navigate({ to: "/admin/users/$userId", params: { userId: u.id } }),
+      })}
+      renderCells={(u) => {
+        const isActive = u.subscriptions.find((s) => s.status === "active");
+        return (
+          <>
+            <TableCell className="font-medium">{u.name}</TableCell>
+            <TableCell className="text-muted-foreground">{u.email}</TableCell>
+            <TableCell>
+              <Chip variant={ROLE_CHIP_VARIANT[u.role] ?? "muted"}>{u.role}</Chip>
+            </TableCell>
+            <TableCell>
+              {u.subscriptions.length === 0 ? (
+                <span className="text-muted-foreground">—</span>
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="capitalize text-muted-foreground">
+                      {isActive?.planName.replace(/_/g, " ")}
+                    </span>
+                    <SubscriptionStatusChip status={isActive?.status || ""} />
+                  </div>
+                </div>
+              )}
+            </TableCell>
+            <TableCell>
+              <SourceBadge source={u.acquisition?.utmSource} />
+            </TableCell>
+            <TableCell className="text-muted-foreground">
+              {new Date(u.createdAt).toLocaleDateString()}
+            </TableCell>
+          </>
+        );
+      }}
+    />
   );
 }

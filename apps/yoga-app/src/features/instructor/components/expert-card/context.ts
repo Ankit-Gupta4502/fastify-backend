@@ -1,10 +1,8 @@
 import { createContext, useContext } from "react";
 import type { InstructorListItem } from "@yoga-app/shared";
-import type { AccentConfig } from "./config";
 
 export interface ExpertCardCtx {
   instructor: InstructorListItem;
-  accent: AccentConfig;
 }
 
 export const ExpertCardContext = createContext<ExpertCardCtx | null>(null);

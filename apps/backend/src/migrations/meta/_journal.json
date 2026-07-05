@@ -197,6 +197,13 @@
       "when": 1783257430617,
       "tag": "0027_lively_sebastian_shaw",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1783273435007,
+      "tag": "0028_noisy_rattler",
+      "breakpoints": true
     }
   ]
 }

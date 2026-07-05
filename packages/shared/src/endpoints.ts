@@ -55,6 +55,7 @@ export const API_ENDPOINTS = {
     INSTRUCTORS: "/admin/instructors",
     APPROVE_INSTRUCTOR: (id: string) => `/admin/instructors/${id}/approve`,
     UPDATE_INSTRUCTOR_PRIORITY: (id: string) => `/admin/instructors/${id}/priority`,
+    UPDATE_INSTRUCTOR_STATS: (id: string) => `/admin/instructors/${id}/stats`,
     GROUP_ROOMS: "/admin/rooms/group",
     UPDATE_GROUP_ROOM: (id: string) => `/admin/rooms/group/${id}`,
     CANCEL_GROUP_ROOM: (id: string) => `/admin/rooms/group/${id}`,

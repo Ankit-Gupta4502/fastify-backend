@@ -29,16 +29,16 @@ function ExpertsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {isLoading
-          ? Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-80 rounded-3xl" />
+          ? Array.from({ length: 10 }).map((_, i) => (
+              <Skeleton key={i} className="h-56 rounded-2xl" />
             ))
-          : instructors.map((instructor, i) => (
-              <ExpertCard key={instructor.id} instructor={instructor} index={i} />
+          : instructors.map((instructor) => (
+              <ExpertCard key={instructor.id} instructor={instructor} />
             ))}
         {!isLoading && instructors.length === 0 && (
-          <div className="col-span-3">
+          <div className="col-span-full">
             <EmptyState
               icon={Sparkles}
               title="No instructors yet."

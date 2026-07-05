@@ -1,79 +1,34 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { InstructorProfile } from "@yoga-app/shared";
-import { useUpdateInstructorProfile, useUploadAttachment } from "@/features/instructor/hooks/use-instructors";
+import { useUpdateInstructorProfile } from "@/features/instructor/hooks/use-instructors";
+import {
+  profileFormSchema,
+  getProfileFormDefaults,
+  type ProfileFormValues,
+} from "@/features/instructor/schemas";
 
 export function useProfileForm(profile: InstructorProfile) {
   const update = useUpdateInstructorProfile();
-  const upload = useUploadAttachment();
-
-  const [bio, setBio] = useState(profile.bio ?? "");
-  const [tagline, setTagline] = useState(profile.tagline ?? "");
-  const [years, setYears] = useState<string>(profile.yearsOfExperience?.toString() ?? "");
-  const [avatarKey, setAvatarKey] = useState<string | null>(profile.avatarKey ?? null);
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(profile.profileImageUrl ?? null);
-  const [videoLinks, setVideoLinks] = useState<string[]>(profile.videoLinks ?? []);
-  const [videoInput, setVideoInput] = useState("");
-  const [tags, setTags] = useState<string[]>(profile.tags ?? []);
-  const [tagInput, setTagInput] = useState("");
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    setBio(profile.bio ?? "");
-    setTagline(profile.tagline ?? "");
-    setYears(profile.yearsOfExperience?.toString() ?? "");
-    setAvatarKey(profile.avatarKey ?? null);
-    setProfileImageUrl(profile.profileImageUrl ?? null);
-    setVideoLinks(profile.videoLinks ?? []);
-    setTags(profile.tags ?? []);
-  }, [profile]);
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: getProfileFormDefaults(profile),
+  });
 
-  const handleFileSelect = (file: File) => {
-    upload.mutate(file, {
-      onSuccess: (res) => {
-        setProfileImageUrl(res.data.url);
-        setAvatarKey(null);
-      },
-    });
-  };
-
-  const handleAvatarSelect = (key: string) => {
-    setAvatarKey(key);
-    setProfileImageUrl(null);
-  };
-
-  const addVideoLink = () => {
-    const trimmed = videoInput.trim();
-    if (!trimmed || videoLinks.length >= 5) return;
-    setVideoLinks((prev) => [...prev, trimmed]);
-    setVideoInput("");
-  };
-
-  const removeVideoLink = (i: number) =>
-    setVideoLinks((prev) => prev.filter((_, idx) => idx !== i));
-
-  const toggleTag = (tag: string) =>
-    setTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-    );
-
-  const addCustomTag = () => {
-    const trimmed = tagInput.trim();
-    if (!trimmed || tags.includes(trimmed) || tags.length >= 10) return;
-    setTags((prev) => [...prev, trimmed]);
-    setTagInput("");
-  };
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = form.handleSubmit((values) => {
+    setSaved(false);
     update.mutate(
       {
-        bio: bio || undefined,
-        tagline: tagline || undefined,
-        profileImageUrl,
-        avatarKey,
-        videoLinks,
-        tags,
-        yearsOfExperience: years ? Number(years) : null,
+        bio: values.bio || undefined,
+        tagline: values.tagline || undefined,
+        profileImageUrl: values.profileImageUrl,
+        avatarKey: null,
+        videoLinks: values.videoLinks,
+        tags: values.tags,
+        yearsOfExperience: values.yearsOfExperience ? Number(values.yearsOfExperience) : null,
       },
       {
         onSuccess: () => {
@@ -82,40 +37,17 @@ export function useProfileForm(profile: InstructorProfile) {
         },
       },
     );
-  };
+  });
 
   return {
-    // state
-    bio,
-    setBio,
-    tagline,
-    setTagline,
-    years,
-    setYears,
-    avatarKey,
-    profileImageUrl,
-    videoLinks,
-    videoInput,
-    setVideoInput,
-    tags,
-    tagInput,
-    setTagInput,
+    form,
+    onSubmit,
     saved,
-    // derived
-    isUploading: upload.isPending,
     isSaving: update.isPending,
     saveError: update.isError
       ? update.error instanceof Error
         ? update.error.message
         : "Save failed"
       : null,
-    // handlers
-    handleFileSelect,
-    handleAvatarSelect,
-    addVideoLink,
-    removeVideoLink,
-    toggleTag,
-    addCustomTag,
-    handleSave,
   };
 }

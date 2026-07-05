@@ -37,6 +37,13 @@ export interface AdminInstructor {
   maxConcurrentSessions: number;
   isApproved: boolean;
   sortOrder: number;
+  rating: number;
+  studentsGuided: number;
+}
+
+export interface UpdateInstructorStatsBody {
+  rating?: number;
+  studentsGuided?: number;
 }
 
 export interface CreateInstructorBody {

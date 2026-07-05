@@ -55,12 +55,18 @@ interface ScheduleCalendarViewProps {
   isLoading: boolean;
   joiningId: string | null;
   onJoin: (room: InstructorScheduleRoom) => void;
+  onRefresh?: () => void;
   className?: string;
 }
 
-export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin, className }: ScheduleCalendarViewProps) {
-  const [selectedRoom, setSelectedRoom] = useState<InstructorScheduleRoom | null>(null);
+export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin, onRefresh, className }: ScheduleCalendarViewProps) {
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [anchorPos, setAnchorPos] = useState<{ x: number; y: number } | null>(null);
+
+  // Re-derived from the live `rooms` list (rather than the room snapshot
+  // captured at click time) so a refresh while the popover is open updates
+  // fields like `canJoinLive` instead of leaving them frozen.
+  const selectedRoom = rooms.find((room) => room.id === selectedRoomId) ?? null;
 
   const events = useMemo<ScheduleEvent[]>(
     () =>
@@ -79,7 +85,11 @@ export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin, clas
   const handleSelectEvent = (event: ScheduleEvent, e: React.SyntheticEvent<HTMLElement>) => {
     const { clientX, clientY } = e as unknown as MouseEvent;
     setAnchorPos({ x: clientX, y: clientY });
-    setSelectedRoom(event.resource);
+    setSelectedRoomId(event.resource.id);
+    // canJoinLive/isExpired are computed server-side at fetch time, so pull
+    // fresh data the moment the details are opened rather than showing
+    // whatever was true up to `staleTime` ago.
+    onRefresh?.();
   };
 
   if (isLoading) {
@@ -137,7 +147,7 @@ export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin, clas
         />
       </div>
 
-      <Popover open={!!selectedRoom} onOpenChange={(open) => !open && setSelectedRoom(null)}>
+      <Popover open={!!selectedRoom} onOpenChange={(open) => !open && setSelectedRoomId(null)}>
         <PopoverAnchor asChild>
           <span
             className="fixed pointer-events-none"
@@ -151,9 +161,9 @@ export function ScheduleCalendarView({ rooms, isLoading, joiningId, onJoin, clas
               joiningId={joiningId}
               onJoin={(room) => {
                 onJoin(room);
-                setSelectedRoom(null);
+                setSelectedRoomId(null);
               }}
-              onClose={() => setSelectedRoom(null)}
+              onClose={() => setSelectedRoomId(null)}
             />
           )}
         </PopoverContent>

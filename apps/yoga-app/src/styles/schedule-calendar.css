@@ -219,3 +219,35 @@
   font-size: 0.72rem;
   color: var(--muted-foreground);
 }
+
+/* ── "+N more" overlay popup ────────────────────────────────────────────── */
+.instructor-calendar .rbc-overlay {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 200px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  box-shadow: 0 12px 32px color-mix(in oklch, var(--foreground) 18%, transparent);
+  padding: 0.75rem;
+}
+
+.instructor-calendar .rbc-overlay > * + * {
+  margin-top: 0;
+}
+
+.instructor-calendar .rbc-overlay-header {
+  border-bottom: 1px solid var(--border);
+  margin: -0.75rem -0.75rem 0.35rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.instructor-calendar .rbc-overlay .rbc-event {
+  width: 100%;
+  display: block;
+}
+

@@ -180,6 +180,8 @@ export async function listInstructors(db: AppDatabase) {
       maxConcurrentSessions: instructorDetails.maxConcurrentSessions,
       isApproved: instructorDetails.isApproved,
       sortOrder: instructorDetails.sortOrder,
+      rating: instructorDetails.rating,
+      studentsGuided: instructorDetails.studentsGuided,
     })
     .from(instructorDetails)
     .innerJoin(user, eq(instructorDetails.userId, user.id))
@@ -232,6 +234,23 @@ export async function approveInstructor(
   const [updated] = await db
     .update(instructorDetails)
     .set({ isApproved: approve })
+    .where(eq(instructorDetails.userId, instructorId))
+    .returning();
+
+  return updated ?? null;
+}
+
+export async function updateInstructorStats(
+  db: AppDatabase,
+  instructorId: string,
+  { rating, studentsGuided }: { rating?: number; studentsGuided?: number },
+) {
+  const [updated] = await db
+    .update(instructorDetails)
+    .set({
+      ...(rating !== undefined && { rating }),
+      ...(studentsGuided !== undefined && { studentsGuided }),
+    })
     .where(eq(instructorDetails.userId, instructorId))
     .returning();
 

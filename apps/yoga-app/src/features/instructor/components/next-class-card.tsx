@@ -24,24 +24,24 @@ interface NextClassCardProps {
 
 export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassCardProps) {
   return (
-    <Card className="border-none shadow-sm bg-card/50 rounded-3xl overflow-hidden">
+    <Card className="border border-border/60 shadow-none bg-card/50 rounded-2xl overflow-hidden">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-xl">Up next on your mat</CardTitle>
-            <CardDescription>Times are in {INSTRUCTOR_TIMEZONE_LABEL}</CardDescription>
+            <CardTitle className="text-base">Up next on your mat</CardTitle>
+            <CardDescription className="text-xs">Times are in {INSTRUCTOR_TIMEZONE_LABEL}</CardDescription>
           </div>
           {room && (
-            <Chip icon={TrendingUp} size="md">
+            <Chip icon={TrendingUp} size="sm">
               {relativeFromNow(room.scheduledStartUtc)}
             </Chip>
           )}
         </div>
       </CardHeader>
 
-      <CardContent className="pt-6">
+      <CardContent className="pt-4">
         {isLoading ? (
-          <Skeleton className="h-32 w-full rounded-2xl" />
+          <Skeleton className="h-24 w-full rounded-2xl" />
         ) : !room ? (
           <EmptyState
             icon={Sparkles}
@@ -49,13 +49,13 @@ export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassC
             description="Admin will assign upcoming flows here."
           />
         ) : (
-          <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-            <div className="size-20 rounded-2xl bg-linear-to-br from-primary/30 to-accent/30 flex items-center justify-center text-primary shrink-0">
-              <Sparkles className="size-9" />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="size-12 rounded-xl bg-linear-to-br from-primary/30 to-accent/30 flex items-center justify-center text-primary shrink-0">
+              <Sparkles className="size-5.5" />
             </div>
 
-            <div className="flex-1 space-y-2">
-              <h3 className="text-2xl font-serif font-bold capitalize">
+            <div className="flex-1 space-y-1.5">
+              <h3 className="text-lg font-serif font-bold capitalize">
                 {room.type} session
               </h3>
               <p className="text-sm text-muted-foreground">
@@ -69,12 +69,12 @@ export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassC
                 </span>
               </div>
               {room.isCancelled ? (
-                <p className="text-sm text-destructive italic bg-destructive/5 rounded-xl px-3 py-2">
+                <p className="text-xs text-destructive italic bg-destructive/5 rounded-lg px-2.5 py-1.5">
                   This class was cancelled by admin
                 </p>
               ) : (
                 room.adminNote && (
-                  <p className="text-sm text-muted-foreground italic bg-muted/40 rounded-xl px-3 py-2">
+                  <p className="text-xs text-muted-foreground italic bg-muted/40 rounded-lg px-2.5 py-1.5">
                     Note from admin: {room.adminNote}
                   </p>
                 )
@@ -83,22 +83,20 @@ export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassC
 
             {room.isCancelled ? (
               <Button
-                size="lg"
                 variant="outline"
                 disabled
                 title="This class was cancelled by admin"
-                className="rounded-full px-8 font-bold shrink-0 opacity-60"
+                className="rounded-full px-6 font-bold shrink-0 opacity-60"
               >
                 Cancelled
               </Button>
             ) : room.canJoinLive ? (
               <Button
-                size="lg"
                 disabled={joiningId === room.id}
                 onClick={() => onJoin(room)}
                 className={cn(
-                  "rounded-full px-8 font-bold shrink-0",
-                  "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20",
+                  "rounded-full px-6 font-bold shrink-0",
+                  "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-600/20",
                 )}
               >
                 {joiningId === room.id
@@ -109,10 +107,9 @@ export function NextClassCard({ room, isLoading, joiningId, onJoin }: NextClassC
               </Button>
             ) : (
               <Button
-                size="lg"
                 variant="outline"
                 disabled
-                className="rounded-full px-8 font-bold shrink-0 opacity-60"
+                className="rounded-full px-6 font-bold shrink-0 opacity-60"
               >
                 {formatCompact(room.scheduledStartUtc, INSTRUCTOR_IANA)}
               </Button>

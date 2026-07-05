@@ -1,5 +1,6 @@
 import { Pencil, Trash2, ToggleLeft, ToggleRight, Video, CalendarDays, Users, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TableCell } from "@/components/ui/table";
 import { cn } from "@/shared/lib/utils";
 import type { AdminWorkshop } from "@yoga-app/shared";
 import { formatCompact } from "@/shared/lib/timezone";
@@ -16,15 +17,15 @@ export interface RowProps {
 
 export function WorkshopRow({ workshop: w, tz, isToggling, isDeleting, onToggle, onDelete, onEdit }: RowProps) {
   return (
-    <tr className="border-b border-border/40 last:border-0 hover:bg-secondary/20 transition-colors group">
+    <>
       {/* Name + description */}
-      <td className="px-4 py-3.5 max-w-xs">
+      <TableCell className="max-w-xs">
         <p className="font-semibold leading-tight">{w.name}</p>
         <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{w.description}</p>
-      </td>
+      </TableCell>
 
       {/* Scheduled */}
-      <td className="px-4 py-3.5 whitespace-nowrap">
+      <TableCell className="whitespace-nowrap">
         {w.scheduledAt ? (
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <CalendarDays className="size-3.5 text-primary shrink-0" />
@@ -33,10 +34,10 @@ export function WorkshopRow({ workshop: w, tz, isToggling, isDeleting, onToggle,
         ) : (
           <span className="text-muted-foreground text-xs">—</span>
         )}
-      </td>
+      </TableCell>
 
       {/* Price */}
-      <td className="px-4 py-3.5 whitespace-nowrap">
+      <TableCell className="whitespace-nowrap">
         {w.priceInr != null || w.priceUsd != null ? (
           <div className="flex flex-col gap-0.5 text-xs">
             {w.priceInr != null && (
@@ -53,19 +54,19 @@ export function WorkshopRow({ workshop: w, tz, isToggling, isDeleting, onToggle,
         ) : (
           <span className="text-muted-foreground text-xs">—</span>
         )}
-      </td>
+      </TableCell>
 
       {/* Attendees */}
-      <td className="px-4 py-3.5 whitespace-nowrap">
+      <TableCell className="whitespace-nowrap">
         <span className="flex items-center gap-1.5 text-xs">
           <Users className="size-3.5 text-muted-foreground shrink-0" />
           <span className="font-medium">{w.attendeeCount}</span>
           <span className="text-muted-foreground">/ {w.maxAttendees}</span>
         </span>
-      </td>
+      </TableCell>
 
       {/* Meet link */}
-      <td className="px-4 py-3.5">
+      <TableCell>
         {w.meetLink ? (
           <a
             href={w.meetLink}
@@ -79,10 +80,10 @@ export function WorkshopRow({ workshop: w, tz, isToggling, isDeleting, onToggle,
         ) : (
           <span className="text-muted-foreground text-xs">—</span>
         )}
-      </td>
+      </TableCell>
 
       {/* Active toggle */}
-      <td className="px-4 py-3.5">
+      <TableCell>
         <button
           className="flex items-center gap-1.5 text-xs font-semibold disabled:opacity-50 cursor-pointer"
           disabled={isToggling}
@@ -99,10 +100,10 @@ export function WorkshopRow({ workshop: w, tz, isToggling, isDeleting, onToggle,
             {w.isActive ? "Live" : "Hidden"}
           </span>
         </button>
-      </td>
+      </TableCell>
 
       {/* Actions */}
-      <td className="px-4 py-3.5">
+      <TableCell>
         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             size="icon-sm"
@@ -128,7 +129,7 @@ export function WorkshopRow({ workshop: w, tz, isToggling, isDeleting, onToggle,
             )}
           </Button>
         </div>
-      </td>
-    </tr>
+      </TableCell>
+    </>
   );
 }

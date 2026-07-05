@@ -9,16 +9,16 @@ export function Videos() {
   return (
     <ContentSection>
       <ContentHeading>Featured Videos</ContentHeading>
-      <div className="space-y-2">
+      <div className="divide-y divide-border/60 border-y border-border/60">
         {instructor.videoLinks.map((url) => (
           <a
             key={url}
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 p-4 rounded-2xl border border-border/40 bg-card/50 hover:border-primary/20 hover:bg-card/80 transition-all duration-200 sketch-border-sm group"
+            className="flex items-center gap-3 py-4 group"
           >
-            <span className="size-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:bg-primary/20 transition-colors">
+            <span className="size-8 rounded-full border border-border flex items-center justify-center text-primary shrink-0 group-hover:bg-primary/10 transition-colors">
               <Play className="size-3.5 fill-primary" />
             </span>
             <span className="text-sm font-medium text-primary truncate flex-1">{url}</span>

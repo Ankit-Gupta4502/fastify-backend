@@ -16,6 +16,7 @@ import {
   approveInstructor,
   createInstructor,
   updateInstructorPriority,
+  updateInstructorStats,
 } from "../../services/admin.service";
 import {
   listAllPrivateSessionRequests,
@@ -26,6 +27,7 @@ import { SessionPoolError } from "../../services/session-pool.service";
 import {
   approveInstructorBodySchema,
   updatePriorityBodySchema,
+  updateInstructorStatsBodySchema,
   createInstructorBodySchema,
   instructorIdParamsSchema,
   listUsersQuerySchema,
@@ -61,6 +63,7 @@ export class AdminController {
         router.post("/instructors", { preHandler }, this.createInstructor);
         router.patch("/instructors/:id/approve", { preHandler }, this.approveInstructor);
         router.patch("/instructors/:id/priority", { preHandler }, this.updatePriority);
+        router.patch("/instructors/:id/stats", { preHandler }, this.updateStats);
         router.get("/rooms/group", { preHandler }, this.getGroupRooms);
         router.post("/rooms/group", { preHandler }, this.createGroupRoom);
         router.patch("/rooms/group/:id", { preHandler }, this.updateGroupRoom);
@@ -179,6 +182,26 @@ export class AdminController {
     }
 
     const { statusCode, payload } = successResponse({ message: "Priority updated", data: null });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private updateStats = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalidParams = validateWithZod(request, reply, { params: instructorIdParamsSchema });
+    if (invalidParams) return invalidParams;
+
+    const invalidBody = validateWithZod(request, reply, { body: updateInstructorStatsBodySchema });
+    if (invalidBody) return invalidBody;
+
+    const { id } = request.params as z.infer<typeof instructorIdParamsSchema>;
+    const body = request.body as z.infer<typeof updateInstructorStatsBodySchema>;
+
+    const updated = await updateInstructorStats(drizzle, id, body);
+    if (!updated) {
+      const { statusCode, payload } = errorResponse({ message: "Instructor not found", statusCode: 404 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const { statusCode, payload } = successResponse({ message: "Instructor stats updated", data: null });
     return reply.status(statusCode).send(payload);
   };
 

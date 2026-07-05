@@ -8,6 +8,11 @@ export const updatePriorityBodySchema = z.object({
   sortOrder: z.number().int().min(0),
 });
 
+export const updateInstructorStatsBodySchema = z.object({
+  rating: z.number().min(1).max(5).optional(),
+  studentsGuided: z.number().int().min(0).optional(),
+});
+
 export const createInstructorBodySchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
@@ -110,6 +115,7 @@ export const rejectPrivateRequestBodySchema = z.object({
 
 export type ApproveInstructorBody = z.infer<typeof approveInstructorBodySchema>;
 export type UpdatePriorityBody = z.infer<typeof updatePriorityBodySchema>;
+export type UpdateInstructorStatsBody = z.infer<typeof updateInstructorStatsBodySchema>;
 export type CreateInstructorBody = z.infer<typeof createInstructorBodySchema>;
 export type InstructorIdParams = z.infer<typeof instructorIdParamsSchema>;
 export type UserIdParams = z.infer<typeof userIdParamsSchema>;

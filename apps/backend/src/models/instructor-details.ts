@@ -6,6 +6,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  real,
   text,
   timestamp,
   uuid,
@@ -61,6 +62,8 @@ export const instructorDetails = pgTable(
       .notNull()
       .default([] as unknown as string[]),
     yearsOfExperience: integer("years_of_experience"),
+    rating: real("rating").notNull().default(5),
+    studentsGuided: integer("students_guided").notNull().default(0),
 
     isApproved: boolean("is_approved").notNull().default(false),
     sortOrder: integer("sort_order").notNull().default(0),

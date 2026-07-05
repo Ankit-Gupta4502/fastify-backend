@@ -1,4 +1,4 @@
-export * from "./avatar-picker";
+export * from "./photo-upload-field";
 export * from "./instructor-header";
 export * from "./instructor-sidebar";
 export * from "./next-class-card";

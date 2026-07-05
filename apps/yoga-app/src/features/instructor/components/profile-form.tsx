@@ -1,95 +1,110 @@
+import { useState } from "react";
 import { Plus, X, ExternalLink } from "lucide-react";
 import type { InstructorProfile } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
-import { AvatarPicker } from "./avatar-picker";
-import { useProfileForm } from "./use-profile-form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/shared/lib/utils";
+import { PhotoUploadField } from "./photo-upload-field";
 import { TagsSection } from "@/features/instructor/components/tags-section";
+import { useProfileForm } from "./use-profile-form";
 
 interface ProfileFormProps {
   profile: InstructorProfile;
 }
 
 export function ProfileForm({ profile }: ProfileFormProps) {
-  const {
-    bio,
-    setBio,
-    tagline,
-    setTagline,
-    years,
-    setYears,
-    avatarKey,
-    profileImageUrl,
-    videoLinks,
-    videoInput,
-    setVideoInput,
-    tags,
-    tagInput,
-    setTagInput,
-    saved,
-    isUploading,
-    isSaving,
-    saveError,
-    handleFileSelect,
-    handleAvatarSelect,
-    addVideoLink,
-    removeVideoLink,
-    toggleTag,
-    addCustomTag,
-    handleSave,
-  } = useProfileForm(profile);
+  const { form, onSubmit, saved, isSaving, saveError } = useProfileForm(profile);
+  const { register, watch, setValue, formState: { errors } } = form;
+  const [videoInput, setVideoInput] = useState("");
+  const [tagInput, setTagInput] = useState("");
+
+  const videoLinks = watch("videoLinks");
+  const tags = watch("tags");
+  const tagline = watch("tagline");
+  const bio = watch("bio");
+
+  function addVideoLink() {
+    const trimmed = videoInput.trim();
+    if (!trimmed || videoLinks.length >= 5) return;
+    setValue("videoLinks", [...videoLinks, trimmed], { shouldValidate: true });
+    setVideoInput("");
+  }
+
+  function removeVideoLink(i: number) {
+    setValue("videoLinks", videoLinks.filter((_, idx) => idx !== i), { shouldValidate: true });
+  }
+
+  function toggleTag(tag: string) {
+    setValue(
+      "tags",
+      tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag],
+      { shouldValidate: true },
+    );
+  }
+
+  function addCustomTag() {
+    const trimmed = tagInput.trim();
+    if (!trimmed || tags.includes(trimmed) || tags.length >= 10) return;
+    setValue("tags", [...tags, trimmed], { shouldValidate: true });
+    setTagInput("");
+  }
 
   return (
-    <form onSubmit={handleSave} className="space-y-8 max-w-2xl">
-      {/* Avatar */}
+    <form onSubmit={onSubmit} className="space-y-8 max-w-2xl">
+      {/* Photo */}
       <section className="space-y-3">
-        <SectionLabel>Photo & Avatar</SectionLabel>
-        <AvatarPicker
-          avatarKey={avatarKey}
-          profileImageUrl={profileImageUrl}
-          uploading={isUploading}
-          onAvatarSelect={handleAvatarSelect}
-          onFileSelect={handleFileSelect}
+        <SectionLabel>Photo</SectionLabel>
+        <PhotoUploadField
+          name={profile.name}
+          value={watch("profileImageUrl")}
+          onChange={(url) => setValue("profileImageUrl", url, { shouldValidate: true })}
         />
       </section>
 
       {/* Tagline */}
       <section className="space-y-2">
         <SectionLabel>Tagline</SectionLabel>
-        <input
-          className="input"
+        <Input
           placeholder="e.g. Helping you find stillness through movement"
-          maxLength={120}
-          value={tagline}
-          onChange={(e) => setTagline(e.target.value)}
+          className={cn("rounded-xl", errors.tagline && "border-destructive focus-visible:ring-destructive/20")}
+          {...register("tagline")}
         />
-        <p className="text-xs text-muted-foreground text-right">{tagline.length} / 120</p>
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span className="text-destructive">{errors.tagline?.message}</span>
+          <span>{tagline.length} / 120</span>
+        </div>
       </section>
 
       {/* Bio */}
       <section className="space-y-2">
         <SectionLabel>Bio</SectionLabel>
-        <textarea
-          className="input min-h-32 resize-y"
+        <Textarea
           placeholder="Tell students a bit about your background, teaching style, and what they can expect…"
-          maxLength={1000}
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
+          className={cn("min-h-32 resize-y rounded-xl", errors.bio && "border-destructive focus-visible:ring-destructive/20")}
+          {...register("bio")}
         />
-        <p className="text-xs text-muted-foreground text-right">{bio.length} / 1000</p>
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span className="text-destructive">{errors.bio?.message}</span>
+          <span>{bio.length} / 1000</span>
+        </div>
       </section>
 
       {/* Years of experience */}
       <section className="space-y-2">
         <SectionLabel>Years of experience</SectionLabel>
-        <input
+        <Input
           type="number"
-          className="input w-28"
           min={0}
           max={60}
           placeholder="e.g. 7"
-          value={years}
-          onChange={(e) => setYears(e.target.value)}
+          className={cn("rounded-xl w-28", errors.yearsOfExperience && "border-destructive focus-visible:ring-destructive/20")}
+          {...register("yearsOfExperience")}
         />
+        {errors.yearsOfExperience && (
+          <p className="text-xs text-destructive">{errors.yearsOfExperience.message}</p>
+        )}
       </section>
 
       {/* Tags */}
@@ -102,19 +117,22 @@ export function ProfileForm({ profile }: ProfileFormProps) {
           toggleTag={toggleTag}
           addCustomTag={addCustomTag}
         />
+        {errors.tags && <p className="text-xs text-destructive">{errors.tags.message}</p>}
       </section>
 
       {/* Video links */}
       <section className="space-y-3">
-        <SectionLabel>Video links <span className="text-muted-foreground font-normal normal-case">(YouTube, Vimeo, etc.)</span></SectionLabel>
+        <SectionLabel>
+          Video links <span className="text-muted-foreground font-normal normal-case">(YouTube, Vimeo, etc.)</span>
+        </SectionLabel>
         <div className="space-y-2">
           {videoLinks.map((link, i) => (
             <div key={i} className="flex items-center gap-2 text-sm">
               <ExternalLink className="size-3.5 text-muted-foreground shrink-0" />
-              <a href={link} target="_blank" rel="noopener noreferrer"
-                className="flex-1 truncate text-primary hover:underline">{link}</a>
-              <button type="button" onClick={() => removeVideoLink(i)}
-                className="text-muted-foreground hover:text-destructive">
+              <a href={link} target="_blank" rel="noopener noreferrer" className="flex-1 truncate text-primary hover:underline">
+                {link}
+              </a>
+              <button type="button" onClick={() => removeVideoLink(i)} className="text-muted-foreground hover:text-destructive">
                 <X className="size-3.5" />
               </button>
             </div>
@@ -122,8 +140,8 @@ export function ProfileForm({ profile }: ProfileFormProps) {
         </div>
         {videoLinks.length < 5 && (
           <div className="flex gap-2">
-            <input
-              className="input flex-1"
+            <Input
+              className="rounded-xl flex-1"
               placeholder="https://youtube.com/watch?v=…"
               value={videoInput}
               onChange={(e) => setVideoInput(e.target.value)}
@@ -134,6 +152,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
             </Button>
           </div>
         )}
+        {errors.videoLinks && <p className="text-xs text-destructive">{errors.videoLinks.message}</p>}
       </section>
 
       {/* Save */}
@@ -142,18 +161,12 @@ export function ProfileForm({ profile }: ProfileFormProps) {
           {isSaving ? "Saving…" : "Save profile"}
         </Button>
         {saved && <span className="text-sm text-emerald-600 font-medium">Saved!</span>}
-        {saveError && (
-          <span className="text-sm text-destructive">{saveError}</span>
-        )}
+        {saveError && <span className="text-sm text-destructive">{saveError}</span>}
       </div>
     </form>
   );
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
-      {children}
-    </label>
-  );
+  return <Label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">{children}</Label>;
 }

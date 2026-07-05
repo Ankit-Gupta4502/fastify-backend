@@ -61,6 +61,7 @@ function UpcomingSessionsPage() {
           isLoading={schedule.isLoading}
           joiningId={joiningId}
           onJoin={handleJoin}
+          onRefresh={schedule.refetch}
         />
       )}
     </div>

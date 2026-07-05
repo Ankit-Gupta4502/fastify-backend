@@ -70,9 +70,9 @@ function InstructorSpotlightRoot() {
         >
           {isLoading
             ? [...Array(4)].map((_, i) => <CardSkeleton key={i} />)
-            : instructors.map((instructor, i) => (
+            : instructors.map((instructor) => (
                 <div key={instructor.id} className="snap-start flex-none w-64">
-                  <ExpertCard instructor={instructor} index={i} />
+                  <ExpertCard instructor={instructor} />
                 </div>
               ))}
         </div>
