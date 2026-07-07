@@ -1,3 +1,6 @@
+import type { PlanRecord } from "@yoga-app/shared";
+import { calcCustomPriceCents } from "@yoga-app/shared";
+
 export const PLAN_COPY: Record<string, { title: string; tagline: string; perks: string[] }> = {
   group_live: {
     title: "Group Live",
@@ -41,3 +44,21 @@ export const PLAN_COPY: Record<string, { title: string; tagline: string; perks: 
     ],
   },
 };
+
+export function getPlanLabel(planName: string): string {
+  if (planName.startsWith("custom_private_")) {
+    const parts = planName.split("_");
+    const sessions = parts[parts.length - 1];
+    return `Private 1:1 · ${sessions} sessions/mo`;
+  }
+  return PLAN_COPY[planName]?.title ?? planName.replace(/_/g, " ");
+}
+
+export function getPlanPriceCents(planName: string, plans: PlanRecord[]): number {
+  if (planName.startsWith("custom_private_")) {
+    const parts = planName.split("_");
+    const sessions = parseInt(parts[parts.length - 1] ?? "4", 10);
+    return calcCustomPriceCents(isNaN(sessions) ? 4 : sessions);
+  }
+  return plans.find((p) => p.name === planName)?.priceCents ?? 0;
+}

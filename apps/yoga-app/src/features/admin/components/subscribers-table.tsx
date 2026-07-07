@@ -1,29 +1,10 @@
 import type { AdminUser, PlanRecord } from "@yoga-app/shared";
-import { calcCustomPriceCents } from "@yoga-app/shared";
 import { Chip } from "@/shared/components/misc/chip";
 import { TableCell } from "@/components/ui/table";
 import { DataTable, type DataTableColumn } from "@/shared/components/tables";
-import { PLAN_COPY } from "@/features/payments/utils/plan-copy";
+import { getPlanLabel, getPlanPriceCents } from "@/features/payments/utils/plan-copy";
 import { centsToDisplay } from "@/shared/lib/utils";
 import { SubscriptionStatusChip } from "@/features/admin/components/subscription-status-chip";
-
-function getPlanLabel(planName: string): string {
-  if (planName.startsWith("custom_private_")) {
-    const parts = planName.split("_");
-    const sessions = parts[parts.length - 1];
-    return `Private 1:1 · ${sessions} sessions/mo`;
-  }
-  return PLAN_COPY[planName]?.title ?? planName.replace(/_/g, " ");
-}
-
-function getPlanPriceCents(planName: string, plans: PlanRecord[]): number {
-  if (planName.startsWith("custom_private_")) {
-    const parts = planName.split("_");
-    const sessions = parseInt(parts[parts.length - 1] ?? "4", 10);
-    return calcCustomPriceCents(isNaN(sessions) ? 4 : sessions);
-  }
-  return plans.find((p) => p.name === planName)?.priceCents ?? 0;
-}
 
 interface SubscribersTableProps {
   users: AdminUser[];

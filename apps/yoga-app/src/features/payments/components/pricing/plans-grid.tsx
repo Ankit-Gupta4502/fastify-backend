@@ -13,57 +13,53 @@ import { PricingCard } from "@/features/payments/components/pricing/pricing-card
 import { PrivatePricingCard } from "@/features/payments/components/pricing/private-pricing-card";
 import { SpecializedPricingCard } from "@/features/payments/components/pricing/specialized-pricing-card";
 
+export type SpecializedPlanName = "prenatal_postnatal" | "therapeutic_yoga";
+
+export interface SpecializedPlanEntry {
+  planName: SpecializedPlanName;
+  plan: PlanRecord | null;
+  sessionCount: number;
+  activeSessions: number | null;
+  isActive: boolean;
+  onSessionCountChange: (n: number) => void;
+}
+
 interface PlansGridProps {
   isLoading: boolean;
   isAuthenticated: boolean;
   isIndia: boolean;
-  groupPlan: PlanRecord | null;
-  privatePlan: PlanRecord | null;
-  prenatalPlan: PlanRecord | null;
-  therapeuticPlan: PlanRecord | null;
   pendingCard: string | null;
+
+  groupPlan: PlanRecord | null;
   isGroupPlanActive: boolean;
-  isPrivatePlanActive: boolean;
-  isPrenatalPlanActive: boolean;
-  isTherapeuticPlanActive: boolean;
-  privateActiveSessions: number | null;
-  prenatalActiveSessions: number | null;
-  therapeuticActiveSessions: number | null;
-  sessionCount: number;
-  prenatalSessions: number;
-  therapeuticSessions: number;
-  onSessionCountChange: (n: number) => void;
-  onPrenatalSessionsChange: (n: number) => void;
-  onTherapeuticSessionsChange: (n: number) => void;
   onGroupSubscribe: (plan: PlanRecord) => void;
+
+  privatePlan: PlanRecord | null;
+  privateSessionCount: number;
+  privateActiveSessions: number | null;
+  isPrivatePlanActive: boolean;
+  onPrivateSessionCountChange: (n: number) => void;
   onPrivateSubscribe: () => void;
-  onSpecializedSubscribe: (planName: "private" | "prenatal_postnatal" | "therapeutic_yoga", sessions: number) => void;
+
+  specializedPlans: SpecializedPlanEntry[];
+  onSpecializedSubscribe: (planName: SpecializedPlanName, sessions: number) => void;
 }
 
 export function PlansGrid({
   isLoading,
   isAuthenticated,
   isIndia,
-  groupPlan,
-  privatePlan,
-  prenatalPlan: _prenatalPlan,
-  therapeuticPlan,
   pendingCard,
+  groupPlan,
   isGroupPlanActive,
-  isPrivatePlanActive,
-  isPrenatalPlanActive: _isPrenatalPlanActive,
-  isTherapeuticPlanActive,
-  privateActiveSessions,
-  prenatalActiveSessions: _prenatalActiveSessions,
-  therapeuticActiveSessions,
-  sessionCount,
-  prenatalSessions: _prenatalSessions,
-  therapeuticSessions,
-  onSessionCountChange,
-  onPrenatalSessionsChange: _onPrenatalSessionsChange,
-  onTherapeuticSessionsChange,
   onGroupSubscribe,
+  privatePlan,
+  privateSessionCount,
+  privateActiveSessions,
+  isPrivatePlanActive,
+  onPrivateSessionCountChange,
   onPrivateSubscribe,
+  specializedPlans,
   onSpecializedSubscribe,
 }: PlansGridProps) {
   const { display: privateFromPrice } = usePlanPrice({
@@ -74,10 +70,11 @@ export function PlansGrid({
     discountCents: PRICE_DISCOUNT_CENTS,
     discountInrPaise: PRICE_DISCOUNT_INR_PAISE,
   });
+  const therapeuticEntry = specializedPlans.find((entry) => entry.planName === "therapeutic_yoga") ?? null;
   const { display: therapeuticFromPrice } = usePlanPrice({
     isIndia,
-    priceCents: therapeuticPlan?.pricePerSessionCents,
-    priceInrPaise: therapeuticPlan?.pricePerSessionInrPaise,
+    priceCents: therapeuticEntry?.plan?.pricePerSessionCents,
+    priceInrPaise: therapeuticEntry?.plan?.pricePerSessionInrPaise,
     quantity: MIN_SESSIONS,
   });
 
@@ -92,8 +89,8 @@ export function PlansGrid({
       ) : (
         <div className={cn("grid gap-8 items-start md:grid-cols-3")}>
           <PrivatePricingCard
-            sessionCount={sessionCount}
-            onSessionCountChange={onSessionCountChange}
+            sessionCount={privateSessionCount}
+            onSessionCountChange={onPrivateSessionCountChange}
             pricePerSessionCents={privatePlan?.pricePerSessionCents ?? null}
             pricePerSessionInrPaise={privatePlan?.pricePerSessionInrPaise ?? null}
             isAuthenticated={isAuthenticated}
@@ -113,21 +110,23 @@ export function PlansGrid({
               onSubscribe={onGroupSubscribe}
             />
           )}
-          {/* prenatal_postnatal hidden for now */}
-          <SpecializedPricingCard
-            planName="therapeutic_yoga"
-            config={specializedPlanConfig.therapeutic_yoga}
-            sessionCount={therapeuticSessions}
-            onSessionCountChange={onTherapeuticSessionsChange}
-            pricePerSessionCents={therapeuticPlan?.pricePerSessionCents ?? null}
-            pricePerSessionInrPaise={therapeuticPlan?.pricePerSessionInrPaise ?? null}
-            isAuthenticated={isAuthenticated}
-            isPending={pendingCard === "therapeutic_yoga"}
-            isActive={isTherapeuticPlanActive}
-            isIndia={isIndia}
-            activeSessions={therapeuticActiveSessions}
-            onSubscribe={() => onSpecializedSubscribe("therapeutic_yoga", therapeuticSessions)}
-          />
+          {specializedPlans.map((entry) => (
+            <SpecializedPricingCard
+              key={entry.planName}
+              planName={entry.planName}
+              config={specializedPlanConfig[entry.planName]}
+              sessionCount={entry.sessionCount}
+              onSessionCountChange={entry.onSessionCountChange}
+              pricePerSessionCents={entry.plan?.pricePerSessionCents ?? null}
+              pricePerSessionInrPaise={entry.plan?.pricePerSessionInrPaise ?? null}
+              isAuthenticated={isAuthenticated}
+              isPending={pendingCard === entry.planName}
+              isActive={entry.isActive}
+              isIndia={isIndia}
+              activeSessions={entry.activeSessions}
+              onSubscribe={() => onSpecializedSubscribe(entry.planName, entry.sessionCount)}
+            />
+          ))}
         </div>
       )}
 
