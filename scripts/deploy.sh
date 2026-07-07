@@ -7,7 +7,7 @@
 #   stop              Stop both containers
 #   restart           Stop then full-deploy both
 #   status            Show running containers for both
-#   logs [service]    Tail logs  (backend | frontend, default: backend)
+#   logs [service]    Tail logs  (backend | frontend | redis, default: backend)
 #   help              Show this message
 
 set -euo pipefail
@@ -30,6 +30,7 @@ COMMAND="${1:-deploy}"
 # Container names (must match defaults in each sub-script)
 BACKEND_CONTAINER="${CONTAINER_NAME:-fastify-backend}"
 FRONTEND_CONTAINER="yoga-app-frontend"
+REDIS_CONTAINER="${REDIS_CONTAINER_NAME:-yoga-app-redis}"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 section() { echo -e "\n${CYAN}━━━ $1 ━━━${NC}"; }
@@ -76,6 +77,7 @@ cmd_status() {
   docker ps \
     --filter "name=^${BACKEND_CONTAINER}$" \
     --filter "name=^${FRONTEND_CONTAINER}$" \
+    --filter "name=^${REDIS_CONTAINER}$" \
     --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 }
 
@@ -84,8 +86,9 @@ cmd_logs() {
   case "$service" in
     backend)  docker logs -f --tail=100 "$BACKEND_CONTAINER" ;;
     frontend) docker logs -f --tail=100 "$FRONTEND_CONTAINER" ;;
+    redis)    docker logs -f --tail=100 "$REDIS_CONTAINER" ;;
     *)
-      echo -e "${RED}Unknown service '$service'. Use: backend | frontend${NC}"
+      echo -e "${RED}Unknown service '$service'. Use: backend | frontend | redis${NC}"
       exit 1
       ;;
   esac
@@ -101,12 +104,15 @@ show_help() {
   echo "  stop              Stop both containers"
   echo "  restart           Stop then full-deploy both"
   echo "  status            Show container status for both"
-  echo "  logs [service]    Tail logs  (backend | frontend, default: backend)"
+  echo "  logs [service]    Tail logs  (backend | frontend | redis, default: backend)"
   echo "  help              Show this message"
   echo ""
   echo "Underlying scripts:"
-  echo "  Backend:   apps/backend/scripts/deploy.sh"
+  echo "  Backend:   apps/backend/scripts/deploy.sh (also ensures the Redis container is running)"
   echo "  Frontend:  apps/yoga-app/scripts/deploy.sh"
+  echo ""
+  echo "Note: Redis is a persistent, deploy-independent container (like the DB) —"
+  echo "'stop'/'restart' never touch it. Manage it directly with docker if needed."
 }
 
 # ── Dispatch ──────────────────────────────────────────────────────────────────

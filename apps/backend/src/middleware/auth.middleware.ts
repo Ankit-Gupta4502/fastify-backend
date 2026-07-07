@@ -6,6 +6,7 @@ import {
 import { fromNodeHeaders } from "better-auth/node";
 import { auth } from "../lib/auth";
 import { errorResponse } from "../utils";
+import { getCachedSession, getSessionTokenFromRequest, setCachedSession } from "../lib/session-cache";
 
 export class AuthMiddleware {
   public handle: preHandlerHookHandler = async (
@@ -13,6 +14,15 @@ export class AuthMiddleware {
     reply: FastifyReply,
   ) => {
     try {
+      const token = getSessionTokenFromRequest(request);
+      const cached = token ? await getCachedSession(token) : null;
+
+      if (cached) {
+        request.user = cached.user;
+        request.session = cached.session;
+        return;
+      }
+
       const session = await auth.api.getSession({
         headers: fromNodeHeaders(request.headers),
       });
@@ -27,6 +37,10 @@ export class AuthMiddleware {
 
       request.user = session.user;
       request.session = session.session;
+
+      if (token) {
+        await setCachedSession(token, { user: session.user, session: session.session });
+      }
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Invalid session";

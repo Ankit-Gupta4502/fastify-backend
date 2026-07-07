@@ -9,6 +9,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "../../lib/auth";
 import { applyAuthResponseHeaders } from "../../lib/auth-cookies";
+import { getSessionTokenFromRequest, invalidateCachedSession } from "../../lib/session-cache";
 import { config } from "../../config";
 import { drizzle } from "../../db";
 import { user } from "../../schema/schema";
@@ -189,10 +190,16 @@ export class AuthController {
 
   private logoutUser = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
+      const token = getSessionTokenFromRequest(request);
+
       const response = await auth.api.signOut({
         headers: fromNodeHeaders(request.headers),
         asResponse: true,
       });
+
+      if (token) {
+        await invalidateCachedSession(token);
+      }
 
       applyAuthResponseHeaders(reply, response.headers);
 

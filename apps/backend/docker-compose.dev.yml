@@ -21,6 +21,23 @@ services:
     networks:
       - yoga-app-network
 
+  # Redis (session cache — same as production)
+  redis:
+    image: redis:7-alpine
+    container_name: yoga-app-redis-dev
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis} --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - yoga-app-network
+
   # Backend API (Development with hot reload)
   backend:
     build:
@@ -37,6 +54,7 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-redis}@redis:6379
     ports:
       - "${PORT:-8080}:8080"
     volumes:
@@ -48,6 +66,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - yoga-app-network
     command: npm run dev
@@ -55,6 +75,8 @@ services:
 
 volumes:
   postgres_dev_data:
+    driver: local
+  redis_dev_data:
     driver: local
 
 networks:

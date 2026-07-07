@@ -8,6 +8,7 @@ import { UserController } from "./controllers/users/user.controller";
 import fastifyEnv from "@fastify/env";
 import fastifyCors from "@fastify/cors";
 import db from "./db";
+import redisPlugin from "./lib/redis";
 import cookie from "@fastify/cookie";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
@@ -80,6 +81,7 @@ const schema = {
     R2_SECRET_ACCESS_KEY: { type: "string" },
     R2_BUCKET_NAME: { type: "string" },
     R2_PUBLIC_URL: { type: "string" },
+    REDIS_URL: { type: "string", default: "redis://localhost:6379" },
   },
 };
 
@@ -103,6 +105,7 @@ const start = async () => {
     });
 
     await fastify.register(db);
+    await fastify.register(redisPlugin);
     await fastify.register(cookie);
     await fastify.register(authPlugin);
     await fastify.register(fastifyMultipart, {
