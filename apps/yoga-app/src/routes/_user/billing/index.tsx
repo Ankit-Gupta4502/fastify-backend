@@ -1,9 +1,5 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute,  useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { ArrowRight } from "lucide-react";
-
-import { StarDoodle, CircleDoodle, PlusDoodle } from "@/shared/components/misc/doodles";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { usePlansWithPricing, useMyPlan } from "@/features/payments/hooks/use-plans";
 import { useCheckout, useCustomCheckout } from "@/features/payments/hooks/use-checkout";
@@ -11,11 +7,8 @@ import { PLAN_COPY } from "@/features/payments/utils/plan-copy";
 import type { PlanRecord } from "@yoga-app/shared";
 
 import { MIN_SESSIONS, specializedPlanConfig } from "@/features/payments/components/pricing/pricing-config";
-import { PricingHero } from "@/features/payments/components/pricing/pricing-hero";
 import { PricingFeedback } from "@/features/payments/components/pricing/pricing-feedback";
 import { PlansGrid } from "@/features/payments/components/pricing/plans-grid";
-import { PricingFAQ } from "@/features/payments/components/pricing/pricing-faq";
-import { TrustSection } from "@/features/payments/components/pricing/trust-section";
 
 export const Route = createFileRoute("/_user/billing/")({
   component: BillingPage,
@@ -119,28 +112,9 @@ function BillingPage() {
 
   return (
     <div className="relative">
-      {/* Ambient glow */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 size-175 bg-primary/5 blur-[130px] rounded-full" />
-        <div className="absolute bottom-1/3 right-0 size-112.5 bg-sky-500/4 blur-[110px] rounded-full" />
-        <div className="absolute top-1/2 left-0 size-75 bg-accent/4 blur-[90px] rounded-full" />
-      </div>
-
-      {/* Floating doodles */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <StarDoodle className="absolute top-20 right-[8%] size-7 text-primary/20 animate-doodle-float" />
-        <CircleDoodle className="absolute top-10 left-[4%] size-32 text-primary/7 animate-doodle-spin-slow" />
-        <PlusDoodle className="absolute top-[40%] right-[3%] size-5 text-primary/15 animate-doodle-float-alt" style={{ animationDelay: "1.5s" }} />
-        <StarDoodle className="absolute top-[55%] left-[6%] size-4 text-accent/30 animate-doodle-float" style={{ animationDelay: "2s" }} />
-        <CircleDoodle className="absolute bottom-[20%] right-[5%] size-44 text-accent/6 animate-doodle-spin-rev" />
-        <StarDoodle className="absolute top-[25%] left-[12%] size-2.5 text-primary/25 animate-doodle-float-alt" style={{ animationDelay: "0.8s" }} />
-      </div>
 
       <div className="py-10 md:py-16 space-y-16">
-        <PricingHero />
-
         <PricingFeedback error={error} success={success} />
-
         <PlansGrid
           isLoading={authLoading || plans.isLoading}
           isAuthenticated={isAuthenticated}
@@ -167,24 +141,6 @@ function BillingPage() {
           onPrivateSubscribe={handlePrivateSubscribe}
           onSpecializedSubscribe={handleSpecializedSubscribe}
         />
-
-        {!isAuthenticated && !authLoading && (
-          <div className="max-w-sm mx-auto px-4 text-center space-y-5">
-            <div className="space-y-1">
-              <p className="font-semibold text-lg">Ready to begin?</p>
-              <p className="text-sm text-muted-foreground">Free account, no card needed to start.</p>
-            </div>
-            <Button asChild size="lg" className="rounded-full px-10 gap-2 font-bold shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-shadow">
-              <Link to="/login">
-                Get started free
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          </div>
-        )}
-
-        <PricingFAQ />
-        <TrustSection />
       </div>
     </div>
   );
