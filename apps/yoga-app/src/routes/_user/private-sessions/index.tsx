@@ -238,7 +238,7 @@ function GuardBanner({ reason, expiresAt }: { reason: NonNullable<GuardReason>; 
       </div>
       {cfg.cta && (
         <Button asChild size="sm" className="shrink-0 rounded-xl">
-          <Link to="/billing">{cfg.cta}</Link>
+          <Link to="/pricing">{cfg.cta}</Link>
         </Button>
       )}
     </div>

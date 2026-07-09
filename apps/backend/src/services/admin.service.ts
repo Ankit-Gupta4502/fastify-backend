@@ -306,7 +306,7 @@ export async function createGroupRoom(
   const conflict = await db.execute(sql`
     SELECT 1 FROM "rooms"
     WHERE "instructor_id" = ${params.instructorId}
-      AND "status" <> ${ROOM_STATUS.ENDED}
+      AND "status" NOT IN (${ROOM_STATUS.ENDED}, ${ROOM_STATUS.CANCELLED})
       AND tstzrange("scheduled_start", "scheduled_end") &&
           tstzrange(${params.scheduledStartUtc.toISOString()}::timestamptz,
                     ${params.scheduledEndUtc.toISOString()}::timestamptz)
@@ -395,7 +395,7 @@ export async function updateGroupRoom(
     SELECT 1 FROM "rooms"
     WHERE "instructor_id" = ${instructorId}
       AND "id" <> ${roomId}
-      AND "status" <> ${ROOM_STATUS.ENDED}
+      AND "status" NOT IN (${ROOM_STATUS.ENDED}, ${ROOM_STATUS.CANCELLED})
       AND tstzrange("scheduled_start", "scheduled_end") &&
           tstzrange(${scheduledStart.toISOString()}::timestamptz,
                     ${scheduledEnd.toISOString()}::timestamptz)
