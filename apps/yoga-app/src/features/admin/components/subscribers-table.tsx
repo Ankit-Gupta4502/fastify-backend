@@ -4,7 +4,7 @@ import { TableCell } from "@/components/ui/table";
 import { DataTable, type DataTableColumn } from "@/shared/components/tables";
 import { getPlanLabel, getPlanPriceCents } from "@/features/payments/utils/plan-copy";
 import { centsToDisplay } from "@/shared/lib/utils";
-import { SubscriptionStatusChip } from "@/features/admin/components/subscription-status-chip";
+import { SubscriptionStatusChip } from "@/shared/components/misc/subscription-status-chip";
 
 interface SubscribersTableProps {
   users: AdminUser[];

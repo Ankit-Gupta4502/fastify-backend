@@ -1,5 +1,5 @@
 import type { AdminUserSubscription } from "@yoga-app/shared";
-import { SubscriptionStatusChip } from "@/features/admin/components/subscription-status-chip";
+import { SubscriptionStatusChip } from "@/shared/components/misc/subscription-status-chip";
 import { paidAmountToDisplay } from "@/shared/lib/utils";
 
 export function UserSubscriptionsSection({ subscriptions }: { subscriptions: AdminUserSubscription[] }) {

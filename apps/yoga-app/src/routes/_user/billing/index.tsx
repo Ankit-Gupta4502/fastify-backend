@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CheckCircle2, CreditCard } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { useMyPlan } from "@/features/payments/hooks/use-plans";
 import { getPlanLabel } from "@/features/payments/utils/plan-copy";
 import { CancelSubscriptionButton } from "@/features/payments/components/billing";
 import { SectionHeader } from "@/shared/components/misc/section-header";
 import { EmptyState } from "@/shared/components/misc/empty-state";
-import { Chip } from "@/shared/components/misc/chip";
+import { SubscriptionStatusChip } from "@/shared/components/misc/subscription-status-chip";
 import { TableCell } from "@/components/ui/table";
 import { DataTable, type DataTableColumn } from "@/shared/components/tables";
 import { paidAmountToDisplay } from "@/shared/lib/utils";
@@ -70,16 +70,16 @@ function BillingPage() {
               {sub.expiresAt ? new Date(sub.expiresAt).toLocaleDateString() : "—"}
             </TableCell>
             <TableCell>
-              <Chip variant="success" icon={CheckCircle2}>
-                Active
-              </Chip>
+              <SubscriptionStatusChip status={sub.status} />
             </TableCell>
             <TableCell>
-              <CancelSubscriptionButton
-                subscriptionId={sub.subscriptionId}
-                planName={sub.plan.name}
-                expiresAt={sub.expiresAt}
-              />
+              {sub.status === "active" && (
+                <CancelSubscriptionButton
+                  subscriptionId={sub.subscriptionId}
+                  planName={sub.plan.name}
+                  expiresAt={sub.expiresAt}
+                />
+              )}
             </TableCell>
           </>
         )}

@@ -4,7 +4,7 @@ import { Chip } from "@/shared/components/misc/chip";
 import type { ChipVariant } from "@/shared/components/misc/chip";
 import { TableCell } from "@/components/ui/table";
 import { DataTable, type DataTableColumn, TablePagination } from "@/shared/components/tables";
-import { SubscriptionStatusChip } from "@/features/admin/components/subscription-status-chip";
+import { SubscriptionStatusChip } from "@/shared/components/misc/subscription-status-chip";
 
 interface UsersTableProps {
   users: AdminUser[];

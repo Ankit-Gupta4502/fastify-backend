@@ -16,6 +16,7 @@ export interface MyPlanResponse {
   plan: PlanRecord;
   sessionsUsedThisWeek: number;
   weekResetAt: string;
+  status: "active" | "expired" | "cancelled";
 }
 
 export const plansApi = {

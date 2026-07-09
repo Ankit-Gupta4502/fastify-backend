@@ -168,6 +168,7 @@ export class PlansController {
         // Weekly quota (for recurring group_live plans)
         sessionsUsedThisWeek: user.sessionsUsedThisWeek,
         weekResetAt: user.weekResetAt,
+        status:userSubscriptions.status
       })
       .from(userSubscriptions)
       .innerJoin(plans, eq(userSubscriptions.planId, plans.id))

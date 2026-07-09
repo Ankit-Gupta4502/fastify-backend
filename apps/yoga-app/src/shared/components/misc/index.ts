@@ -7,4 +7,5 @@ export * from "./instructor-avatar";
 export * from "./not-found";
 export * from "./section-header";
 export * from "./stat-card";
+export * from "./subscription-status-chip";
 export * from "./table-skeleton-rows";

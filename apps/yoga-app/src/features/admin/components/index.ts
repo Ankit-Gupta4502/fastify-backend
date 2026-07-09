@@ -12,7 +12,6 @@ export * from "./room-form-dialog";
 export * from "./room-form-schema";
 export * from "./rooms-table";
 export * from "./subscribers-table";
-export * from "./subscription-status-chip";
 export * from "./subscriptions-charts";
 export * from "./use-review-demo-dialog";
 export * from "./use-room-form";
