@@ -9,7 +9,7 @@ import { EmptyState } from "@/shared/components/misc/empty-state";
 import { Chip } from "@/shared/components/misc/chip";
 import { TableCell } from "@/components/ui/table";
 import { DataTable, type DataTableColumn } from "@/shared/components/tables";
-import { centsToDisplay } from "@/shared/lib/utils";
+import { paidAmountToDisplay } from "@/shared/lib/utils";
 
 export const Route = createFileRoute("/_user/billing/")({
   component: BillingPage,
@@ -62,7 +62,7 @@ function BillingPage() {
               {sub.sessionsTotal === null ? "Unlimited" : `${sub.sessionsUsed} / ${sub.sessionsTotal}`}
             </TableCell>
             <TableCell className="text-muted-foreground capitalize">{sub.plan.billingInterval}</TableCell>
-            <TableCell className="font-medium">{centsToDisplay(sub.pricePaidCents)}</TableCell>
+            <TableCell className="font-medium">{paidAmountToDisplay(sub.pricePaidCents, sub.currency)}</TableCell>
             <TableCell className="text-muted-foreground">
               {new Date(sub.purchasedAt).toLocaleDateString()}
             </TableCell>

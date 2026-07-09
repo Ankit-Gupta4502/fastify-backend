@@ -6,6 +6,7 @@ import { cn } from "@/shared/lib/utils";
 import { PLAN_COPY } from "@/features/payments/utils/plan-copy";
 import type { PlanRecord } from "@yoga-app/shared";
 import { usePlanPrice } from "@/features/payments/hooks/use-plan-price";
+import { paidAmountToDisplay } from "@/shared/lib/utils";
 import { planMeta } from "./pricing-config";
 
 export interface PricingCardProps {
@@ -14,10 +15,15 @@ export interface PricingCardProps {
   isPending: boolean;
   isActive?: boolean;
   isIndia?: boolean;
+  // The rate actually locked in at signup — shown for an active plan instead
+  // of a live-recomputed price, since the current catalog price/geo-currency
+  // may have moved on since the subscription started.
+  activePricePaidCents?: number | null;
+  activeCurrency?: string | null;
   onSubscribe: (plan: PlanRecord) => void;
 }
 
-export function PricingCard({ plan, isAuthenticated, isPending, isActive, isIndia, onSubscribe }: PricingCardProps) {
+export function PricingCard({ plan, isAuthenticated, isPending, isActive, isIndia, activePricePaidCents, activeCurrency, onSubscribe }: PricingCardProps) {
   const copy = PLAN_COPY[plan.name] ?? { title: plan.name.replace(/_/g, " "), tagline: "", perks: [] };
   const meta = planMeta[plan.name] ?? {
     icon: Sparkles,
@@ -29,7 +35,10 @@ export function PricingCard({ plan, isAuthenticated, isPending, isActive, isIndi
   const billingNote = plan.billingInterval === "week" ? "Billed weekly · Cancel any time" : "Billed monthly · Cancel any time";
   const isGroupPlan = plan.name === "group_live";
   const PlanIcon = meta.icon;
-  const { display: priceDisplay } = usePlanPrice({ isIndia, priceCents: plan.priceCents, priceInrPaise: plan.priceInrPaise });
+  const { display: livePriceDisplay } = usePlanPrice({ isIndia, priceCents: plan.priceCents, priceInrPaise: plan.priceInrPaise });
+  const priceDisplay = isActive && activePricePaidCents != null
+    ? paidAmountToDisplay(activePricePaidCents, activeCurrency ?? null)
+    : livePriceDisplay;
 
   return (
     <div className="relative flex flex-col">

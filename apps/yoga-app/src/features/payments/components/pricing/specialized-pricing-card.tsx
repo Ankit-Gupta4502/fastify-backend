@@ -4,6 +4,7 @@ import { Check, ArrowRight, Loader2, Minus, Plus, BadgeCheck } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { cn } from "@/shared/lib/utils";
 import { usePlanPrice } from "@/features/payments/hooks/use-plan-price";
+import { paidAmountToDisplay } from "@/shared/lib/utils";
 import { MIN_SESSIONS } from "./pricing-config";
 import type { SpecializedPlanConfigEntry } from "./pricing-config";
 
@@ -19,6 +20,11 @@ export interface SpecializedPricingCardProps {
   isActive?: boolean;
   isIndia?: boolean;
   activeSessions?: number | null;
+  // The rate actually locked in at signup — shown while the selector still
+  // matches the active session count, since the live catalog price/currency
+  // may have moved on since the subscription started.
+  activePricePaidCents?: number | null;
+  activeCurrency?: string | null;
   onSubscribe: () => void;
 }
 
@@ -33,11 +39,17 @@ export function SpecializedPricingCard({
   isActive,
   isIndia,
   activeSessions,
+  activePricePaidCents,
+  activeCurrency,
   onSubscribe,
 }: SpecializedPricingCardProps) {
-  const { display: priceDisplay } = usePlanPrice({
+  const { display: livePriceDisplay } = usePlanPrice({
     isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise, quantity: sessionCount,
   });
+  const showActivePrice = isActive && activeSessions === sessionCount && activePricePaidCents != null;
+  const priceDisplay = showActivePrice
+    ? paidAmountToDisplay(activePricePaidCents, activeCurrency ?? null)
+    : livePriceDisplay;
   const { display: basePriceDisplay } = usePlanPrice({
     isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise, quantity: MIN_SESSIONS,
   });

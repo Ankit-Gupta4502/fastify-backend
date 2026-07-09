@@ -151,6 +151,7 @@ export class PlansController {
         sessionsTotal: userSubscriptions.sessionsTotal,
         sessionsUsed: userSubscriptions.sessionsUsed,
         pricePaidCents: userSubscriptions.pricePaidCents,
+        currency: userSubscriptions.currency,
         purchasedAt: userSubscriptions.purchasedAt,
         expiresAt: userSubscriptions.expiresAt,
         plan: {

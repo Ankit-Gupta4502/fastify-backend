@@ -117,6 +117,8 @@ export interface AdminUserSubscription {
   sessionsTotal: number | null;
   sessionsUsed: number;
   pricePaidCents: number;
+  // null for subscriptions purchased before currency was tracked per-row
+  currency: string | null;
   status: string;
   purchasedAt: string;
   expiresAt: string | null;

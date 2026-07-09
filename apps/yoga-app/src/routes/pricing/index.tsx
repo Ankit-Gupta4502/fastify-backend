@@ -74,6 +74,8 @@ function PricingPage() {
       sessionCount: therapeuticSessions,
       activeSessions: therapeuticActiveSessions,
       isActive: isTherapeuticPlanActive,
+      activePricePaidCents: therapeuticSub?.pricePaidCents ?? null,
+      activeCurrency: therapeuticSub?.currency ?? null,
       onSessionCountChange: setTherapeuticSessions,
     },
   ];
@@ -154,11 +156,15 @@ function PricingPage() {
           pendingCard={pendingCard}
           groupPlan={groupPlan}
           isGroupPlanActive={isGroupPlanActive}
+          groupActivePricePaidCents={groupSub?.pricePaidCents ?? null}
+          groupActiveCurrency={groupSub?.currency ?? null}
           onGroupSubscribe={handleGroupSubscribe}
           privatePlan={privatePlan}
           privateSessionCount={sessionCount}
           privateActiveSessions={privateActiveSessions}
           isPrivatePlanActive={isPrivatePlanActive}
+          privateActivePricePaidCents={privateSub?.pricePaidCents ?? null}
+          privateActiveCurrency={privateSub?.currency ?? null}
           onPrivateSessionCountChange={setSessionCount}
           onPrivateSubscribe={handlePrivateSubscribe}
           specializedPlans={specializedPlans}

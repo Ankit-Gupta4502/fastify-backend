@@ -21,6 +21,11 @@ export interface SpecializedPlanEntry {
   sessionCount: number;
   activeSessions: number | null;
   isActive: boolean;
+  // What the current subscription actually locked in at signup — shown instead
+  // of a live-recomputed price so an active plan doesn't appear to change price
+  // just because today's geo-detected currency or catalog price differs.
+  activePricePaidCents: number | null;
+  activeCurrency: string | null;
   onSessionCountChange: (n: number) => void;
 }
 
@@ -32,12 +37,16 @@ interface PlansGridProps {
 
   groupPlan: PlanRecord | null;
   isGroupPlanActive: boolean;
+  groupActivePricePaidCents: number | null;
+  groupActiveCurrency: string | null;
   onGroupSubscribe: (plan: PlanRecord) => void;
 
   privatePlan: PlanRecord | null;
   privateSessionCount: number;
   privateActiveSessions: number | null;
   isPrivatePlanActive: boolean;
+  privateActivePricePaidCents: number | null;
+  privateActiveCurrency: string | null;
   onPrivateSessionCountChange: (n: number) => void;
   onPrivateSubscribe: () => void;
 
@@ -52,11 +61,15 @@ export function PlansGrid({
   pendingCard,
   groupPlan,
   isGroupPlanActive,
+  groupActivePricePaidCents,
+  groupActiveCurrency,
   onGroupSubscribe,
   privatePlan,
   privateSessionCount,
   privateActiveSessions,
   isPrivatePlanActive,
+  privateActivePricePaidCents,
+  privateActiveCurrency,
   onPrivateSessionCountChange,
   onPrivateSubscribe,
   specializedPlans,
@@ -98,6 +111,8 @@ export function PlansGrid({
             isActive={isPrivatePlanActive}
             isIndia={isIndia}
             activeSessions={privateActiveSessions}
+            activePricePaidCents={privateActivePricePaidCents}
+            activeCurrency={privateActiveCurrency}
             onSubscribe={onPrivateSubscribe}
           />
           {groupPlan && (
@@ -107,6 +122,8 @@ export function PlansGrid({
               isPending={pendingCard === "group"}
               isActive={isGroupPlanActive}
               isIndia={isIndia}
+              activePricePaidCents={groupActivePricePaidCents}
+              activeCurrency={groupActiveCurrency}
               onSubscribe={onGroupSubscribe}
             />
           )}
@@ -124,6 +141,8 @@ export function PlansGrid({
               isActive={entry.isActive}
               isIndia={isIndia}
               activeSessions={entry.activeSessions}
+              activePricePaidCents={entry.activePricePaidCents}
+              activeCurrency={entry.activeCurrency}
               onSubscribe={() => onSpecializedSubscribe(entry.planName, entry.sessionCount)}
             />
           ))}

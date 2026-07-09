@@ -1,5 +1,6 @@
 import type { AdminUserSubscription } from "@yoga-app/shared";
 import { SubscriptionStatusChip } from "@/features/admin/components/subscription-status-chip";
+import { paidAmountToDisplay } from "@/shared/lib/utils";
 
 export function UserSubscriptionsSection({ subscriptions }: { subscriptions: AdminUserSubscription[] }) {
   if (subscriptions.length === 0) {
@@ -45,7 +46,7 @@ export function UserSubscriptionsSection({ subscriptions }: { subscriptions: Adm
             <div className="rounded-lg bg-secondary/40 px-3 py-2">
               <p className="text-xs text-muted-foreground">Paid</p>
               <p className="text-sm font-semibold mt-0.5">
-                ₹{(sub.pricePaidCents / 100).toLocaleString("en-IN")}
+                {paidAmountToDisplay(sub.pricePaidCents, sub.currency)}
               </p>
             </div>
           </div>

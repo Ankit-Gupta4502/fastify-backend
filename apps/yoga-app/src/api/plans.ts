@@ -9,6 +9,8 @@ export interface MyPlanResponse {
   sessionsTotal: number | null;
   sessionsUsed: number;
   pricePaidCents: number;
+  // null for subscriptions purchased before currency was tracked per-row
+  currency: string | null;
   purchasedAt: string;
   expiresAt: string | null;
   plan: PlanRecord;

@@ -204,6 +204,13 @@
       "when": 1783273435007,
       "tag": "0028_noisy_rattler",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1783602482259,
+      "tag": "0029_add_subscription_currency",
+      "breakpoints": true
     }
   ]
 }

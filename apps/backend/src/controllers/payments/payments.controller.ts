@@ -181,6 +181,7 @@ export class PaymentsController {
         sessionsTotal: sessionCount,
         sessionsUsed: 0,
         pricePaidCents: amount,
+        currency,
         status: "pending_payment",
         razorpaySubscriptionId: rpSub.id,
       });
@@ -293,6 +294,7 @@ export class PaymentsController {
         sessionsTotal: null,
         sessionsUsed: 0,
         pricePaidCents: amount,
+        currency,
         status: "pending_payment",
         razorpaySubscriptionId: rpSub.id,
       });

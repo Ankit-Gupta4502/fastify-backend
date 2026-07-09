@@ -3,6 +3,7 @@ import { Check, ArrowRight, Loader2, Lock, Minus, Plus, BadgeCheck, Sparkles } f
 
 import { Button } from "@/components/ui/button";
 import { usePlanPrice } from "@/features/payments/hooks/use-plan-price";
+import { paidAmountToDisplay } from "@/shared/lib/utils";
 import {
   MIN_SESSIONS,
   PRICE_DISCOUNT_CENTS,
@@ -19,6 +20,11 @@ export interface PrivatePricingCardProps {
   isActive?: boolean;
   isIndia?: boolean;
   activeSessions?: number | null;
+  // The rate actually locked in at signup — shown while the selector still
+  // matches the active session count, since the live catalog price/currency
+  // may have moved on since the subscription started.
+  activePricePaidCents?: number | null;
+  activeCurrency?: string | null;
   onSubscribe: () => void;
 }
 
@@ -28,11 +34,15 @@ const privatePerks = [
   "Priority support",
 ];
 
-export function PrivatePricingCard({ sessionCount, onSessionCountChange, pricePerSessionCents, pricePerSessionInrPaise, isAuthenticated, isPending, isActive, isIndia, activeSessions, onSubscribe }: PrivatePricingCardProps) {
-  const { display: priceDisplay } = usePlanPrice({
+export function PrivatePricingCard({ sessionCount, onSessionCountChange, pricePerSessionCents, pricePerSessionInrPaise, isAuthenticated, isPending, isActive, isIndia, activeSessions, activePricePaidCents, activeCurrency, onSubscribe }: PrivatePricingCardProps) {
+  const { display: livePriceDisplay } = usePlanPrice({
     isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise,
     quantity: sessionCount, discountCents: PRICE_DISCOUNT_CENTS, discountInrPaise: PRICE_DISCOUNT_INR_PAISE,
   });
+  const showActivePrice = isActive && activeSessions === sessionCount && activePricePaidCents != null;
+  const priceDisplay = showActivePrice
+    ? paidAmountToDisplay(activePricePaidCents, activeCurrency ?? null)
+    : livePriceDisplay;
   const { display: basePriceDisplay } = usePlanPrice({
     isIndia, priceCents: pricePerSessionCents, priceInrPaise: pricePerSessionInrPaise,
     quantity: MIN_SESSIONS, discountCents: PRICE_DISCOUNT_CENTS, discountInrPaise: PRICE_DISCOUNT_INR_PAISE,

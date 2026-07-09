@@ -12,3 +12,9 @@ export function centsToDisplay(cents: number): string {
 export function paiseToDisplay(paise: number): string {
   return `₹${Math.round(paise / 100).toLocaleString("en-IN")}`;
 }
+
+// currency is null for rows purchased before it was tracked — fall back to USD
+// display rather than guessing from the viewer's current geo.
+export function paidAmountToDisplay(amount: number, currency: string | null): string {
+  return currency === "INR" ? paiseToDisplay(amount) : centsToDisplay(amount);
+}

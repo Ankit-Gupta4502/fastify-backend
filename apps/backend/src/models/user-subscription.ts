@@ -29,6 +29,9 @@ export const userSubscriptions = pgTable("user_subscriptions", {
   sessionsTotal: integer("sessions_total"),
   sessionsUsed: integer("sessions_used").notNull().default(0),
   pricePaidCents: integer("price_paid_cents").notNull(),
+  // Currency actually charged ("USD" | "INR") — null for rows purchased before
+  // this column existed, since their true currency was never persisted.
+  currency: text("currency"),
   status: subscriptionStatusEnum("status").notNull().default("pending_payment"),
   purchasedAt: timestamp("purchased_at", { withTimezone: true })
     .notNull()
