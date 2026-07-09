@@ -121,7 +121,7 @@ export function SessionRow({ room, tz, acting, onEnrol, onJoinLive }: SessionRow
             size="sm"
             disabled={full || acting}
             onClick={() => onEnrol(room.id)}
-            className="rounded-full px-5 font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+            className="rounded-full px-5 font-bold "
           >
             {acting ? "Reserving…" : full ? "Full" : "Reserve"}
           </Button>
