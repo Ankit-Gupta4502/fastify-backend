@@ -95,19 +95,26 @@ export function SessionRow({ room, tz, acting, onEnrol, onJoinLive }: SessionRow
               Join Meet
             </a>
           ) : (
-            <Button
-              size="sm"
-              disabled={!live || acting}
-              onClick={() => onJoinLive(room.id)}
-              className={cn(
-                "rounded-full px-5 font-bold",
-                live
-                  ? "opacity-100 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md"
-                  : "opacity-60 group-hover:opacity-80",
+            <div className="flex flex-col items-end gap-1">
+              <Button
+                size="sm"
+                disabled={!live || acting}
+                onClick={() => onJoinLive(room.id)}
+                className={cn(
+                  "rounded-full px-5 font-bold",
+                  live
+                    ? "opacity-100 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md"
+                    : "opacity-60 group-hover:opacity-80",
+                )}
+              >
+                {acting ? "Joining…" : live ? "Join Live" : "Enrolled ✓"}
+              </Button>
+              {!live && (
+                <span className="text-[11px] text-muted-foreground">
+                  Link available 15 min before start
+                </span>
               )}
-            >
-              {acting ? "Joining…" : live ? "Join Live" : "Enrolled ✓"}
-            </Button>
+            </div>
           )
         ) : (
           <Button
