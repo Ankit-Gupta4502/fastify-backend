@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import {
-  calcCustomPriceCents,
+  PRICE_DISCOUNT_CENTS,
   PRICE_DISCOUNT_INR_PAISE,
   createOrderBodySchema,
   createCustomOrderBodySchema,
@@ -120,10 +120,16 @@ export class PaymentsController {
     }
 
     const inrRatePerSession = plan.pricePerSessionInrPaise;
-    const amount = isIndia && inrRatePerSession != null
-      ? sessionCount * inrRatePerSession - PRICE_DISCOUNT_INR_PAISE
-      : calcCustomPriceCents(sessionCount);
-    const currency = isIndia && inrRatePerSession != null ? "INR" : "USD";
+    const usdRatePerSession = plan.pricePerSessionCents;
+    const useInrPricing = isIndia && inrRatePerSession != null;
+    if (!useInrPricing && usdRatePerSession == null) {
+      const { statusCode, payload } = errorResponse({ message: "Plan pricing not configured", statusCode: 500 });
+      return reply.status(statusCode).send(payload);
+    }
+    const amount = useInrPricing
+      ? sessionCount * (inrRatePerSession as number) - PRICE_DISCOUNT_INR_PAISE
+      : sessionCount * (usdRatePerSession as number) - PRICE_DISCOUNT_CENTS;
+    const currency = useInrPricing ? "INR" : "USD";
     const period = plan.billingInterval === "week" ? "weekly" as const : "monthly" as const;
 
     // Idempotency: return an existing pending subscription rather than creating a duplicate
