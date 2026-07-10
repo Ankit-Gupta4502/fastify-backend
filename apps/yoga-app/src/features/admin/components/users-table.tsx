@@ -86,7 +86,6 @@ export function UsersTable({
         onClick: () => navigate({ to: "/admin/users/$userId", params: { userId: u.id } }),
       })}
       renderCells={(u) => {
-        const isActive = u.subscriptions.find((s) => s.status === "active");
         return (
           <>
             <TableCell className="font-medium">{u.name}</TableCell>
@@ -95,15 +94,15 @@ export function UsersTable({
               <Chip variant={ROLE_CHIP_VARIANT[u.role] ?? "muted"}>{u.role}</Chip>
             </TableCell>
             <TableCell>
-              {u.subscriptions.length === 0 ? (
+              {u.planName === null ? (
                 <span className="text-muted-foreground">—</span>
               ) : (
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-1.5">
                     <span className="capitalize text-muted-foreground">
-                      {isActive?.planName.replace(/_/g, " ")}
+                      {u.planName.replace(/_/g, " ")}
                     </span>
-                    <SubscriptionStatusChip status={isActive?.status || ""} />
+                    <SubscriptionStatusChip status={u.status || ""} />
                   </div>
                 </div>
               )}
