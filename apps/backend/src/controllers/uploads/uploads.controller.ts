@@ -1,6 +1,12 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
-import { uploadFile, deleteFile } from "../../services/upload.service";
+import {
+  uploadFile,
+  deleteFile,
+  VIDEO_ALLOWED_MIME,
+  VIDEO_MAX_BYTES,
+  type UploadOptions,
+} from "../../services/upload.service";
 import { errorResponse, successResponse } from "../../utils";
 
 export class UploadsController {
@@ -24,13 +30,33 @@ export class UploadsController {
           { preHandler: this.authMiddleware.handle },
           this.delete,
         );
+        router.post(
+          "/video",
+          { preHandler: this.authMiddleware.handle },
+          this.uploadVideo,
+        );
       },
       { prefix: "/uploads" },
     );
   }
 
-  private upload = async (request: FastifyRequest, reply: FastifyReply) => {
-    const data = await request.file();
+  private upload = (request: FastifyRequest, reply: FastifyReply) =>
+    this.handleUpload(request, reply);
+
+  private uploadVideo = (request: FastifyRequest, reply: FastifyReply) =>
+    this.handleUpload(request, reply, {
+      allowedMime: VIDEO_ALLOWED_MIME,
+      maxBytes: VIDEO_MAX_BYTES,
+    });
+
+  private handleUpload = async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+    options: UploadOptions = {},
+  ) => {
+    const data = await request.file(
+      options.maxBytes ? { limits: { fileSize: options.maxBytes } } : undefined,
+    );
 
     if (!data) {
       const { statusCode, payload } = errorResponse({
@@ -43,7 +69,7 @@ export class UploadsController {
     const buffer = await data.toBuffer();
 
     try {
-      const result = await uploadFile(buffer, data.filename, data.mimetype);
+      const result = await uploadFile(buffer, data.filename, data.mimetype, options);
       const { statusCode, payload } = successResponse({
         message: "Uploaded",
         data: result,

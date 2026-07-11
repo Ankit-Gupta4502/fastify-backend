@@ -9,6 +9,7 @@ export interface InstructorListItem {
   currentRoomId: string | null;
   profileImageUrl: string | null;
   tagline: string | null;
+  yearsOfExperience: number | null;
   rating: number;
 }
 
@@ -22,7 +23,8 @@ export interface InstructorProfile {
   tagline: string | null;
   profileImageUrl: string | null;
   avatarKey: string | null;
-  videoLinks: string[];
+  introVideoUrl: string | null;
+  introVideoKey: string | null;
   tags: string[];
   yearsOfExperience: number | null;
 }
@@ -38,7 +40,7 @@ export interface PublicInstructorProfile {
   tagline: string | null;
   profileImageUrl: string | null;
   avatarKey: string | null;
-  videoLinks: string[];
+  introVideoUrl: string | null;
   tags: string[];
   yearsOfExperience: number | null;
   rating: number;
@@ -46,11 +48,13 @@ export interface PublicInstructorProfile {
 }
 
 export interface UpdateProfileBody {
+  name?: string;
   bio?: string;
   tagline?: string;
   profileImageUrl?: string | null;
   avatarKey?: string | null;
-  videoLinks?: string[];
+  introVideoUrl?: string | null;
+  introVideoKey?: string | null;
   tags?: string[];
   yearsOfExperience?: number | null;
 }

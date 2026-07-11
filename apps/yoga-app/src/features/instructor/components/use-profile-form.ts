@@ -22,11 +22,13 @@ export function useProfileForm(profile: InstructorProfile) {
     setSaved(false);
     update.mutate(
       {
+        name: values.name.trim(),
         bio: values.bio || undefined,
         tagline: values.tagline || undefined,
         profileImageUrl: values.profileImageUrl,
         avatarKey: null,
-        videoLinks: values.videoLinks,
+        introVideoUrl: values.introVideoUrl,
+        introVideoKey: values.introVideoKey,
         tags: values.tags,
         yearsOfExperience: values.yearsOfExperience ? Number(values.yearsOfExperience) : null,
       },

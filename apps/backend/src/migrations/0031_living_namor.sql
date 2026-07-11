@@ -1,0 +1,1 @@
+ALTER TABLE "instructor_details" DROP COLUMN "video_links";

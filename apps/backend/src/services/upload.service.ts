@@ -16,6 +16,19 @@ const ALLOWED_MIME = new Set([
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
+export const VIDEO_ALLOWED_MIME = new Set([
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+]);
+
+export const VIDEO_MAX_BYTES = 100 * 1024 * 1024; // 100 MB
+
+export interface UploadOptions {
+  allowedMime?: Set<string>;
+  maxBytes?: number;
+}
+
 function createR2Client(): S3Client {
   const accountId = process.env.R2_ACCOUNT_ID;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
@@ -38,15 +51,17 @@ export async function uploadFile(
   buffer: Buffer,
   originalName: string,
   mimeType: string,
+  options: UploadOptions = {},
 ): Promise<UploadResult> {
-  if (!ALLOWED_MIME.has(mimeType)) {
-    throw new Error(
-      `Unsupported file type: ${mimeType}. Allowed: jpeg, png, webp, gif`,
-    );
+  const allowedMime = options.allowedMime ?? ALLOWED_MIME;
+  const maxBytes = options.maxBytes ?? MAX_BYTES;
+
+  if (!allowedMime.has(mimeType)) {
+    throw new Error(`Unsupported file type: ${mimeType}`);
   }
 
-  if (buffer.byteLength > MAX_BYTES) {
-    throw new Error("File exceeds the 5 MB limit");
+  if (buffer.byteLength > maxBytes) {
+    throw new Error(`File exceeds the ${Math.round(maxBytes / (1024 * 1024))} MB limit`);
   }
 
   const bucket = process.env.R2_BUCKET_NAME;

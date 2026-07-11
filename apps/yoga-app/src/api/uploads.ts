@@ -26,6 +26,25 @@ export const uploadsApi = {
     return json;
   },
 
+  uploadVideo: async (file: File): Promise<{ data: UploadResult }> => {
+    const form = new FormData();
+    form.append("file", file);
+
+    const res = await fetch(`${API_BASE_URL}${API_ENDPOINTS.UPLOADS.VIDEO}`, {
+      method: "POST",
+      credentials: "include",
+      body: form,
+    });
+
+    if (!res.ok) {
+      const json = (await res.json().catch(() => ({}))) as { message?: string };
+      throw new Error(json.message ?? "Upload failed");
+    }
+
+    const json = (await res.json()) as { data: UploadResult };
+    return json;
+  },
+
   deleteAttachment: async (key: string): Promise<void> => {
     const res = await fetch(
       `${API_BASE_URL}${API_ENDPOINTS.UPLOADS.ATTACHMENT}?key=${encodeURIComponent(key)}`,

@@ -18,7 +18,7 @@ function InstructorSpotlightRoot() {
   if (!isLoading && instructors.length === 0) return null;
 
   const scroll = (dir: "left" | "right") => {
-    scrollRef.current?.scrollBy({ left: dir === "left" ? -272 : 272, behavior: "smooth" });
+    scrollRef.current?.scrollBy({ left: dir === "left" ? -304 : 304, behavior: "smooth" });
   };
 
   return (
@@ -71,7 +71,7 @@ function InstructorSpotlightRoot() {
           {isLoading
             ? [...Array(4)].map((_, i) => <CardSkeleton key={i} />)
             : instructors.map((instructor) => (
-                <div key={instructor.id} className="snap-start flex-none w-64">
+                <div key={instructor.id} className="snap-start flex-none w-72">
                   <ExpertCard instructor={instructor} />
                 </div>
               ))}

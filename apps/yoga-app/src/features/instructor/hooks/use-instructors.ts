@@ -52,6 +52,12 @@ export function useUploadAttachment() {
   });
 }
 
+export function useUploadVideo() {
+  return useMutation({
+    mutationFn: (file: File) => uploadsApi.uploadVideo(file),
+  });
+}
+
 export function useInstructorWallet() {
   return useQuery({
     queryKey: queryKeys.instructors.myWallet(),
