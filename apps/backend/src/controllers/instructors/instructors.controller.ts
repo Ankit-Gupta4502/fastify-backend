@@ -130,6 +130,7 @@ export class InstructorsController {
         currentRoomId: instructorDetails.currentRoomId,
         profileImageUrl: instructorDetails.profileImageUrl,
         tagline: instructorDetails.tagline,
+        yearsOfExperience: instructorDetails.yearsOfExperience,
         rating: instructorDetails.rating,
       })
       .from(user)
@@ -223,7 +224,7 @@ export class InstructorsController {
         tagline: instructorDetails.tagline,
         profileImageUrl: instructorDetails.profileImageUrl,
         avatarKey: instructorDetails.avatarKey,
-        videoLinks: instructorDetails.videoLinks,
+        introVideoUrl: instructorDetails.introVideoUrl,
         tags: instructorDetails.tags,
         yearsOfExperience: instructorDetails.yearsOfExperience,
         rating: instructorDetails.rating,
@@ -260,7 +261,8 @@ export class InstructorsController {
         tagline: instructorDetails.tagline,
         profileImageUrl: instructorDetails.profileImageUrl,
         avatarKey: instructorDetails.avatarKey,
-        videoLinks: instructorDetails.videoLinks,
+        introVideoUrl: instructorDetails.introVideoUrl,
+        introVideoKey: instructorDetails.introVideoKey,
         tags: instructorDetails.tags,
         yearsOfExperience: instructorDetails.yearsOfExperience,
         specialty: instructorDetails.specialty,
@@ -287,18 +289,24 @@ export class InstructorsController {
 
     const body = request.body as z.infer<typeof updateInstructorProfileBodySchema>;
 
-    await drizzle
-      .update(instructorDetails)
-      .set({
-        ...(body.bio !== undefined && { bio: body.bio }),
-        ...(body.tagline !== undefined && { tagline: body.tagline }),
-        ...(body.profileImageUrl !== undefined && { profileImageUrl: body.profileImageUrl }),
-        ...(body.avatarKey !== undefined && { avatarKey: body.avatarKey }),
-        ...(body.videoLinks !== undefined && { videoLinks: body.videoLinks }),
-        ...(body.tags !== undefined && { tags: body.tags }),
-        ...(body.yearsOfExperience !== undefined && { yearsOfExperience: body.yearsOfExperience }),
-      })
-      .where(eq(instructorDetails.userId, me.id));
+    await Promise.all([
+      body.name !== undefined
+        ? drizzle.update(user).set({ name: body.name }).where(eq(user.id, me.id))
+        : Promise.resolve(),
+      drizzle
+        .update(instructorDetails)
+        .set({
+          ...(body.bio !== undefined && { bio: body.bio }),
+          ...(body.tagline !== undefined && { tagline: body.tagline }),
+          ...(body.profileImageUrl !== undefined && { profileImageUrl: body.profileImageUrl }),
+          ...(body.avatarKey !== undefined && { avatarKey: body.avatarKey }),
+          ...(body.introVideoUrl !== undefined && { introVideoUrl: body.introVideoUrl }),
+          ...(body.introVideoKey !== undefined && { introVideoKey: body.introVideoKey }),
+          ...(body.tags !== undefined && { tags: body.tags }),
+          ...(body.yearsOfExperience !== undefined && { yearsOfExperience: body.yearsOfExperience }),
+        })
+        .where(eq(instructorDetails.userId, me.id)),
+    ]);
 
     const { statusCode, payload } = successResponse({ message: "Profile updated", data: null });
     return reply.status(statusCode).send(payload);

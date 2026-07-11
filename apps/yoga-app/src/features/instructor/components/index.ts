@@ -1,4 +1,5 @@
 export * from "./photo-upload-field";
+export * from "./video-upload-field";
 export * from "./instructor-header";
 export * from "./instructor-sidebar";
 export * from "./next-class-card";

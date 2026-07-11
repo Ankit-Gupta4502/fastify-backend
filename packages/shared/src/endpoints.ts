@@ -37,6 +37,7 @@ export const API_ENDPOINTS = {
   },
   UPLOADS: {
     ATTACHMENT: "/uploads/attachment",
+    VIDEO: "/uploads/video",
   },
   PLANS: {
     LIST: "/plans",          // public, no priceCents

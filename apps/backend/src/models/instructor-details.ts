@@ -53,10 +53,8 @@ export const instructorDetails = pgTable(
     tagline: text("tagline"),
     profileImageUrl: text("profile_image_url"),
     avatarKey: text("avatar_key"),
-    videoLinks: text("video_links")
-      .array()
-      .notNull()
-      .default([] as unknown as string[]),
+    introVideoUrl: text("intro_video_url"),
+    introVideoKey: text("intro_video_key"),
     tags: text("tags")
       .array()
       .notNull()

@@ -1,30 +1,23 @@
-import { Play, ExternalLink } from "lucide-react";
+import ReactPlayer from "react-player";
 import { useInstructorDetail } from "./context";
 import { ContentSection, ContentHeading } from "./primitives";
 
 export function Videos() {
   const { instructor } = useInstructorDetail();
-  if (instructor.videoLinks.length === 0) return null;
+  if (!instructor.introVideoUrl) return null;
 
   return (
     <ContentSection>
-      <ContentHeading>Featured Videos</ContentHeading>
-      <div className="divide-y divide-border/60 border-y border-border/60">
-        {instructor.videoLinks.map((url) => (
-          <a
-            key={url}
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 py-4 group"
-          >
-            <span className="size-8 rounded-full border border-border flex items-center justify-center text-primary shrink-0 group-hover:bg-primary/10 transition-colors">
-              <Play className="size-3.5 fill-primary" />
-            </span>
-            <span className="text-sm font-medium text-primary truncate flex-1">{url}</span>
-            <ExternalLink className="size-3.5 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </a>
-        ))}
+      <ContentHeading>Meet {instructor.name.split(" ")[0]}</ContentHeading>
+      <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-[0_24px_50px_-28px_rgba(0,0,0,0.35)]">
+        <ReactPlayer
+          src={instructor.introVideoUrl}
+          poster={instructor.profileImageUrl ?? undefined}
+          controls
+          playsInline
+          width="100%"
+          height="100%"
+        />
       </div>
     </ContentSection>
   );
