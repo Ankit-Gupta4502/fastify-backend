@@ -1,6 +1,17 @@
 import { relations } from "drizzle-orm";
-import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  type AnyPgColumn,
+} from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { DEFAULT_USER_ROLE } from "../constants/roles";
+import { DEFAULT_USER_TIMEZONE } from "../constants/sessions";
+import { userSubscriptions } from "./user-subscription";
 
 export const user = pgTable("user", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -9,8 +20,18 @@ export const user = pgTable("user", {
   emailVerified: boolean("email_verified").default(false).notNull(),
   role: text("role").notNull().default(DEFAULT_USER_ROLE),
   image: text("image"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
+  preferredInstructorId: uuid("preferred_instructor_id").references(
+    (): AnyPgColumn => user.id,
+  ),
+  timezone: text("timezone").notNull().default(DEFAULT_USER_TIMEZONE),
+  sessionsUsedThisWeek: integer("sessions_used_this_week")
+    .notNull()
+    .default(0),
+  weekResetAt: timestamp("week_reset_at", { withTimezone: true })
+    .notNull()
+    .default(sql`date_trunc('week', now())`),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
@@ -18,15 +39,15 @@ export const user = pgTable("user", {
 
 export const session = pgTable("session", {
   id: uuid("id").defaultRandom().primaryKey(),
-  expiresAt: timestamp("expires_at").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   token: text("token").notNull().unique(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .$onUpdate(() => new Date())
     .notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 });
@@ -35,18 +56,18 @@ export const account = pgTable("account", {
   id: uuid("id").defaultRandom().primaryKey(),
   accountId: text("account_id").notNull(),
   providerId: text("provider_id").notNull(),
-  userId: text("user_id")
+  userId: uuid("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   accessToken: text("access_token"),
   refreshToken: text("refresh_token"),
   idToken: text("id_token"),
-  accessTokenExpiresAt: timestamp("access_token_expires_at"),
-  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at", { withTimezone: true }),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at", { withTimezone: true }),
   scope: text("scope"),
   password: text("password"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .$onUpdate(() => new Date())
     .notNull(),
 });
@@ -55,14 +76,20 @@ export const verification = pgTable("verification", {
   id: uuid("id").defaultRandom().primaryKey(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ one, many }) => ({
   sessions: many(session),
   accounts: many(account),
+  subscriptions: many(userSubscriptions),
+  preferredInstructor: one(user, {
+    relationName: "preferredInstructor",
+    fields: [user.preferredInstructorId],
+    references: [user.id],
+  }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

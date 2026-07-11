@@ -18,7 +18,7 @@ function createQueryClient() {
 
 let browserQueryClient: QueryClient | undefined;
 
-function getQueryClient() {
+export function getQueryClient() {
   if (typeof window === "undefined") {
     return createQueryClient();
   }

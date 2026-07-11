@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 COMPOSE_FILE="$BACKEND_DIR/docker-compose.yml"
 ENV_FILE="$REPO_ROOT/.env"
 
@@ -98,23 +98,23 @@ check_env_file() {
 # Function to build production image
 build() {
     echo -e "${BLUE}Building production Docker image...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build --no-cache)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build --no-cache)
     echo -e "${GREEN}Production image built successfully!${NC}"
 }
 
 # Function to start services
 start() {
     echo -e "${BLUE}Starting production services...${NC}"
-    
+
     # Ensure database is healthy before starting backend
     echo -e "${BLUE}Waiting for database to be ready...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d postgres)
-    
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d postgres)
+
     # Wait for database health check
     MAX_WAIT=60
     COUNTER=0
     while [ $COUNTER -lt $MAX_WAIT ]; do
-        if (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps postgres | grep -q "healthy"); then
+        if (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps postgres | grep -q "healthy"); then
             echo -e "${GREEN}Database is ready!${NC}"
             break
         fi
@@ -128,7 +128,7 @@ start() {
         exit 1
     fi
 
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d backend)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d backend)
     echo -e "${GREEN}Production services started!${NC}"
     echo -e "${BLUE}Backend API: http://localhost:${PORT:-8080}${NC}"
     echo ""
@@ -139,14 +139,14 @@ start() {
 # Function to stop services
 stop() {
     echo -e "${BLUE}Stopping production services...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down)
     echo -e "${GREEN}Production services stopped!${NC}"
 }
 
 # Function to restart services
 restart() {
     echo -e "${BLUE}Restarting production services...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" restart)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" restart)
     echo -e "${GREEN}Production services restarted!${NC}"
 }
 
@@ -154,13 +154,13 @@ restart() {
 logs() {
     SERVICE=${1:-backend}
     echo -e "${BLUE}Showing logs for $SERVICE (Press Ctrl+C to exit)...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs -f --tail=100 "$SERVICE")
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs -f --tail=100 "$SERVICE")
 }
 
 # Function to show status
 status() {
     echo -e "${BLUE}Service Status:${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps)
     echo ""
     echo -e "${BLUE}Resource Usage:${NC}"
     docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}"
@@ -181,13 +181,13 @@ backup() {
     mkdir -p "$BACKUP_DIR"
     TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
     BACKUP_FILE="$BACKUP_DIR/yoga-app_backup_$TIMESTAMP.sql"
-    
+
     echo -e "${BLUE}Creating database backup...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec -T postgres pg_dumpall -U postgres > "$BACKUP_FILE")
-    
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec -T postgres pg_dumpall -U postgres > "$BACKUP_FILE")
+
     if [ -f "$BACKUP_FILE" ] && [ -s "$BACKUP_FILE" ]; then
         echo -e "${GREEN}Backup created successfully: $BACKUP_FILE${NC}"
-        
+
         # Compress backup
         gzip "$BACKUP_FILE"
         echo -e "${GREEN}Backup compressed: ${BACKUP_FILE}.gz${NC}"
@@ -206,7 +206,7 @@ restore() {
     fi
 
     BACKUP_FILE="$1"
-    
+
     if [ ! -f "$BACKUP_FILE" ]; then
         echo -e "${RED}Error: Backup file not found: $BACKUP_FILE${NC}"
         exit 1
@@ -221,46 +221,46 @@ restore() {
     fi
 
     echo -e "${BLUE}Restoring database from backup...${NC}"
-    
+
     # Decompress if needed and restore
     if [[ "$BACKUP_FILE" == *.gz ]]; then
-        gunzip -c "$BACKUP_FILE" | (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec -T postgres psql -U postgres)
+        gunzip -c "$BACKUP_FILE" | (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec -T postgres psql -U postgres)
     else
-        cat "$BACKUP_FILE" | (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec -T postgres psql -U postgres)
+        cat "$BACKUP_FILE" | (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec -T postgres psql -U postgres)
     fi
-    
+
     echo -e "${GREEN}Database restored successfully!${NC}"
 }
 
 # Function to access database shell
 db_shell() {
     echo -e "${BLUE}Accessing PostgreSQL shell...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec postgres psql -U postgres -d yoga-app)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec postgres psql -U postgres -d yoga-app)
 }
 
 # Function to show logs from last 24 hours
 logs_recent() {
     SERVICE=${1:-backend}
     echo -e "${BLUE}Showing logs from last 24 hours for $SERVICE...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs --since 24h "$SERVICE")
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs --since 24h "$SERVICE")
 }
 
 # Function to update services (pull, rebuild, restart)
 update() {
     echo -e "${BLUE}Updating production services...${NC}"
-    
+
     # Pull latest images
     echo -e "${BLUE}Pulling latest base images...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" pull postgres)
-    
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" pull postgres)
+
     # Rebuild backend
     echo -e "${BLUE}Rebuilding backend image...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build --no-cache backend)
-    
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build --no-cache backend)
+
     # Restart with zero downtime (if possible)
     echo -e "${BLUE}Restarting services...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --no-deps backend)
-    
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --no-deps backend)
+
     echo -e "${GREEN}Services updated successfully!${NC}"
 }
 
@@ -274,9 +274,9 @@ clean() {
         echo -e "${BLUE}Cleanup cancelled.${NC}"
         exit 0
     fi
-    
+
     echo -e "${BLUE}Cleaning up production environment...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down -v --remove-orphans)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down -v --remove-orphans)
     echo -e "${GREEN}Cleanup completed!${NC}"
 }
 

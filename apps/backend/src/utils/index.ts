@@ -8,6 +8,23 @@ type Schemas = {
   params?: ZodType;
 };
 
+export function detectCountry(request: FastifyRequest, clientCountry?: string): string | null {
+  const cf = request.headers["cf-ipcountry"];
+  if (typeof cf === "string" && cf.length === 2 && cf !== "XX") return cf.toUpperCase();
+
+  const nginx = request.headers["x-country-code"];
+  if (typeof nginx === "string" && nginx.length === 2) return nginx.toUpperCase();
+
+  if (clientCountry && clientCountry.length === 2) return clientCountry.toUpperCase();
+
+  // Env-level override — set FORCE_COUNTRY=IN in .env.local or staging config
+  // to get INR pricing without Cloudflare/nginx headers present.
+  const env = process.env.FORCE_COUNTRY;
+  if (env && env.length === 2) return env.toUpperCase();
+
+  return null;
+}
+
 export function formatZodErrors(error: ZodError): Record<string, string> {
   const formatted: Record<string, string> = {};
   for (const issue of error.issues) {
@@ -19,6 +36,21 @@ export function formatZodErrors(error: ZodError): Record<string, string> {
   return formatted;
 }
 
+function sendValidationError(
+  reply: FastifyReply,
+  label: string,
+  error: ZodError,
+) {
+  const details = formatZodErrors(error);
+  const payload: ApiResponse<null> = {
+    success: false,
+    message: label,
+    data: null,
+    error: label,
+  };
+  return reply.status(422).send({ ...payload, details });
+}
+
 export function validateWithZod(
   req: FastifyRequest,
   reply: FastifyReply,
@@ -28,39 +60,27 @@ export function validateWithZod(
     if (schemas.body) {
       const result = schemas.body.safeParse(req.body);
       if (!result.success) {
-        return reply.status(422).send({
-          error: "Invalid body",
-          details: formatZodErrors(result.error),
-        });
+        return sendValidationError(reply, "Invalid body", result.error);
       }
       req.body = result.data;
     }
     if (schemas.query) {
       const result = schemas.query.safeParse(req.query);
       if (!result.success) {
-        return reply.status(422).send({
-          error: "Invalid query",
-          details: formatZodErrors(result.error),
-        });
+        return sendValidationError(reply, "Invalid query", result.error);
       }
       req.query = result.data;
     }
     if (schemas.params) {
       const result = schemas.params.safeParse(req.params);
       if (!result.success) {
-        return reply.status(422).send({
-          error: "Invalid params",
-          details: formatZodErrors(result.error),
-        });
+        return sendValidationError(reply, "Invalid params", result.error);
       }
       req.params = result.data;
     }
   } catch (err) {
     if (err instanceof ZodError) {
-      return reply.status(422).send({
-        error: "Validation failed",
-        details: formatZodErrors(err),
-      });
+      return sendValidationError(reply, "Validation failed", err);
     }
     throw err;
   }

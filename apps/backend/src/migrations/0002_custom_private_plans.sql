@@ -1,0 +1,1 @@
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS sessions_per_month INTEGER;

@@ -1,4 +1,4 @@
-export const APP_NAME = "Yoga App";
+export const APP_NAME = "Book Your Yoga Teacher";
 
 export const DEFAULT_BACKEND_PORT = 8080;
 export const DEFAULT_FRONTEND_PORT = 3000;

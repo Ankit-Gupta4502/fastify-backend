@@ -1,0 +1,1 @@
+ALTER TABLE "demo_requests" ALTER COLUMN "phone" DROP NOT NULL;

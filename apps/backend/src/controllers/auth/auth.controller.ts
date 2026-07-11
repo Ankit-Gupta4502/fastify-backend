@@ -17,7 +17,12 @@ import {
   loginBodySchema,
   registerBodySchema,
   socialCallbackQuerySchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  resendVerificationEmailSchema,
+  verifyEmailSchema,
 } from "../../validation/auth.validation.schema";
+import { USER_ROLES } from "../../constants/roles";
 import {
   errorResponse,
   successResponse,
@@ -58,6 +63,26 @@ export class AuthController {
           { schema: authSwaggerSchemas.googleLogin },
           this.googleLogin,
         );
+        router.post(
+          "/forgot-password",
+          { schema: authSwaggerSchemas.forgotPassword },
+          this.forgotPassword,
+        );
+        router.post(
+          "/reset-password",
+          { schema: authSwaggerSchemas.resetPassword },
+          this.resetPassword,
+        );
+        router.post(
+          "/resend-verification-email",
+          { schema: authSwaggerSchemas.resendVerificationEmail },
+          this.resendVerificationEmail,
+        );
+        router.post(
+          "/verify-email",
+          { schema: authSwaggerSchemas.verifyEmail },
+          this.verifyEmail,
+        );
       },
       { prefix: "/auth" },
     );
@@ -78,7 +103,7 @@ export class AuthController {
 
     try {
       const { headers, response: data } = await auth.api.signUpEmail({
-        body,
+        body: { ...body, role: USER_ROLES.USER },
         headers: fromNodeHeaders(request.headers),
         returnHeaders: true,
       });
@@ -119,10 +144,24 @@ export class AuthController {
         return reply.status(statusCode).send(payload);
       }
 
-      if (existingUser.role !== body.role) {
+      // Email verification is only enforced for role=USER — instructor/admin
+      // accounts are created out-of-band and shouldn't be gated by this.
+      if (existingUser.role === USER_ROLES.USER && !existingUser.emailVerified) {
+        try {
+          await auth.api.sendVerificationEmail({
+            body: { email: existingUser.email },
+            headers: fromNodeHeaders(request.headers),
+          });
+        } catch (err) {
+          if (process.env.NODE_ENV !== "production") {
+            console.error("[loginUser] sendVerificationEmail threw:", err);
+          }
+        }
+
         const { statusCode, payload } = errorResponse({
-          message: `This account is registered as ${existingUser.role}. Choose the matching role to sign in.`,
+          message: "Email not verified",
           statusCode: 403,
+          error: "EMAIL_NOT_VERIFIED",
         });
         return reply.status(statusCode).send(payload);
       }
@@ -136,7 +175,6 @@ export class AuthController {
         headers: fromNodeHeaders(request.headers),
         returnHeaders: true,
       });
-
       applyAuthResponseHeaders(reply, headers);
 
       const { statusCode, payload } = successResponse({
@@ -221,20 +259,127 @@ export class AuthController {
         returnHeaders: true,
       });
 
-      applyAuthResponseHeaders(reply, headers);
+      console.log("SIGN_IN_SOCIAL RESULT");
+      console.dir(response, { depth: null });
 
-      if (response.url) {
-        return reply.redirect(response.url);
-      }
+      applyAuthResponseHeaders(reply, headers);
 
       const { statusCode, payload } = successResponse({
         message: "Google sign-in initiated",
-        data: response,
+        data: { url: response.url ?? null },
       });
       return reply.status(statusCode).send(payload);
     } catch (error) {
       console.info(error);
       
+      return this.handleAuthError(error, reply);
+    }
+  };
+
+  private forgotPassword = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: forgotPasswordSchema });
+    if (invalid) return invalid;
+
+    const body = request.body as z.infer<typeof forgotPasswordSchema>;
+
+    try {
+      const result = await auth.api.requestPasswordReset({
+        body: {
+          email: body.email,
+          redirectTo: `${config.frontend.url}/reset-password`,
+        },
+        headers: fromNodeHeaders(request.headers),
+      });
+      // better-auth returns error objects rather than always throwing
+      if (result && typeof result === "object" && "error" in result && result.error) {
+        console.error("[forgotPassword] better-auth error:", result.error);
+      }
+    } catch (err) {
+      // Log in dev so we can diagnose failures; never expose to client
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[forgotPassword] requestPasswordReset threw:", err);
+      }
+    }
+
+    const { statusCode, payload } = successResponse({
+      message: "If an account with that email exists, a reset link has been sent.",
+      data: null,
+    });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private resetPassword = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: resetPasswordSchema });
+    if (invalid) return invalid;
+
+    const body = request.body as z.infer<typeof resetPasswordSchema>;
+
+    try {
+      await auth.api.resetPassword({
+        body: { newPassword: body.newPassword, token: body.token },
+        headers: fromNodeHeaders(request.headers),
+      });
+
+      const { statusCode, payload } = successResponse({
+        message: "Password updated successfully.",
+        data: null,
+      });
+      return reply.status(statusCode).send(payload);
+    } catch (error) {
+      return this.handleAuthError(error, reply);
+    }
+  };
+
+  private resendVerificationEmail = async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ) => {
+    const invalid = validateWithZod(request, reply, {
+      body: resendVerificationEmailSchema,
+    });
+    if (invalid) return invalid;
+
+    const body = request.body as z.infer<typeof resendVerificationEmailSchema>;
+
+    try {
+      await auth.api.sendVerificationEmail({
+        body: { email: body.email },
+        headers: fromNodeHeaders(request.headers),
+      });
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[resendVerificationEmail] sendVerificationEmail threw:", err);
+      }
+    }
+
+    const { statusCode, payload } = successResponse({
+      message: "If an account with that email exists, a verification link has been sent.",
+      data: null,
+    });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private verifyEmail = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: verifyEmailSchema });
+    if (invalid) return invalid;
+
+    const body = request.body as z.infer<typeof verifyEmailSchema>;
+
+    try {
+      const { headers, response: data } = await auth.api.verifyEmail({
+        query: { token: body.token },
+        headers: fromNodeHeaders(request.headers),
+        returnHeaders: true,
+      });
+
+      applyAuthResponseHeaders(reply, headers);
+
+      const { statusCode, payload } = successResponse({
+        message: "Email verified successfully",
+        data,
+      });
+      return reply.status(statusCode).send(payload);
+    } catch (error) {
       return this.handleAuthError(error, reply);
     }
   };

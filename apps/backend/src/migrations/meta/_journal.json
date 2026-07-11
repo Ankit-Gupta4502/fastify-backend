@@ -5,8 +5,211 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1779013870886,
-      "tag": "0000_talented_skaar",
+      "when": 1779122790468,
+      "tag": "0000_tearful_loa",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779200000000,
+      "tag": "0002_custom_private_plans",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779200001000,
+      "tag": "0003_billing_interval",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779200002000,
+      "tag": "0004_quota_log_billing_interval",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780212627121,
+      "tag": "0004_slippery_mephistopheles",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1781020468116,
+      "tag": "0005_sour_komodo",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781113432737,
+      "tag": "0006_certain_venus",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1781350334975,
+      "tag": "0007_stormy_scarlet_witch",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1782147358082,
+      "tag": "0008_nifty_invisible_woman",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1782337298482,
+      "tag": "0009_swift_mercury",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1782579208906,
+      "tag": "0010_flawless_korath",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1782580314306,
+      "tag": "0011_cute_roughhouse",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1782588325539,
+      "tag": "0012_early_nova",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1782338887991,
+      "tag": "0010_inr_pricing",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1782614372269,
+      "tag": "0013_slim_deathstrike",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1782616425767,
+      "tag": "0016_bitter_scalphunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1751088000000,
+      "tag": "0017_razorpay_subscriptions",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1782629222436,
+      "tag": "0018_unique_the_renegades",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1782632400177,
+      "tag": "0018_opposite_captain_marvel",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1782669414259,
+      "tag": "0019_round_micromacro",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1782752027144,
+      "tag": "0020_striped_skreet",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1782752461654,
+      "tag": "0021_damp_baron_zemo",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1782753550553,
+      "tag": "0022_serious_marrow",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1782999980119,
+      "tag": "0023_milky_ultimatum",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1783000837657,
+      "tag": "0024_messy_moira_mactaggert",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1783227851214,
+      "tag": "0025_nervous_reptil",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1783255516912,
+      "tag": "0026_dapper_triton",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1783257430617,
+      "tag": "0027_lively_sebastian_shaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1783273435007,
+      "tag": "0028_noisy_rattler",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1783602482259,
+      "tag": "0029_add_subscription_currency",
       "breakpoints": true
     }
   ]

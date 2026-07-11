@@ -9,27 +9,57 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as ExpertsRouteImport } from './routes/experts'
+import { Route as InstructorRouteRouteImport } from './routes/instructor/route'
+import { Route as DemoRouteRouteImport } from './routes/demo/route'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as UserRouteRouteImport } from './routes/_user/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ExpertsExpertIdRouteImport } from './routes/experts.$expertId'
-import { Route as UserDashboardRouteImport } from './routes/_user/dashboard'
+import { Route as VerifyEmailIndexRouteImport } from './routes/verify-email/index'
+import { Route as TermsIndexRouteImport } from './routes/terms/index'
+import { Route as ResetPasswordIndexRouteImport } from './routes/reset-password/index'
+import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
+import { Route as PricingIndexRouteImport } from './routes/pricing/index'
+import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as ExpertsIndexRouteImport } from './routes/experts/index'
+import { Route as DemoIndexRouteImport } from './routes/demo/index'
+import { Route as ContactIndexRouteImport } from './routes/contact/index'
+import { Route as AdminLoginIndexRouteImport } from './routes/admin-login/index'
+import { Route as DemoSuccessRouteImport } from './routes/demo/success'
+import { Route as SessionRoomIdIndexRouteImport } from './routes/session.$roomId/index'
+import { Route as InstructorProfileIndexRouteImport } from './routes/instructor/profile/index'
+import { Route as InstructorEarningsIndexRouteImport } from './routes/instructor/earnings/index'
+import { Route as InstructorDashboardIndexRouteImport } from './routes/instructor/dashboard/index'
+import { Route as ExpertsExpertIdIndexRouteImport } from './routes/experts/$expertId/index'
+import { Route as AdminWorkshopsIndexRouteImport } from './routes/admin/workshops/index'
+import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
+import { Route as AdminSubscriptionsIndexRouteImport } from './routes/admin/subscriptions/index'
+import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
+import { Route as AdminReviewsIndexRouteImport } from './routes/admin/reviews/index'
+import { Route as AdminPrivateSessionsIndexRouteImport } from './routes/admin/private-sessions/index'
+import { Route as AdminInstructorsIndexRouteImport } from './routes/admin/instructors/index'
+import { Route as AdminDemoRequestsIndexRouteImport } from './routes/admin/demo-requests/index'
+import { Route as AdminContactQueriesIndexRouteImport } from './routes/admin/contact-queries/index'
+import { Route as UserRoomsIndexRouteImport } from './routes/_user/rooms/index'
+import { Route as UserPrivateSessionsIndexRouteImport } from './routes/_user/private-sessions/index'
+import { Route as UserEditProfileIndexRouteImport } from './routes/_user/edit-profile/index'
+import { Route as UserDashboardIndexRouteImport } from './routes/_user/dashboard/index'
+import { Route as UserBillingIndexRouteImport } from './routes/_user/billing/index'
+import { Route as InstructorDashboardUpcomingRouteImport } from './routes/instructor/dashboard/upcoming'
+import { Route as AdminUsersUserIdRouteImport } from './routes/admin/users/$userId'
 
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
+const InstructorRouteRoute = InstructorRouteRouteImport.update({
+  id: '/instructor',
+  path: '/instructor',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const DemoRouteRoute = DemoRouteRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ExpertsRoute = ExpertsRouteImport.update({
-  id: '/experts',
-  path: '/experts',
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UserRouteRoute = UserRouteRouteImport.update({
@@ -41,100 +71,444 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ExpertsExpertIdRoute = ExpertsExpertIdRouteImport.update({
-  id: '/$expertId',
-  path: '/$expertId',
-  getParentRoute: () => ExpertsRoute,
+const VerifyEmailIndexRoute = VerifyEmailIndexRouteImport.update({
+  id: '/verify-email/',
+  path: '/verify-email/',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const UserDashboardRoute = UserDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const TermsIndexRoute = TermsIndexRouteImport.update({
+  id: '/terms/',
+  path: '/terms/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordIndexRoute = ResetPasswordIndexRouteImport.update({
+  id: '/reset-password/',
+  path: '/reset-password/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyIndexRoute = PrivacyIndexRouteImport.update({
+  id: '/privacy/',
+  path: '/privacy/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingIndexRoute = PricingIndexRouteImport.update({
+  id: '/pricing/',
+  path: '/pricing/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginIndexRoute = LoginIndexRouteImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExpertsIndexRoute = ExpertsIndexRouteImport.update({
+  id: '/experts/',
+  path: '/experts/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoIndexRoute = DemoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DemoRouteRoute,
+} as any)
+const ContactIndexRoute = ContactIndexRouteImport.update({
+  id: '/contact/',
+  path: '/contact/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginIndexRoute = AdminLoginIndexRouteImport.update({
+  id: '/admin-login/',
+  path: '/admin-login/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoSuccessRoute = DemoSuccessRouteImport.update({
+  id: '/success',
+  path: '/success',
+  getParentRoute: () => DemoRouteRoute,
+} as any)
+const SessionRoomIdIndexRoute = SessionRoomIdIndexRouteImport.update({
+  id: '/session/$roomId/',
+  path: '/session/$roomId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstructorProfileIndexRoute = InstructorProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => InstructorRouteRoute,
+} as any)
+const InstructorEarningsIndexRoute = InstructorEarningsIndexRouteImport.update({
+  id: '/earnings/',
+  path: '/earnings/',
+  getParentRoute: () => InstructorRouteRoute,
+} as any)
+const InstructorDashboardIndexRoute =
+  InstructorDashboardIndexRouteImport.update({
+    id: '/dashboard/',
+    path: '/dashboard/',
+    getParentRoute: () => InstructorRouteRoute,
+  } as any)
+const ExpertsExpertIdIndexRoute = ExpertsExpertIdIndexRouteImport.update({
+  id: '/experts/$expertId/',
+  path: '/experts/$expertId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminWorkshopsIndexRoute = AdminWorkshopsIndexRouteImport.update({
+  id: '/workshops/',
+  path: '/workshops/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSubscriptionsIndexRoute = AdminSubscriptionsIndexRouteImport.update({
+  id: '/subscriptions/',
+  path: '/subscriptions/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminRoomsIndexRoute = AdminRoomsIndexRouteImport.update({
+  id: '/rooms/',
+  path: '/rooms/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminReviewsIndexRoute = AdminReviewsIndexRouteImport.update({
+  id: '/reviews/',
+  path: '/reviews/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPrivateSessionsIndexRoute =
+  AdminPrivateSessionsIndexRouteImport.update({
+    id: '/private-sessions/',
+    path: '/private-sessions/',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
+const AdminInstructorsIndexRoute = AdminInstructorsIndexRouteImport.update({
+  id: '/instructors/',
+  path: '/instructors/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminDemoRequestsIndexRoute = AdminDemoRequestsIndexRouteImport.update({
+  id: '/demo-requests/',
+  path: '/demo-requests/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminContactQueriesIndexRoute =
+  AdminContactQueriesIndexRouteImport.update({
+    id: '/contact-queries/',
+    path: '/contact-queries/',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
+const UserRoomsIndexRoute = UserRoomsIndexRouteImport.update({
+  id: '/rooms/',
+  path: '/rooms/',
   getParentRoute: () => UserRouteRoute,
+} as any)
+const UserPrivateSessionsIndexRoute =
+  UserPrivateSessionsIndexRouteImport.update({
+    id: '/private-sessions/',
+    path: '/private-sessions/',
+    getParentRoute: () => UserRouteRoute,
+  } as any)
+const UserEditProfileIndexRoute = UserEditProfileIndexRouteImport.update({
+  id: '/edit-profile/',
+  path: '/edit-profile/',
+  getParentRoute: () => UserRouteRoute,
+} as any)
+const UserDashboardIndexRoute = UserDashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => UserRouteRoute,
+} as any)
+const UserBillingIndexRoute = UserBillingIndexRouteImport.update({
+  id: '/billing/',
+  path: '/billing/',
+  getParentRoute: () => UserRouteRoute,
+} as any)
+const InstructorDashboardUpcomingRoute =
+  InstructorDashboardUpcomingRouteImport.update({
+    id: '/dashboard/upcoming',
+    path: '/dashboard/upcoming',
+    getParentRoute: () => InstructorRouteRoute,
+  } as any)
+const AdminUsersUserIdRoute = AdminUsersUserIdRouteImport.update({
+  id: '/users/$userId',
+  path: '/users/$userId',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/experts': typeof ExpertsRouteWithChildren
-  '/login': typeof LoginRoute
-  '/pricing': typeof PricingRoute
-  '/dashboard': typeof UserDashboardRoute
-  '/experts/$expertId': typeof ExpertsExpertIdRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/demo': typeof DemoRouteRouteWithChildren
+  '/instructor': typeof InstructorRouteRouteWithChildren
+  '/demo/success': typeof DemoSuccessRoute
+  '/admin-login/': typeof AdminLoginIndexRoute
+  '/contact/': typeof ContactIndexRoute
+  '/demo/': typeof DemoIndexRoute
+  '/experts/': typeof ExpertsIndexRoute
+  '/login/': typeof LoginIndexRoute
+  '/pricing/': typeof PricingIndexRoute
+  '/privacy/': typeof PrivacyIndexRoute
+  '/reset-password/': typeof ResetPasswordIndexRoute
+  '/terms/': typeof TermsIndexRoute
+  '/verify-email/': typeof VerifyEmailIndexRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
+  '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
+  '/billing/': typeof UserBillingIndexRoute
+  '/dashboard/': typeof UserDashboardIndexRoute
+  '/edit-profile/': typeof UserEditProfileIndexRoute
+  '/private-sessions/': typeof UserPrivateSessionsIndexRoute
+  '/rooms/': typeof UserRoomsIndexRoute
+  '/admin/contact-queries/': typeof AdminContactQueriesIndexRoute
+  '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
+  '/admin/instructors/': typeof AdminInstructorsIndexRoute
+  '/admin/private-sessions/': typeof AdminPrivateSessionsIndexRoute
+  '/admin/reviews/': typeof AdminReviewsIndexRoute
+  '/admin/rooms/': typeof AdminRoomsIndexRoute
+  '/admin/subscriptions/': typeof AdminSubscriptionsIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
+  '/admin/workshops/': typeof AdminWorkshopsIndexRoute
+  '/experts/$expertId/': typeof ExpertsExpertIdIndexRoute
+  '/instructor/dashboard/': typeof InstructorDashboardIndexRoute
+  '/instructor/earnings/': typeof InstructorEarningsIndexRoute
+  '/instructor/profile/': typeof InstructorProfileIndexRoute
+  '/session/$roomId/': typeof SessionRoomIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/experts': typeof ExpertsRouteWithChildren
-  '/login': typeof LoginRoute
-  '/pricing': typeof PricingRoute
-  '/dashboard': typeof UserDashboardRoute
-  '/experts/$expertId': typeof ExpertsExpertIdRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/instructor': typeof InstructorRouteRouteWithChildren
+  '/demo/success': typeof DemoSuccessRoute
+  '/admin-login': typeof AdminLoginIndexRoute
+  '/contact': typeof ContactIndexRoute
+  '/demo': typeof DemoIndexRoute
+  '/experts': typeof ExpertsIndexRoute
+  '/login': typeof LoginIndexRoute
+  '/pricing': typeof PricingIndexRoute
+  '/privacy': typeof PrivacyIndexRoute
+  '/reset-password': typeof ResetPasswordIndexRoute
+  '/terms': typeof TermsIndexRoute
+  '/verify-email': typeof VerifyEmailIndexRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
+  '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
+  '/billing': typeof UserBillingIndexRoute
+  '/dashboard': typeof UserDashboardIndexRoute
+  '/edit-profile': typeof UserEditProfileIndexRoute
+  '/private-sessions': typeof UserPrivateSessionsIndexRoute
+  '/rooms': typeof UserRoomsIndexRoute
+  '/admin/contact-queries': typeof AdminContactQueriesIndexRoute
+  '/admin/demo-requests': typeof AdminDemoRequestsIndexRoute
+  '/admin/instructors': typeof AdminInstructorsIndexRoute
+  '/admin/private-sessions': typeof AdminPrivateSessionsIndexRoute
+  '/admin/reviews': typeof AdminReviewsIndexRoute
+  '/admin/rooms': typeof AdminRoomsIndexRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsIndexRoute
+  '/admin/users': typeof AdminUsersIndexRoute
+  '/admin/workshops': typeof AdminWorkshopsIndexRoute
+  '/experts/$expertId': typeof ExpertsExpertIdIndexRoute
+  '/instructor/dashboard': typeof InstructorDashboardIndexRoute
+  '/instructor/earnings': typeof InstructorEarningsIndexRoute
+  '/instructor/profile': typeof InstructorProfileIndexRoute
+  '/session/$roomId': typeof SessionRoomIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_user': typeof UserRouteRouteWithChildren
-  '/experts': typeof ExpertsRouteWithChildren
-  '/login': typeof LoginRoute
-  '/pricing': typeof PricingRoute
-  '/_user/dashboard': typeof UserDashboardRoute
-  '/experts/$expertId': typeof ExpertsExpertIdRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/demo': typeof DemoRouteRouteWithChildren
+  '/instructor': typeof InstructorRouteRouteWithChildren
+  '/demo/success': typeof DemoSuccessRoute
+  '/admin-login/': typeof AdminLoginIndexRoute
+  '/contact/': typeof ContactIndexRoute
+  '/demo/': typeof DemoIndexRoute
+  '/experts/': typeof ExpertsIndexRoute
+  '/login/': typeof LoginIndexRoute
+  '/pricing/': typeof PricingIndexRoute
+  '/privacy/': typeof PrivacyIndexRoute
+  '/reset-password/': typeof ResetPasswordIndexRoute
+  '/terms/': typeof TermsIndexRoute
+  '/verify-email/': typeof VerifyEmailIndexRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
+  '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
+  '/_user/billing/': typeof UserBillingIndexRoute
+  '/_user/dashboard/': typeof UserDashboardIndexRoute
+  '/_user/edit-profile/': typeof UserEditProfileIndexRoute
+  '/_user/private-sessions/': typeof UserPrivateSessionsIndexRoute
+  '/_user/rooms/': typeof UserRoomsIndexRoute
+  '/admin/contact-queries/': typeof AdminContactQueriesIndexRoute
+  '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
+  '/admin/instructors/': typeof AdminInstructorsIndexRoute
+  '/admin/private-sessions/': typeof AdminPrivateSessionsIndexRoute
+  '/admin/reviews/': typeof AdminReviewsIndexRoute
+  '/admin/rooms/': typeof AdminRoomsIndexRoute
+  '/admin/subscriptions/': typeof AdminSubscriptionsIndexRoute
+  '/admin/users/': typeof AdminUsersIndexRoute
+  '/admin/workshops/': typeof AdminWorkshopsIndexRoute
+  '/experts/$expertId/': typeof ExpertsExpertIdIndexRoute
+  '/instructor/dashboard/': typeof InstructorDashboardIndexRoute
+  '/instructor/earnings/': typeof InstructorEarningsIndexRoute
+  '/instructor/profile/': typeof InstructorProfileIndexRoute
+  '/session/$roomId/': typeof SessionRoomIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/experts'
-    | '/login'
-    | '/pricing'
-    | '/dashboard'
-    | '/experts/$expertId'
+    | '/admin'
+    | '/demo'
+    | '/instructor'
+    | '/demo/success'
+    | '/admin-login/'
+    | '/contact/'
+    | '/demo/'
+    | '/experts/'
+    | '/login/'
+    | '/pricing/'
+    | '/privacy/'
+    | '/reset-password/'
+    | '/terms/'
+    | '/verify-email/'
+    | '/admin/users/$userId'
+    | '/instructor/dashboard/upcoming'
+    | '/billing/'
+    | '/dashboard/'
+    | '/edit-profile/'
+    | '/private-sessions/'
+    | '/rooms/'
+    | '/admin/contact-queries/'
+    | '/admin/demo-requests/'
+    | '/admin/instructors/'
+    | '/admin/private-sessions/'
+    | '/admin/reviews/'
+    | '/admin/rooms/'
+    | '/admin/subscriptions/'
+    | '/admin/users/'
+    | '/admin/workshops/'
+    | '/experts/$expertId/'
+    | '/instructor/dashboard/'
+    | '/instructor/earnings/'
+    | '/instructor/profile/'
+    | '/session/$roomId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
+    | '/instructor'
+    | '/demo/success'
+    | '/admin-login'
+    | '/contact'
+    | '/demo'
     | '/experts'
     | '/login'
     | '/pricing'
+    | '/privacy'
+    | '/reset-password'
+    | '/terms'
+    | '/verify-email'
+    | '/admin/users/$userId'
+    | '/instructor/dashboard/upcoming'
+    | '/billing'
     | '/dashboard'
+    | '/edit-profile'
+    | '/private-sessions'
+    | '/rooms'
+    | '/admin/contact-queries'
+    | '/admin/demo-requests'
+    | '/admin/instructors'
+    | '/admin/private-sessions'
+    | '/admin/reviews'
+    | '/admin/rooms'
+    | '/admin/subscriptions'
+    | '/admin/users'
+    | '/admin/workshops'
     | '/experts/$expertId'
+    | '/instructor/dashboard'
+    | '/instructor/earnings'
+    | '/instructor/profile'
+    | '/session/$roomId'
   id:
     | '__root__'
     | '/'
     | '/_user'
-    | '/experts'
-    | '/login'
-    | '/pricing'
-    | '/_user/dashboard'
-    | '/experts/$expertId'
+    | '/admin'
+    | '/demo'
+    | '/instructor'
+    | '/demo/success'
+    | '/admin-login/'
+    | '/contact/'
+    | '/demo/'
+    | '/experts/'
+    | '/login/'
+    | '/pricing/'
+    | '/privacy/'
+    | '/reset-password/'
+    | '/terms/'
+    | '/verify-email/'
+    | '/admin/users/$userId'
+    | '/instructor/dashboard/upcoming'
+    | '/_user/billing/'
+    | '/_user/dashboard/'
+    | '/_user/edit-profile/'
+    | '/_user/private-sessions/'
+    | '/_user/rooms/'
+    | '/admin/contact-queries/'
+    | '/admin/demo-requests/'
+    | '/admin/instructors/'
+    | '/admin/private-sessions/'
+    | '/admin/reviews/'
+    | '/admin/rooms/'
+    | '/admin/subscriptions/'
+    | '/admin/users/'
+    | '/admin/workshops/'
+    | '/experts/$expertId/'
+    | '/instructor/dashboard/'
+    | '/instructor/earnings/'
+    | '/instructor/profile/'
+    | '/session/$roomId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   UserRouteRoute: typeof UserRouteRouteWithChildren
-  ExpertsRoute: typeof ExpertsRouteWithChildren
-  LoginRoute: typeof LoginRoute
-  PricingRoute: typeof PricingRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  DemoRouteRoute: typeof DemoRouteRouteWithChildren
+  InstructorRouteRoute: typeof InstructorRouteRouteWithChildren
+  AdminLoginIndexRoute: typeof AdminLoginIndexRoute
+  ContactIndexRoute: typeof ContactIndexRoute
+  ExpertsIndexRoute: typeof ExpertsIndexRoute
+  LoginIndexRoute: typeof LoginIndexRoute
+  PricingIndexRoute: typeof PricingIndexRoute
+  PrivacyIndexRoute: typeof PrivacyIndexRoute
+  ResetPasswordIndexRoute: typeof ResetPasswordIndexRoute
+  TermsIndexRoute: typeof TermsIndexRoute
+  VerifyEmailIndexRoute: typeof VerifyEmailIndexRoute
+  ExpertsExpertIdIndexRoute: typeof ExpertsExpertIdIndexRoute
+  SessionRoomIdIndexRoute: typeof SessionRoomIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
+    '/instructor': {
+      id: '/instructor'
+      path: '/instructor'
+      fullPath: '/instructor'
+      preLoaderRoute: typeof InstructorRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/experts': {
-      id: '/experts'
-      path: '/experts'
-      fullPath: '/experts'
-      preLoaderRoute: typeof ExpertsRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_user': {
@@ -151,52 +525,332 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/experts/$expertId': {
-      id: '/experts/$expertId'
-      path: '/$expertId'
-      fullPath: '/experts/$expertId'
-      preLoaderRoute: typeof ExpertsExpertIdRouteImport
-      parentRoute: typeof ExpertsRoute
+    '/verify-email/': {
+      id: '/verify-email/'
+      path: '/verify-email'
+      fullPath: '/verify-email/'
+      preLoaderRoute: typeof VerifyEmailIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_user/dashboard': {
-      id: '/_user/dashboard'
+    '/terms/': {
+      id: '/terms/'
+      path: '/terms'
+      fullPath: '/terms/'
+      preLoaderRoute: typeof TermsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password/': {
+      id: '/reset-password/'
+      path: '/reset-password'
+      fullPath: '/reset-password/'
+      preLoaderRoute: typeof ResetPasswordIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy/': {
+      id: '/privacy/'
+      path: '/privacy'
+      fullPath: '/privacy/'
+      preLoaderRoute: typeof PrivacyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing/': {
+      id: '/pricing/'
+      path: '/pricing'
+      fullPath: '/pricing/'
+      preLoaderRoute: typeof PricingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login/': {
+      id: '/login/'
+      path: '/login'
+      fullPath: '/login/'
+      preLoaderRoute: typeof LoginIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experts/': {
+      id: '/experts/'
+      path: '/experts'
+      fullPath: '/experts/'
+      preLoaderRoute: typeof ExpertsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/': {
+      id: '/demo/'
+      path: '/'
+      fullPath: '/demo/'
+      preLoaderRoute: typeof DemoIndexRouteImport
+      parentRoute: typeof DemoRouteRoute
+    }
+    '/contact/': {
+      id: '/contact/'
+      path: '/contact'
+      fullPath: '/contact/'
+      preLoaderRoute: typeof ContactIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-login/': {
+      id: '/admin-login/'
+      path: '/admin-login'
+      fullPath: '/admin-login/'
+      preLoaderRoute: typeof AdminLoginIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/success': {
+      id: '/demo/success'
+      path: '/success'
+      fullPath: '/demo/success'
+      preLoaderRoute: typeof DemoSuccessRouteImport
+      parentRoute: typeof DemoRouteRoute
+    }
+    '/session/$roomId/': {
+      id: '/session/$roomId/'
+      path: '/session/$roomId'
+      fullPath: '/session/$roomId/'
+      preLoaderRoute: typeof SessionRoomIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/instructor/profile/': {
+      id: '/instructor/profile/'
+      path: '/profile'
+      fullPath: '/instructor/profile/'
+      preLoaderRoute: typeof InstructorProfileIndexRouteImport
+      parentRoute: typeof InstructorRouteRoute
+    }
+    '/instructor/earnings/': {
+      id: '/instructor/earnings/'
+      path: '/earnings'
+      fullPath: '/instructor/earnings/'
+      preLoaderRoute: typeof InstructorEarningsIndexRouteImport
+      parentRoute: typeof InstructorRouteRoute
+    }
+    '/instructor/dashboard/': {
+      id: '/instructor/dashboard/'
       path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof UserDashboardRouteImport
+      fullPath: '/instructor/dashboard/'
+      preLoaderRoute: typeof InstructorDashboardIndexRouteImport
+      parentRoute: typeof InstructorRouteRoute
+    }
+    '/experts/$expertId/': {
+      id: '/experts/$expertId/'
+      path: '/experts/$expertId'
+      fullPath: '/experts/$expertId/'
+      preLoaderRoute: typeof ExpertsExpertIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/workshops/': {
+      id: '/admin/workshops/'
+      path: '/workshops'
+      fullPath: '/admin/workshops/'
+      preLoaderRoute: typeof AdminWorkshopsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/users/': {
+      id: '/admin/users/'
+      path: '/users'
+      fullPath: '/admin/users/'
+      preLoaderRoute: typeof AdminUsersIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/subscriptions/': {
+      id: '/admin/subscriptions/'
+      path: '/subscriptions'
+      fullPath: '/admin/subscriptions/'
+      preLoaderRoute: typeof AdminSubscriptionsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/rooms/': {
+      id: '/admin/rooms/'
+      path: '/rooms'
+      fullPath: '/admin/rooms/'
+      preLoaderRoute: typeof AdminRoomsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/reviews/': {
+      id: '/admin/reviews/'
+      path: '/reviews'
+      fullPath: '/admin/reviews/'
+      preLoaderRoute: typeof AdminReviewsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/private-sessions/': {
+      id: '/admin/private-sessions/'
+      path: '/private-sessions'
+      fullPath: '/admin/private-sessions/'
+      preLoaderRoute: typeof AdminPrivateSessionsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/instructors/': {
+      id: '/admin/instructors/'
+      path: '/instructors'
+      fullPath: '/admin/instructors/'
+      preLoaderRoute: typeof AdminInstructorsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/demo-requests/': {
+      id: '/admin/demo-requests/'
+      path: '/demo-requests'
+      fullPath: '/admin/demo-requests/'
+      preLoaderRoute: typeof AdminDemoRequestsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/contact-queries/': {
+      id: '/admin/contact-queries/'
+      path: '/contact-queries'
+      fullPath: '/admin/contact-queries/'
+      preLoaderRoute: typeof AdminContactQueriesIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/_user/rooms/': {
+      id: '/_user/rooms/'
+      path: '/rooms'
+      fullPath: '/rooms/'
+      preLoaderRoute: typeof UserRoomsIndexRouteImport
       parentRoute: typeof UserRouteRoute
+    }
+    '/_user/private-sessions/': {
+      id: '/_user/private-sessions/'
+      path: '/private-sessions'
+      fullPath: '/private-sessions/'
+      preLoaderRoute: typeof UserPrivateSessionsIndexRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
+    '/_user/edit-profile/': {
+      id: '/_user/edit-profile/'
+      path: '/edit-profile'
+      fullPath: '/edit-profile/'
+      preLoaderRoute: typeof UserEditProfileIndexRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
+    '/_user/dashboard/': {
+      id: '/_user/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof UserDashboardIndexRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
+    '/_user/billing/': {
+      id: '/_user/billing/'
+      path: '/billing'
+      fullPath: '/billing/'
+      preLoaderRoute: typeof UserBillingIndexRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
+    '/instructor/dashboard/upcoming': {
+      id: '/instructor/dashboard/upcoming'
+      path: '/dashboard/upcoming'
+      fullPath: '/instructor/dashboard/upcoming'
+      preLoaderRoute: typeof InstructorDashboardUpcomingRouteImport
+      parentRoute: typeof InstructorRouteRoute
+    }
+    '/admin/users/$userId': {
+      id: '/admin/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/admin/users/$userId'
+      preLoaderRoute: typeof AdminUsersUserIdRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
   }
 }
 
 interface UserRouteRouteChildren {
-  UserDashboardRoute: typeof UserDashboardRoute
+  UserBillingIndexRoute: typeof UserBillingIndexRoute
+  UserDashboardIndexRoute: typeof UserDashboardIndexRoute
+  UserEditProfileIndexRoute: typeof UserEditProfileIndexRoute
+  UserPrivateSessionsIndexRoute: typeof UserPrivateSessionsIndexRoute
+  UserRoomsIndexRoute: typeof UserRoomsIndexRoute
 }
 
 const UserRouteRouteChildren: UserRouteRouteChildren = {
-  UserDashboardRoute: UserDashboardRoute,
+  UserBillingIndexRoute: UserBillingIndexRoute,
+  UserDashboardIndexRoute: UserDashboardIndexRoute,
+  UserEditProfileIndexRoute: UserEditProfileIndexRoute,
+  UserPrivateSessionsIndexRoute: UserPrivateSessionsIndexRoute,
+  UserRoomsIndexRoute: UserRoomsIndexRoute,
 }
 
 const UserRouteRouteWithChildren = UserRouteRoute._addFileChildren(
   UserRouteRouteChildren,
 )
 
-interface ExpertsRouteChildren {
-  ExpertsExpertIdRoute: typeof ExpertsExpertIdRoute
+interface AdminRouteRouteChildren {
+  AdminUsersUserIdRoute: typeof AdminUsersUserIdRoute
+  AdminContactQueriesIndexRoute: typeof AdminContactQueriesIndexRoute
+  AdminDemoRequestsIndexRoute: typeof AdminDemoRequestsIndexRoute
+  AdminInstructorsIndexRoute: typeof AdminInstructorsIndexRoute
+  AdminPrivateSessionsIndexRoute: typeof AdminPrivateSessionsIndexRoute
+  AdminReviewsIndexRoute: typeof AdminReviewsIndexRoute
+  AdminRoomsIndexRoute: typeof AdminRoomsIndexRoute
+  AdminSubscriptionsIndexRoute: typeof AdminSubscriptionsIndexRoute
+  AdminUsersIndexRoute: typeof AdminUsersIndexRoute
+  AdminWorkshopsIndexRoute: typeof AdminWorkshopsIndexRoute
 }
 
-const ExpertsRouteChildren: ExpertsRouteChildren = {
-  ExpertsExpertIdRoute: ExpertsExpertIdRoute,
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminUsersUserIdRoute: AdminUsersUserIdRoute,
+  AdminContactQueriesIndexRoute: AdminContactQueriesIndexRoute,
+  AdminDemoRequestsIndexRoute: AdminDemoRequestsIndexRoute,
+  AdminInstructorsIndexRoute: AdminInstructorsIndexRoute,
+  AdminPrivateSessionsIndexRoute: AdminPrivateSessionsIndexRoute,
+  AdminReviewsIndexRoute: AdminReviewsIndexRoute,
+  AdminRoomsIndexRoute: AdminRoomsIndexRoute,
+  AdminSubscriptionsIndexRoute: AdminSubscriptionsIndexRoute,
+  AdminUsersIndexRoute: AdminUsersIndexRoute,
+  AdminWorkshopsIndexRoute: AdminWorkshopsIndexRoute,
 }
 
-const ExpertsRouteWithChildren =
-  ExpertsRoute._addFileChildren(ExpertsRouteChildren)
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
+interface DemoRouteRouteChildren {
+  DemoSuccessRoute: typeof DemoSuccessRoute
+  DemoIndexRoute: typeof DemoIndexRoute
+}
+
+const DemoRouteRouteChildren: DemoRouteRouteChildren = {
+  DemoSuccessRoute: DemoSuccessRoute,
+  DemoIndexRoute: DemoIndexRoute,
+}
+
+const DemoRouteRouteWithChildren = DemoRouteRoute._addFileChildren(
+  DemoRouteRouteChildren,
+)
+
+interface InstructorRouteRouteChildren {
+  InstructorDashboardUpcomingRoute: typeof InstructorDashboardUpcomingRoute
+  InstructorDashboardIndexRoute: typeof InstructorDashboardIndexRoute
+  InstructorEarningsIndexRoute: typeof InstructorEarningsIndexRoute
+  InstructorProfileIndexRoute: typeof InstructorProfileIndexRoute
+}
+
+const InstructorRouteRouteChildren: InstructorRouteRouteChildren = {
+  InstructorDashboardUpcomingRoute: InstructorDashboardUpcomingRoute,
+  InstructorDashboardIndexRoute: InstructorDashboardIndexRoute,
+  InstructorEarningsIndexRoute: InstructorEarningsIndexRoute,
+  InstructorProfileIndexRoute: InstructorProfileIndexRoute,
+}
+
+const InstructorRouteRouteWithChildren = InstructorRouteRoute._addFileChildren(
+  InstructorRouteRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   UserRouteRoute: UserRouteRouteWithChildren,
-  ExpertsRoute: ExpertsRouteWithChildren,
-  LoginRoute: LoginRoute,
-  PricingRoute: PricingRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
+  DemoRouteRoute: DemoRouteRouteWithChildren,
+  InstructorRouteRoute: InstructorRouteRouteWithChildren,
+  AdminLoginIndexRoute: AdminLoginIndexRoute,
+  ContactIndexRoute: ContactIndexRoute,
+  ExpertsIndexRoute: ExpertsIndexRoute,
+  LoginIndexRoute: LoginIndexRoute,
+  PricingIndexRoute: PricingIndexRoute,
+  PrivacyIndexRoute: PrivacyIndexRoute,
+  ResetPasswordIndexRoute: ResetPasswordIndexRoute,
+  TermsIndexRoute: TermsIndexRoute,
+  VerifyEmailIndexRoute: VerifyEmailIndexRoute,
+  ExpertsExpertIdIndexRoute: ExpertsExpertIdIndexRoute,
+  SessionRoomIdIndexRoute: SessionRoomIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

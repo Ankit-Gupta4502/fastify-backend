@@ -1,3 +1,27 @@
+import { z } from "zod";
+
+export const saveAcquisitionSchema = z.object({
+  utmSource: z.string().optional().nullable(),
+  utmMedium: z.string().optional().nullable(),
+  utmCampaign: z.string().optional().nullable(),
+  utmContent: z.string().optional().nullable(),
+  utmTerm: z.string().optional().nullable(),
+  referrer: z.string().optional().nullable(),
+  landingPage: z.string().optional().nullable(),
+});
+
+export const savePreferencesSchema = z.object({
+  gender: z.enum(["Male", "Female", "Other"]),
+  phone: z.string().optional().nullable(),
+  purposes: z.array(z.string()).min(1),
+  otherPurpose: z.string().optional().nullable(),
+  preferredTimeOfDay: z.enum(["Morning", "Afternoon", "Evening", "Flexible"]).optional().nullable(),
+  timezone: z.string().min(1),
+});
+
+export type SaveAcquisitionBody = z.infer<typeof saveAcquisitionSchema>;
+export type SavePreferencesBody = z.infer<typeof savePreferencesSchema>;
+
 export const userSwaggerSchemas = {
   getUserDetail: {
     description: "Get authenticated user details",

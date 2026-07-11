@@ -2,6 +2,10 @@ export {
   loginBodySchema,
   registerBodySchema,
   socialCallbackQuerySchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  resendVerificationEmailSchema,
+  verifyEmailSchema,
 } from "@yoga-app/shared";
 
 export const authSwaggerSchemas = {
@@ -10,15 +14,11 @@ export const authSwaggerSchemas = {
     tags: ["Auth"] as string[],
     body: {
       type: "object" as const,
-      required: ["name", "email", "password", "role"],
+      required: ["name", "email", "password"],
       properties: {
         name: { type: "string" as const },
         email: { type: "string" as const, format: "email" },
         password: { type: "string" as const, minLength: 8 },
-        role: {
-          type: "string" as const,
-          enum: ["user", "instructor"],
-        },
       },
     },
   },
@@ -27,15 +27,11 @@ export const authSwaggerSchemas = {
     tags: ["Auth"] as string[],
     body: {
       type: "object" as const,
-      required: ["email", "password", "role"],
+      required: ["email", "password"],
       properties: {
         email: { type: "string" as const, format: "email" },
         password: { type: "string" as const },
         rememberMe: { type: "boolean" as const },
-        role: {
-          type: "string" as const,
-          enum: ["user", "instructor"],
-        },
       },
     },
   },
@@ -59,6 +55,51 @@ export const authSwaggerSchemas = {
           type: "string" as const,
           description: "Frontend URL to return to after sign-in",
         },
+      },
+    },
+  },
+  forgotPassword: {
+    description: "Send a password reset email",
+    tags: ["Auth"] as string[],
+    body: {
+      type: "object" as const,
+      required: ["email"],
+      properties: {
+        email: { type: "string" as const, format: "email" },
+      },
+    },
+  },
+  resetPassword: {
+    description: "Reset password using a token from email",
+    tags: ["Auth"] as string[],
+    body: {
+      type: "object" as const,
+      required: ["token", "newPassword"],
+      properties: {
+        token: { type: "string" as const },
+        newPassword: { type: "string" as const, minLength: 8 },
+      },
+    },
+  },
+  resendVerificationEmail: {
+    description: "Resend the email verification link",
+    tags: ["Auth"] as string[],
+    body: {
+      type: "object" as const,
+      required: ["email"],
+      properties: {
+        email: { type: "string" as const, format: "email" },
+      },
+    },
+  },
+  verifyEmail: {
+    description: "Verify email using a token from email",
+    tags: ["Auth"] as string[],
+    body: {
+      type: "object" as const,
+      required: ["token"],
+      properties: {
+        token: { type: "string" as const },
       },
     },
   },

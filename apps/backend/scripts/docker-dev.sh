@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-COMPOSE_FILE="$BACKEND_DIR/docker-compose.dev.yml"
+COMPOSE_FILE="$BACKEND_DIR/docker compose.dev.yml"
 ENV_FILE="$REPO_ROOT/.env"
 
 # Load environment variables from .env file if it exists
@@ -49,10 +49,10 @@ check_docker() {
     fi
 }
 
-# Check if docker-compose file exists
+# Check if docker compose file exists
 check_compose_file() {
     if [ ! -f "$COMPOSE_FILE" ]; then
-        echo -e "${RED}Error: docker-compose.dev.yml not found at $COMPOSE_FILE${NC}"
+        echo -e "${RED}Error: docker compose.dev.yml not found at $COMPOSE_FILE${NC}"
         exit 1
     fi
 }
@@ -73,7 +73,7 @@ check_env_file() {
 start() {
     echo -e "${BLUE}Starting development services...${NC}"
     # Run from the backend package directory so compose paths stay stable.
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d)
     echo -e "${GREEN}Development services started!${NC}"
     echo -e "${BLUE}Backend API: http://localhost:8080${NC}"
     echo -e "${BLUE}Database: localhost:5432${NC}"
@@ -85,21 +85,21 @@ start() {
 # Function to stop services
 stop() {
     echo -e "${BLUE}Stopping development services...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down)
     echo -e "${GREEN}Development services stopped!${NC}"
 }
 
 # Function to restart services
 restart() {
     echo -e "${BLUE}Restarting development services...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" restart)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" restart)
     echo -e "${GREEN}Development services restarted!${NC}"
 }
 
 # Function to rebuild services
 rebuild() {
     echo -e "${BLUE}Rebuilding development services...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build --no-cache)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build --no-cache)
     echo -e "${GREEN}Development services rebuilt!${NC}"
     echo -e "${YELLOW}Starting services...${NC}"
     start
@@ -109,39 +109,39 @@ rebuild() {
 logs() {
     SERVICE=${1:-backend}
     echo -e "${BLUE}Showing logs for $SERVICE (Press Ctrl+C to exit)...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs -f "$SERVICE")
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs -f "$SERVICE")
 }
 
 # Function to show status
 status() {
     echo -e "${BLUE}Service Status:${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps)
 }
 
 # Function to run migrations
 migrate() {
     echo -e "${BLUE}Running database migrations...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec backend npm run db:migrate)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec backend npm run db:migrate)
     echo -e "${GREEN}Migrations completed!${NC}"
 }
 
 # Function to generate migrations
 generate_migrations() {
     echo -e "${BLUE}Generating database migrations...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec backend npm run db:generate)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec backend npm run db:generate)
     echo -e "${GREEN}Migrations generated!${NC}"
 }
 
 # Function to access database shell
 db_shell() {
     echo -e "${BLUE}Accessing PostgreSQL shell...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec postgres psql -U postgres -d yoga-app-dev)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec postgres psql -U postgres -d yoga-app-dev)
 }
 
 # Function to access backend shell
 backend_shell() {
     echo -e "${BLUE}Accessing backend container shell...${NC}"
-    (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec backend sh)
+    (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec backend sh)
 }
 
 # Function to clean everything
@@ -151,7 +151,7 @@ clean() {
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo -e "${BLUE}Cleaning up development environment...${NC}"
-        (cd "$BACKEND_DIR" && docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down -v)
+        (cd "$BACKEND_DIR" && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down -v)
         echo -e "${GREEN}Cleanup completed!${NC}"
     else
         echo -e "${BLUE}Cleanup cancelled.${NC}"

@@ -1,0 +1,1 @@
+ALTER TABLE "private_session_requests" ADD COLUMN "preferred_slots" jsonb DEFAULT '[]'::jsonb NOT NULL;

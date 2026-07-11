@@ -13,6 +13,11 @@ export class ApiRequestError extends Error {
     super(message);
     this.name = "ApiRequestError";
   }
+
+  /** Field name -> error message, present on 422 validation errors. */
+  get fieldErrors(): Record<string, string> | undefined {
+    return this.payload?.details;
+  }
 }
 
 export const http = axios.create({

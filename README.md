@@ -44,4 +44,22 @@ VITE_API_BASE_URL=http://localhost:8080
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/social_sync_dev
 BETTER_AUTH_SECRET=your-secret-at-least-32-characters-long
 BETTER_AUTH_URL=http://localhost:8080
+
+# Payments
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
+
+# Video (100ms)
+HMS_APP_ACCESS_KEY=
+HMS_APP_SECRET=
+HMS_TEMPLATE_ID_GROUP=
+HMS_TEMPLATE_ID_PRIVATE=
+HMS_WEBHOOK_SECRET=
+
+# Email (Resend)
+RESEND_API_KEY=
+EMAIL_FROM=
 ```
+
+See [SETUP.md](./SETUP.md) for full configuration details including webhook registration for Razorpay and 100ms.
