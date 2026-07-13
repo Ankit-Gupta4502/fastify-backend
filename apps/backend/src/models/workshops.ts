@@ -6,6 +6,7 @@ export const workshops = pgTable("workshops", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
   description: text("description").notNull(),
+  content: text("content"),
   priceInr: integer("price_inr"),
   priceUsd: integer("price_usd"),
   image: text("image"),

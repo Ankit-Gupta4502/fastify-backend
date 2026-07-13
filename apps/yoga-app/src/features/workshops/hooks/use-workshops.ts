@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { workshopsApi } from "@/api/workshops";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import type { Workshop, WorkshopJoinBody, CreateWorkshopBody, UpdateWorkshopBody } from "@yoga-app/shared";
@@ -14,13 +14,18 @@ export function useWorkshops() {
   });
 }
 
+export const workshopQueryOptions = {
+  detail: (id: string) =>
+    queryOptions({
+      queryKey: queryKeys.workshops.detail(id),
+      queryFn: () => workshopsApi.detail(id),
+      staleTime: 60_000,
+      enabled: !!id,
+    }),
+};
+
 export function useWorkshop(id: string) {
-  return useQuery({
-    queryKey: queryKeys.workshops.detail(id),
-    queryFn: () => workshopsApi.detail(id),
-    staleTime: 60_000,
-    enabled: !!id,
-  });
+  return useQuery(workshopQueryOptions.detail(id));
 }
 
 export function useJoinWorkshop() {

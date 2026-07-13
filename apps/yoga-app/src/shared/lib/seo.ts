@@ -128,3 +128,20 @@ export function buildExpertHead(instructor: {
     ogImage: instructor.profileImageUrl ?? undefined,
   });
 }
+
+// Builder for dynamic workshop landing pages.
+export function buildWorkshopHead(workshop: {
+  id: string;
+  name: string;
+  description: string;
+  image?: string | null;
+} | null | undefined) {
+  if (!workshop) return {};
+  return buildPageHead({
+    title: `${workshop.name} | ${SITE.name}`,
+    description: workshop.description,
+    keywords: `${workshop.name}, online yoga workshop, book yoga workshop, live yoga workshop`,
+    canonical: `${SITE.url}/workshops/${workshop.id}`,
+    ogImage: workshop.image ?? undefined,
+  });
+}

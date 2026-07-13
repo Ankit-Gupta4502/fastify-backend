@@ -18,7 +18,7 @@ function fireAcquisition() {
 
 export type LoginMode = "login" | "register" | "forgot";
 
-export function useLogin() {
+export function useLogin(redirectTo?: string) {
   const [mode, setMode] = useState<LoginMode>("login");
   const [feedback, setFeedback] = useState<string | null>(null);
   const { login, register: registerUserMutation, getGoogleUrl } = useAuth();
@@ -34,7 +34,7 @@ export function useLogin() {
     setFeedback(null);
     try {
       await login.mutateAsync(values);
-      navigate({ to: "/", replace: true });
+      navigate({ href: redirectTo || "/", replace: true });
     } catch (error) {
       if (error instanceof ApiRequestError && error.payload?.error === "EMAIL_NOT_VERIFIED") {
         navigate({ to: "/verify-email" });
@@ -71,7 +71,9 @@ export function useLogin() {
 
   async function handleGoogleSignIn() {
     setIsGooglePending(true);
-    const callbackURL = window.location.origin;
+    const callbackURL = redirectTo
+      ? new URL(redirectTo, window.location.origin).toString()
+      : window.location.origin;
     try {
       const response = await getGoogleUrl(callbackURL);
       if (response.data?.url) window.location.assign(response.data.url);

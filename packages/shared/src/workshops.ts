@@ -2,6 +2,7 @@ export interface Workshop {
   id: string;
   name: string;
   description: string;
+  content: string | null;
   priceInr: number | null;
   priceUsd: number | null;
   utmPriceInr: number;
@@ -35,6 +36,7 @@ export interface WorkshopJoinBody {
 export interface CreateWorkshopBody {
   name: string;
   description: string;
+  content?: string | null;
   priceInr?: number | null;
   priceUsd?: number | null;
   utmPriceInr?: number;
@@ -49,6 +51,7 @@ export interface CreateWorkshopBody {
 export interface UpdateWorkshopBody {
   name?: string;
   description?: string;
+  content?: string | null;
   priceInr?: number | null;
   priceUsd?: number | null;
   utmPriceInr?: number;

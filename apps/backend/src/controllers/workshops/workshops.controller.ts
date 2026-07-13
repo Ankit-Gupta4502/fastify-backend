@@ -20,6 +20,7 @@ const joinBodySchema = z.object({
 const createBodySchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().min(1).max(2000),
+  content: z.string().max(20000).optional().nullable(),
   priceInr: z.number().int().min(0).optional().nullable(),
   priceUsd: z.number().int().min(0).optional().nullable(),
   utmPriceInr: z.number().int().min(0).optional(),
@@ -70,6 +71,7 @@ export class WorkshopsController {
         id: workshops.id,
         name: workshops.name,
         description: workshops.description,
+        content: workshops.content,
         priceInr: workshops.priceInr,
         priceUsd: workshops.priceUsd,
         utmPriceInr: workshops.utmPriceInr,
@@ -113,6 +115,7 @@ export class WorkshopsController {
         id: workshops.id,
         name: workshops.name,
         description: workshops.description,
+        content: workshops.content,
         priceInr: workshops.priceInr,
         priceUsd: workshops.priceUsd,
         utmPriceInr: workshops.utmPriceInr,
@@ -319,6 +322,7 @@ export class WorkshopsController {
         id: workshops.id,
         name: workshops.name,
         description: workshops.description,
+        content: workshops.content,
         priceInr: workshops.priceInr,
         priceUsd: workshops.priceUsd,
         utmPriceInr: workshops.utmPriceInr,
@@ -367,6 +371,7 @@ export class WorkshopsController {
       .values({
         name: body.name,
         description: body.description,
+        content: body.content ?? null,
         priceInr: body.priceInr ?? null,
         priceUsd: body.priceUsd ?? null,
         utmPriceInr: body.utmPriceInr ?? 9900,
@@ -411,6 +416,7 @@ export class WorkshopsController {
       .set({
         ...(body.name !== undefined && { name: body.name }),
         ...(body.description !== undefined && { description: body.description }),
+        ...(body.content !== undefined && { content: body.content }),
         ...(body.priceInr !== undefined && { priceInr: body.priceInr }),
         ...(body.priceUsd !== undefined && { priceUsd: body.priceUsd }),
         ...(body.image !== undefined && { image: body.image }),

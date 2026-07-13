@@ -6,6 +6,7 @@ import type { AdminWorkshop, CreateWorkshopBody } from "@yoga-app/shared";
 export const EMPTY_WORKSHOP: CreateWorkshopBody = {
   name: "",
   description: "",
+  content: null,
   priceInr: null,
   priceUsd: null,
   utmPriceInr: 9900,
@@ -32,6 +33,7 @@ export function useWorkshopDialogForm(
       ? {
           name: initial.name,
           description: initial.description,
+          content: initial.content ?? null,
           priceInr: initial.priceInr,
           priceUsd: initial.priceUsd,
           utmPriceInr: initial.utmPriceInr,

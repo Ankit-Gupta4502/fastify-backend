@@ -54,6 +54,19 @@ export function WorkshopDialog({ initial, onClose }: Props) {
             />
           </Field>
 
+          <Field label="Landing page content">
+            <textarea
+              placeholder="Longer-form copy shown on the workshop's public landing page (e.g. what's included, agenda, testimonials). Line breaks are preserved."
+              value={form.content ?? ""}
+              onChange={(e) => set("content", e.target.value || null)}
+              rows={8}
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 resize-none"
+            />
+            <p className="text-xs text-muted-foreground">
+              Optional. Shown on /workshops/&#123;id&#125; — the page you can link ads to. Falls back to the description above if left blank.
+            </p>
+          </Field>
+
           <Field label="Cover image">
             <WorkshopImageField
               image={form.image}

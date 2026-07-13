@@ -25,6 +25,7 @@ import { Route as DemoIndexRouteImport } from './routes/demo/index'
 import { Route as ContactIndexRouteImport } from './routes/contact/index'
 import { Route as AdminLoginIndexRouteImport } from './routes/admin-login/index'
 import { Route as DemoSuccessRouteImport } from './routes/demo/success'
+import { Route as WorkshopsWorkshopIdIndexRouteImport } from './routes/workshops/$workshopId/index'
 import { Route as SessionRoomIdIndexRouteImport } from './routes/session.$roomId/index'
 import { Route as InstructorProfileIndexRouteImport } from './routes/instructor/profile/index'
 import { Route as InstructorEarningsIndexRouteImport } from './routes/instructor/earnings/index'
@@ -126,6 +127,12 @@ const DemoSuccessRoute = DemoSuccessRouteImport.update({
   path: '/success',
   getParentRoute: () => DemoRouteRoute,
 } as any)
+const WorkshopsWorkshopIdIndexRoute =
+  WorkshopsWorkshopIdIndexRouteImport.update({
+    id: '/workshops/$workshopId/',
+    path: '/workshops/$workshopId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SessionRoomIdIndexRoute = SessionRoomIdIndexRouteImport.update({
   id: '/session/$roomId/',
   path: '/session/$roomId/',
@@ -274,6 +281,7 @@ export interface FileRoutesByFullPath {
   '/instructor/earnings/': typeof InstructorEarningsIndexRoute
   '/instructor/profile/': typeof InstructorProfileIndexRoute
   '/session/$roomId/': typeof SessionRoomIdIndexRoute
+  '/workshops/$workshopId/': typeof WorkshopsWorkshopIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -311,6 +319,7 @@ export interface FileRoutesByTo {
   '/instructor/earnings': typeof InstructorEarningsIndexRoute
   '/instructor/profile': typeof InstructorProfileIndexRoute
   '/session/$roomId': typeof SessionRoomIdIndexRoute
+  '/workshops/$workshopId': typeof WorkshopsWorkshopIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -351,6 +360,7 @@ export interface FileRoutesById {
   '/instructor/earnings/': typeof InstructorEarningsIndexRoute
   '/instructor/profile/': typeof InstructorProfileIndexRoute
   '/session/$roomId/': typeof SessionRoomIdIndexRoute
+  '/workshops/$workshopId/': typeof WorkshopsWorkshopIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -391,6 +401,7 @@ export interface FileRouteTypes {
     | '/instructor/earnings/'
     | '/instructor/profile/'
     | '/session/$roomId/'
+    | '/workshops/$workshopId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -428,6 +439,7 @@ export interface FileRouteTypes {
     | '/instructor/earnings'
     | '/instructor/profile'
     | '/session/$roomId'
+    | '/workshops/$workshopId'
   id:
     | '__root__'
     | '/'
@@ -467,6 +479,7 @@ export interface FileRouteTypes {
     | '/instructor/earnings/'
     | '/instructor/profile/'
     | '/session/$roomId/'
+    | '/workshops/$workshopId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -486,6 +499,7 @@ export interface RootRouteChildren {
   VerifyEmailIndexRoute: typeof VerifyEmailIndexRoute
   ExpertsExpertIdIndexRoute: typeof ExpertsExpertIdIndexRoute
   SessionRoomIdIndexRoute: typeof SessionRoomIdIndexRoute
+  WorkshopsWorkshopIdIndexRoute: typeof WorkshopsWorkshopIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -601,6 +615,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/demo/success'
       preLoaderRoute: typeof DemoSuccessRouteImport
       parentRoute: typeof DemoRouteRoute
+    }
+    '/workshops/$workshopId/': {
+      id: '/workshops/$workshopId/'
+      path: '/workshops/$workshopId'
+      fullPath: '/workshops/$workshopId/'
+      preLoaderRoute: typeof WorkshopsWorkshopIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/session/$roomId/': {
       id: '/session/$roomId/'
@@ -851,6 +872,7 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyEmailIndexRoute: VerifyEmailIndexRoute,
   ExpertsExpertIdIndexRoute: ExpertsExpertIdIndexRoute,
   SessionRoomIdIndexRoute: SessionRoomIdIndexRoute,
+  WorkshopsWorkshopIdIndexRoute: WorkshopsWorkshopIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
