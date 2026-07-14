@@ -2,6 +2,7 @@ import { CalendarDays, Users, Video } from "lucide-react";
 import type { Workshop } from "@yoga-app/shared";
 import { formatCompact, userTimezone } from "@/shared/lib/timezone";
 import { useWorkshopPricing } from "@/features/workshops/hooks/use-workshop-pricing";
+import { WorkshopBackLink } from "@/features/workshops/components/workshop-back-link";
 import { WorkshopRegisterCta } from "@/features/workshops/components/workshop-register-cta";
 
 export function WorkshopDetail({ workshop }: { workshop: Workshop }) {
@@ -13,6 +14,8 @@ export function WorkshopDetail({ workshop }: { workshop: Workshop }) {
 
   return (
     <div className="py-8 sm:py-12 max-w-3xl mx-auto space-y-8">
+      <WorkshopBackLink />
+
       {workshop.image && (
         <div className="rounded-3xl overflow-hidden border border-border/60">
           <img src={workshop.image} alt={workshop.name} className="w-full h-56 sm:h-72 object-cover" />
