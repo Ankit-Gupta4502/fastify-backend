@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PAGE_SEO } from "@/shared/lib/seo";
 import { lazy, Suspense, useEffect } from "react";
 import { useAuthStore } from "@/features/auth/store/auth.store";
-import { getStoredUtm, clearUtm } from "@/shared/lib/utm";
+import { getStoredUtm, hasSavedAcquisition, markAcquisitionSaved } from "@/shared/lib/utm";
 import { userPreferencesApi } from "@/api/user-preferences";
 import { getQueryClient } from "@/lib/react-query/query-client.tsx";
 
@@ -61,10 +61,10 @@ function SectionFallback({ height = "h-64" }: { height?: string }) {
 function Home() {
   const { isAuthenticated } = useAuthStore();
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || hasSavedAcquisition()) return;
     const utm = getStoredUtm();
     if (!utm) return;
-    userPreferencesApi.saveAcquisition(utm).then(() => clearUtm()).catch(() => {});
+    userPreferencesApi.saveAcquisition(utm).then(() => markAcquisitionSaved()).catch(() => {});
   }, [isAuthenticated]);
 
   return (

@@ -7,13 +7,14 @@ import { loginFormOptions, registerFormOptions, forgotPasswordFormOptions } from
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ApiRequestError } from "@/lib/http";
 import { authApi } from "@/api";
-import { getStoredUtm, clearUtm } from "@/shared/lib/utm";
+import { getStoredUtm, hasSavedAcquisition, markAcquisitionSaved } from "@/shared/lib/utm";
 import { userPreferencesApi } from "@/api/user-preferences";
 
 function fireAcquisition() {
+  if (hasSavedAcquisition()) return;
   const utm = getStoredUtm();
   if (!utm) return;
-  userPreferencesApi.saveAcquisition(utm).then(() => clearUtm()).catch(() => {});
+  userPreferencesApi.saveAcquisition(utm).then(() => markAcquisitionSaved()).catch(() => {});
 }
 
 export type LoginMode = "login" | "register" | "forgot";

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { formatCompact, userTimezone } from "@/shared/lib/timezone";
 import type { Workshop } from "@yoga-app/shared";
 import { useAuthStore } from "@/features/auth/store/auth.store";
-import { getStoredUtm } from "@/shared/lib/utm";
+import { useWorkshopPricing } from "@/features/workshops/hooks/use-workshop-pricing";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useWorkshopCheckout } from "@/features/workshops/hooks/use-workshops";
@@ -24,12 +24,7 @@ export function WorkshopJoinDialog({ workshop: w, onClose }: Props) {
   const spotsLeft = w.maxAttendees - w.attendeeCount;
   const full = spotsLeft <= 0;
 
-  const utm = getStoredUtm();
-  const utmSource = utm?.utmSource ?? null;
-  const isPaid = !!utmSource && (w.utmPriceInr > 0 || w.utmPriceUsd > 0);
-
-  const displayPriceInr = utmSource ? w.utmPriceInr : w.priceInr;
-  const displayPriceUsd = utmSource ? w.utmPriceUsd : w.priceUsd;
+  const { isPaid, displayPriceInr, displayPriceUsd } = useWorkshopPricing(w);
 
   const handleJoin = () => {
     if (!isAuthenticated) {

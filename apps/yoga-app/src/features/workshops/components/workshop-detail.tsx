@@ -1,7 +1,7 @@
 import { CalendarDays, Users, Video } from "lucide-react";
 import type { Workshop } from "@yoga-app/shared";
 import { formatCompact, userTimezone } from "@/shared/lib/timezone";
-import { getStoredUtm } from "@/shared/lib/utm";
+import { useWorkshopPricing } from "@/features/workshops/hooks/use-workshop-pricing";
 import { WorkshopRegisterCta } from "@/features/workshops/components/workshop-register-cta";
 
 export function WorkshopDetail({ workshop }: { workshop: Workshop }) {
@@ -9,10 +9,7 @@ export function WorkshopDetail({ workshop }: { workshop: Workshop }) {
   const spotsLeft = workshop.maxAttendees - workshop.attendeeCount;
   const full = spotsLeft <= 0;
 
-  const utm = getStoredUtm();
-  const utmSource = utm?.utmSource ?? null;
-  const displayPriceInr = utmSource ? workshop.utmPriceInr : workshop.priceInr;
-  const displayPriceUsd = utmSource ? workshop.utmPriceUsd : workshop.priceUsd;
+  const { displayPriceInr, displayPriceUsd } = useWorkshopPricing(workshop);
 
   return (
     <div className="py-8 sm:py-12 max-w-3xl mx-auto space-y-8">

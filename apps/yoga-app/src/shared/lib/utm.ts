@@ -1,4 +1,5 @@
 const UTM_KEY = "utm_data";
+const ACQUISITION_SAVED_KEY = "utm_acquisition_saved";
 
 export interface UtmData {
   utmSource: string | null;
@@ -52,4 +53,20 @@ export function getStoredUtm(): UtmData | null {
 
 export function clearUtm(): void {
   if (typeof window !== "undefined") localStorage.removeItem(UTM_KEY);
+}
+
+/**
+ * Acquisition (first-touch marketing attribution) is saved once per user, but the
+ * underlying UTM data must stick around beyond that — a pending workshop
+ * registration (e.g. sign up -> verify email -> auto-register) still needs to read
+ * utm_source to price/checkout correctly. Track "already saved" separately instead
+ * of deleting the UTM data itself.
+ */
+export function hasSavedAcquisition(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(ACQUISITION_SAVED_KEY) === "1";
+}
+
+export function markAcquisitionSaved(): void {
+  if (typeof window !== "undefined") localStorage.setItem(ACQUISITION_SAVED_KEY, "1");
 }

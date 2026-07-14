@@ -2,7 +2,7 @@ import { ArrowRight, CheckCircle2, LogIn, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Workshop } from "@yoga-app/shared";
 import { useAuthStore } from "@/features/auth/store/auth.store";
-import { getStoredUtm } from "@/shared/lib/utm";
+import { useWorkshopPricing } from "@/features/workshops/hooks/use-workshop-pricing";
 import { useWorkshopRegistration } from "@/features/workshops/hooks/use-workshop-registration";
 
 export function WorkshopRegisterCta({ workshop }: { workshop: Workshop }) {
@@ -12,9 +12,7 @@ export function WorkshopRegisterCta({ workshop }: { workshop: Workshop }) {
   const spotsLeft = workshop.maxAttendees - workshop.attendeeCount;
   const full = spotsLeft <= 0;
 
-  const utm = getStoredUtm();
-  const utmSource = utm?.utmSource ?? null;
-  const isPaid = !!utmSource && (workshop.utmPriceInr > 0 || workshop.utmPriceUsd > 0);
+  const { isPaid } = useWorkshopPricing(workshop);
 
   if (done) {
     return (
@@ -60,7 +58,7 @@ export function WorkshopRegisterCta({ workshop }: { workshop: Workshop }) {
           </>
         ) : !isAuthenticated ? (
           <>
-            <LogIn className="size-4" /> Sign in to Register Free
+            <LogIn className="size-4" /> {isPaid ? "Sign in to Continue" : "Sign in to Register Free"}
           </>
         ) : isPaid ? (
           <>

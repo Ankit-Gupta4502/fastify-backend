@@ -9,6 +9,7 @@ import { registeredWorkshops, workshops } from "../../schema/schema";
 import { detectCountry, errorResponse, successResponse, validateWithZod } from "../../utils";
 import { deleteFile } from "../../services/upload.service";
 import { getRazorpay, getRazorpayKeyId, verifyPaymentSignature } from "../../services/razorpay.service";
+import { sendWorkshopConfirmationEmail } from "../../services/workshop-email.service";
 
 const joinBodySchema = z.object({
   utmSource: z.string().max(200).optional().nullable(),
@@ -204,7 +205,7 @@ export class WorkshopsController {
 
     const { id } = request.params as { id: string };
     const body = request.body as z.infer<typeof joinBodySchema>;
-    const user = request.user as { name: string; email: string };
+    const user = request.user as { id: string; name: string; email: string };
 
     const [workshop] = await drizzle
       .select({ id: workshops.id, isActive: workshops.isActive, maxAttendees: workshops.maxAttendees, utmPriceInr: workshops.utmPriceInr, utmPriceUsd: workshops.utmPriceUsd })
@@ -301,6 +302,7 @@ export class WorkshopsController {
 
     await drizzle.insert(registeredWorkshops).values({
       workshopId: id,
+      userId: user.id,
       name: user.name,
       email: user.email,
       utmSource,
@@ -311,6 +313,15 @@ export class WorkshopsController {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
+
+    sendWorkshopConfirmationEmail({
+      userId: user.id,
+      userName: user.name,
+      userEmail: user.email,
+      workshopId: id,
+      pricePaid,
+      currency,
+    }).catch((err) => request.log.error({ err }, "workshop confirmation email failed"));
 
     const { statusCode, payload } = successResponse({ message: "Registered successfully", data: null, statusCode: 201 });
     return reply.status(statusCode).send(payload);

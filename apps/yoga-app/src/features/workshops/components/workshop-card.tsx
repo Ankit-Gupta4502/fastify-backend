@@ -1,7 +1,7 @@
 import { CalendarDays, Users, Video, ArrowRight } from "lucide-react";
 import type { Workshop } from "@yoga-app/shared";
 import { formatCompact, userTimezone } from "@/shared/lib/timezone";
-import { getStoredUtm } from "@/shared/lib/utm";
+import { useWorkshopPricing } from "@/features/workshops/hooks/use-workshop-pricing";
 import { Link } from "@tanstack/react-router";
 
 export function WorkshopCard({ workshop }: { workshop: Workshop }) {
@@ -10,10 +10,7 @@ export function WorkshopCard({ workshop }: { workshop: Workshop }) {
   const spotsLeft = workshop.maxAttendees - workshop.attendeeCount;
   const full = spotsLeft <= 0;
 
-  const utm = getStoredUtm();
-  const utmSource = utm?.utmSource ?? null;
-  const displayPriceInr = utmSource ? workshop.utmPriceInr : workshop.priceInr;
-  const displayPriceUsd = utmSource ? workshop.utmPriceUsd : workshop.priceUsd;
+  const { displayPriceInr, displayPriceUsd } = useWorkshopPricing(workshop);
 
   return (
     <Link
