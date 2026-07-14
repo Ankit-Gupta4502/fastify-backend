@@ -14,12 +14,12 @@ export function WorkshopRegisterCta({ workshop }: { workshop: Workshop }) {
 
   const { isPaid } = useWorkshopPricing(workshop);
 
-  if (done) {
+  if (done || workshop.isRegistered) {
     return (
       <div className="flex items-center gap-2.5 text-sm text-emerald-600 font-medium bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl px-5 py-4">
         <CheckCircle2 className="size-5 shrink-0" />
         <div>
-          <p className="font-semibold">You're registered!</p>
+          <p className="font-semibold">You're already registered!</p>
           <p className="text-xs font-normal text-emerald-600/80 mt-0.5">Check your email for details.</p>
         </div>
       </div>

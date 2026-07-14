@@ -115,16 +115,24 @@ export class WorkshopsController {
       return reply.status(statusCode).send(payload);
     }
 
-    const [attendees] = await drizzle
-      .select({ n: count() })
-      .from(registeredWorkshops)
-      .where(eq(registeredWorkshops.workshopId, id));
+    const optionalUser = await this.authMiddleware.getOptionalUser(request);
+
+    const [[attendees], existing] = await Promise.all([
+      drizzle.select({ n: count() }).from(registeredWorkshops).where(eq(registeredWorkshops.workshopId, id)),
+      optionalUser
+        ? drizzle
+            .select({ id: registeredWorkshops.id })
+            .from(registeredWorkshops)
+            .where(and(eq(registeredWorkshops.workshopId, id), eq(registeredWorkshops.email, optionalUser.email)))
+        : Promise.resolve([]),
+    ]);
 
     const data = {
       ...row,
       scheduledAt: row.scheduledAt ? row.scheduledAt.toISOString() : null,
       attendeeCount: Number(attendees?.n ?? 0),
       isIndia,
+      isRegistered: existing.length > 0,
     };
 
     const { statusCode, payload } = successResponse({ message: "Workshop", data });

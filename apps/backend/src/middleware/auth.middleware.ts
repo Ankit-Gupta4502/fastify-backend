@@ -39,4 +39,20 @@ export class AuthMiddleware {
       return reply.code(statusCode).send(payload);
     }
   };
+
+  /**
+   * For public routes that want to personalize the response for a signed-in
+   * visitor without requiring auth — resolves the session if present, returns
+   * null on no session/invalid session instead of rejecting the request.
+   */
+  public getOptionalUser = async (request: FastifyRequest) => {
+    try {
+      const session = await auth.api.getSession({
+        headers: fromNodeHeaders(request.headers),
+      });
+      return session?.user ?? null;
+    } catch {
+      return null;
+    }
+  };
 }
