@@ -43,7 +43,9 @@ export class WorkshopsController {
     );
   }
 
-  private listActive = async (_req: FastifyRequest, reply: FastifyReply) => {
+  private listActive = async (request: FastifyRequest, reply: FastifyReply) => {
+    const isIndia = detectCountry(request, undefined) === "IN";
+
     const rows = await drizzle
       .select({
         id: workshops.id,
@@ -79,6 +81,7 @@ export class WorkshopsController {
       ...r,
       scheduledAt: r.scheduledAt ? r.scheduledAt.toISOString() : null,
       attendeeCount: countMap[r.id] ?? 0,
+      isIndia,
     }));
 
     const { statusCode, payload } = successResponse({ message: "Active workshops", data });
@@ -87,6 +90,7 @@ export class WorkshopsController {
 
   private getWorkshop = async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
+    const isIndia = detectCountry(request, undefined) === "IN";
 
     const [row] = await drizzle
       .select({
@@ -120,6 +124,7 @@ export class WorkshopsController {
       ...row,
       scheduledAt: row.scheduledAt ? row.scheduledAt.toISOString() : null,
       attendeeCount: Number(attendees?.n ?? 0),
+      isIndia,
     };
 
     const { statusCode, payload } = successResponse({ message: "Workshop", data });
@@ -218,11 +223,14 @@ export class WorkshopsController {
 
     const utmSource = body.utmSource ?? null;
 
-    // Payment is required if UTM source is present AND the workshop has a non-zero UTM price in any currency.
-    // The exact country/currency is resolved from the Razorpay order notes to avoid a second detectCountry
-    // call that may return a different result (VPN flip, CDN header mismatch between the two requests).
-    const hasAnyUtmPrice = workshop.utmPriceInr > 0 || workshop.utmPriceUsd > 0;
-    const requiresPayment = !!utmSource && hasAnyUtmPrice;
+    // Payment is required if UTM source is present AND the workshop's price for this visitor's
+    // detected country/currency is non-zero — must mirror createOrder's per-country resolution,
+    // otherwise a workshop priced free in one currency but paid in the other incorrectly blocks
+    // the free currency's registrations with a false "payment required" error.
+    const country = detectCountry(request, undefined);
+    const isIndia = country === "IN";
+    const expectedUtmPrice = isIndia ? workshop.utmPriceInr : workshop.utmPriceUsd;
+    const requiresPayment = !!utmSource && expectedUtmPrice > 0;
 
     let pricePaid: number | null = null;
     let currency: string | null = null;

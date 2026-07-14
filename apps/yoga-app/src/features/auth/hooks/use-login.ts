@@ -35,6 +35,7 @@ export function useLogin(redirectTo?: string) {
     setFeedback(null);
     try {
       await login.mutateAsync(values);
+      fireAcquisition();
       navigate({ href: redirectTo || "/", replace: true });
     } catch (error) {
       if (error instanceof ApiRequestError && error.payload?.error === "EMAIL_NOT_VERIFIED") {

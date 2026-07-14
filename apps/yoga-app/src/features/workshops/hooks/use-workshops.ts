@@ -5,6 +5,7 @@ import type { Workshop, WorkshopJoinBody, CreateWorkshopBody, UpdateWorkshopBody
 import { openRazorpayCheckout } from "@/features/payments/services/razorpay.service";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { getStoredUtm } from "@/shared/lib/utm";
+import { ApiRequestError } from "@/lib/http";
 
 export function useWorkshops() {
   return useQuery({
@@ -87,6 +88,10 @@ export function useWorkshopCheckout(workshop: Workshop) {
           });
           return;
         } catch (err) {
+          // A 409 here means an earlier attempt in this same loop already succeeded (the
+          // response was just lost in transit) — this user IS registered and charged, so
+          // treat it as success rather than surfacing an error for a completed registration.
+          if (err instanceof ApiRequestError && err.status === 409) return;
           lastErr = err;
           if (attempt < 2) await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
         }

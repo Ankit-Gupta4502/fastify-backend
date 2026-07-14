@@ -10,7 +10,7 @@ export function WorkshopDetail({ workshop }: { workshop: Workshop }) {
   const spotsLeft = workshop.maxAttendees - workshop.attendeeCount;
   const full = spotsLeft <= 0;
 
-  const { displayPriceInr, displayPriceUsd } = useWorkshopPricing(workshop);
+  const { price, currency } = useWorkshopPricing(workshop);
 
   return (
     <div className="py-8 sm:py-12 max-w-3xl mx-auto space-y-8">
@@ -48,10 +48,10 @@ export function WorkshopDetail({ workshop }: { workshop: Workshop }) {
               Google Meet
             </span>
           )}
-          {displayPriceInr != null && displayPriceInr > 0 ? (
-            <span className="font-bold text-foreground">₹{(displayPriceInr / 100).toFixed(0)}</span>
-          ) : displayPriceUsd != null && displayPriceUsd > 0 ? (
-            <span className="font-bold text-foreground">${(displayPriceUsd / 100).toFixed(0)}</span>
+          {price != null && price > 0 ? (
+            <span className="font-bold text-foreground">
+              {currency === "INR" ? "₹" : "$"}{(price / 100).toFixed(0)}
+            </span>
           ) : (
             <span className="rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold px-2.5 py-1">
               FREE

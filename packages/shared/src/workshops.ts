@@ -12,6 +12,8 @@ export interface Workshop {
   scheduledAt: string | null;
   maxAttendees: number;
   attendeeCount: number;
+  /** Resolved server-side from the visitor's detected country (IN vs rest-of-world). Only set on public list/detail responses. */
+  isIndia?: boolean;
 }
 
 export interface AdminWorkshop extends Workshop {
