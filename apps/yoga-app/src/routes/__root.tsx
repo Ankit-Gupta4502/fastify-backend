@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode } from "react";
 import {
   HeadContent,
   Outlet,
@@ -18,6 +18,10 @@ import { fetchUserFn } from "@/features/auth/services/server-auth.service";
 import { userApi } from "../api";
 import type { RouterContext } from "../router";
 import appCss from "../styles.css?url";
+
+// Runs once at module load, before the first render — must happen before any
+// component reads getStoredUtm() synchronously during render (see WorkshopCard, WorkshopDetail, etc).
+captureUtm();
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async () => {
@@ -67,7 +71,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 const SHELL_HIDDEN_PREFIXES = ["/_user", "/instructor", "/admin", "/session/"];
 
 function RootLayout() {
-  useEffect(() => { captureUtm(); }, []);
   const { matches } = useRouterState();
   const hideShell = matches.some((m) =>
     SHELL_HIDDEN_PREFIXES.some((prefix) => m.routeId.startsWith(prefix))
