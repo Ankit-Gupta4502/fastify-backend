@@ -42,21 +42,17 @@ export function WorkshopDetail({ workshop }: { workshop: Workshop }) {
               </span>
             )}
           </span>
-          {workshop.meetLink && (
+          {workshop.meetLink && workshop.isRegistered && (
             <span className="flex items-center gap-1.5">
               <Video className="size-4 text-primary" />
               Google Meet
             </span>
           )}
-          {price != null && price > 0 ? (
+          {price != null && price > 0 && (
             <span className="font-bold text-foreground">
               {currency === "INR" ? "₹" : "$"}{(price / 100).toFixed(0)}
             </span>
-          ) : (
-            <span className="rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold px-2.5 py-1">
-              FREE
-            </span>
-          )}
+          ) }
         </div>
       </div>
 

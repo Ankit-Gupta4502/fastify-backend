@@ -37,14 +37,14 @@ export function WorkshopChips() {
           </div>
 
           {/* Chips */}
-          {workshops.map((w) => (
+          {workshops.slice(0,1).map((w) => (
             <Link
               key={w.id}
               to="/workshops/$workshopId"
               params={{ workshopId: w.id }}
               className="flex items-center gap-1.5 shrink-0 rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-medium hover:border-primary/40 hover:bg-primary/5 transition-colors cursor-pointer"
             >
-              <span className="max-w-[160px] truncate">{w.name}</span>
+              <span className="max-w-40 truncate">{w.name}</span>
               {w.scheduledAt && (
                 <>
                   <span className="h-2.5 w-px bg-border/60" />
@@ -53,11 +53,6 @@ export function WorkshopChips() {
                     {formatCompact(w.scheduledAt, tz)}
                   </span>
                 </>
-              )}
-              {(!w.priceInr || w.priceInr === 0) && (!w.priceUsd || w.priceUsd === 0) && (
-                <span className="ml-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold px-1.5 py-0.5 leading-none">
-                  FREE
-                </span>
               )}
             </Link>
           ))}
