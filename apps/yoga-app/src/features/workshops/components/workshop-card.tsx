@@ -1,7 +1,6 @@
 import { CalendarDays, Users, Video, ArrowRight } from "lucide-react";
 import type { Workshop } from "@yoga-app/shared";
 import { formatCompact, userTimezone } from "@/shared/lib/timezone";
-import { useWorkshopPricing } from "@/features/workshops/hooks/use-workshop-pricing";
 import { Link } from "@tanstack/react-router";
 
 export function WorkshopCard({ workshop }: { workshop: Workshop }) {
@@ -9,8 +8,6 @@ export function WorkshopCard({ workshop }: { workshop: Workshop }) {
 
   const spotsLeft = workshop.maxAttendees - workshop.attendeeCount;
   const full = spotsLeft <= 0;
-
-  const { price, currency } = useWorkshopPricing(workshop);
 
   return (
     <Link
@@ -49,13 +46,6 @@ export function WorkshopCard({ workshop }: { workshop: Workshop }) {
               <Video className="size-3.5 text-primary" />
               Google Meet
             </span>
-          )}
-          {price != null && price > 0 ? (
-            <span className="ml-auto font-bold text-foreground">
-              {currency === "INR" ? "₹" : "$"}{(price / 100).toFixed(0)}
-            </span>
-          ) : (
-            <span className="ml-auto font-bold text-emerald-600">Free</span>
           )}
         </div>
       </div>
