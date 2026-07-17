@@ -333,40 +333,47 @@ export async function enterLiveRoom(
 
     const isRoomInstructor = room.instructorId === params.userId;
 
-    if (!isRoomInstructor) {
-      const [booking] = await trx
-        .select({ id: roomUsers.id, leftAt: roomUsers.leftAt })
-        .from(roomUsers)
-        .where(
-          and(
-            eq(roomUsers.roomId, params.roomId),
-            eq(roomUsers.userId, params.userId),
-          ),
-        )
-        .orderBy(sql`${roomUsers.leftAt} IS NULL DESC`)
-        .limit(1);
+    const [booking] = await trx
+      .select({ id: roomUsers.id, leftAt: roomUsers.leftAt })
+      .from(roomUsers)
+      .where(
+        and(
+          eq(roomUsers.roomId, params.roomId),
+          eq(roomUsers.userId, params.userId),
+        ),
+      )
+      .orderBy(sql`${roomUsers.leftAt} IS NULL DESC`)
+      .limit(1);
 
-      if (!booking) {
+    if (!booking) {
+      if (isRoomInstructor) {
+        // The instructor doesn't go through the enrolment/quota flow — give
+        // them a room_users row on first join so their attendance is tracked
+        // the same way a student's is.
+        await trx.insert(roomUsers).values({
+          roomId: params.roomId,
+          userId: params.userId,
+          status: BOOKING_STATUS.ACTIVE,
+        });
+      } else {
         throw new SessionPoolError(
           "NOT_ENROLLED",
           "You must enrol in this session before joining",
           403,
         );
       }
-
-      if (booking.leftAt !== null) {
-        if (now < room.scheduledStart.getTime()) {
-          throw new SessionPoolError(
-            "NOT_ENROLLED",
-            "You must enrol in this session before joining",
-            403,
-          );
-        }
-        await trx
-          .update(roomUsers)
-          .set({ leftAt: null, status: BOOKING_STATUS.ACTIVE })
-          .where(eq(roomUsers.id, booking.id));
+    } else if (booking.leftAt !== null) {
+      if (!isRoomInstructor && now < room.scheduledStart.getTime()) {
+        throw new SessionPoolError(
+          "NOT_ENROLLED",
+          "You must enrol in this session before joining",
+          403,
+        );
       }
+      await trx
+        .update(roomUsers)
+        .set({ leftAt: null, status: BOOKING_STATUS.ACTIVE })
+        .where(eq(roomUsers.id, booking.id));
     }
 
     if (room.status === ROOM_STATUS.IDLE) {

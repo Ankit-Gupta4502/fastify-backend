@@ -33,7 +33,6 @@ import { getDatabaseDriver } from "./config/database";
 import { backendEnvPath } from "./config/env";
 import { DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_URL } from "@yoga-app/shared";
 import { drizzle } from "./db";
-import { registerQuotaResetJob } from "./jobs/quota-reset.job";
 
 export const fastify = Fastify({
   logger: true,
@@ -178,8 +177,6 @@ const start = async () => {
       return { status: "ok", timestamp: new Date().toISOString(), country: request.headers["cf-ipcountry"] };
     });
 
-
-    registerQuotaResetJob(drizzle, fastify.log);
 
     await fastify.ready();
     const port = Number(process.env.PORT) || DEFAULT_BACKEND_PORT;

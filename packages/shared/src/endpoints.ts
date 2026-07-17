@@ -33,6 +33,7 @@ export const API_ENDPOINTS = {
     EXPERT_PROFILE: (id: string) => `/instructor/${id}/profile`,
     MY_SCHEDULE: "/instructor/schedule",
     MY_PROFILE: "/instructor/profile",
+    MY_AVAILABILITY: "/instructor/availability",
     MY_WALLET: "/instructor/wallet",
   },
   UPLOADS: {
@@ -54,6 +55,9 @@ export const API_ENDPOINTS = {
     USERS: "/admin/users",
     USER_DETAIL: (id: string) => `/admin/users/${id}`,
     INSTRUCTORS: "/admin/instructors",
+    INSTRUCTOR_DETAIL: (id: string) => `/admin/instructors/${id}`,
+    INSTRUCTOR_SESSION_DETAIL: (instructorId: string, roomId: string) =>
+      `/admin/instructors/${instructorId}/sessions/${roomId}`,
     APPROVE_INSTRUCTOR: (id: string) => `/admin/instructors/${id}/approve`,
     UPDATE_INSTRUCTOR_PRIORITY: (id: string) => `/admin/instructors/${id}/priority`,
     UPDATE_INSTRUCTOR_STATS: (id: string) => `/admin/instructors/${id}/stats`,

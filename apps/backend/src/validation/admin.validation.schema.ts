@@ -23,6 +23,18 @@ export const instructorIdParamsSchema = z.object({
   id: z.string().uuid("Invalid instructor id"),
 });
 
+export const instructorSessionParamsSchema = z.object({
+  instructorId: z.string().uuid("Invalid instructor id"),
+  roomId: z.string().uuid("Invalid room id"),
+});
+
+export const instructorDetailQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(10),
+  dateFrom: z.string().datetime().optional(),
+  dateTo: z.string().datetime().optional(),
+});
+
 export const userIdParamsSchema = z.object({
   id: z.string().uuid("Invalid user id"),
 });
@@ -118,6 +130,8 @@ export type UpdatePriorityBody = z.infer<typeof updatePriorityBodySchema>;
 export type UpdateInstructorStatsBody = z.infer<typeof updateInstructorStatsBodySchema>;
 export type CreateInstructorBody = z.infer<typeof createInstructorBodySchema>;
 export type InstructorIdParams = z.infer<typeof instructorIdParamsSchema>;
+export type InstructorSessionParams = z.infer<typeof instructorSessionParamsSchema>;
+export type InstructorDetailQuery = z.infer<typeof instructorDetailQuerySchema>;
 export type UserIdParams = z.infer<typeof userIdParamsSchema>;
 export type CreateGroupRoomBody = z.infer<typeof createGroupRoomBodySchema>;
 export type RoomIdParams = z.infer<typeof roomIdParamsSchema>;

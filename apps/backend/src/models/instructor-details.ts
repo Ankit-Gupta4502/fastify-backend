@@ -11,6 +11,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import type { AvailabilityWindow } from "@yoga-app/shared";
 import {
   INSTRUCTOR_STATUS,
   INSTRUCTOR_STATUS_VALUES,
@@ -23,11 +24,7 @@ export const instructorStatusEnum = pgEnum(
   INSTRUCTOR_STATUS_VALUES as [string, ...string[]],
 );
 
-export type AvailabilityWindow = {
-  dow: number;
-  start: string;
-  end: string;
-};
+export type { AvailabilityWindow };
 
 export const instructorDetails = pgTable(
   "instructor_details",
@@ -47,6 +44,7 @@ export const instructorDetails = pgTable(
       .notNull()
       .default(1),
     availabilityJson: jsonb("availability_json").$type<AvailabilityWindow[]>(),
+    availabilityUpdatedAt: timestamp("availability_updated_at", { withTimezone: true }),
 
     // Profile fields
     bio: text("bio"),

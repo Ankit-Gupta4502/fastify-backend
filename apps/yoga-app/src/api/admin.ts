@@ -3,6 +3,9 @@ import type {
   AdminUser,
   AdminUserDetail,
   AdminInstructor,
+  AdminInstructorDetail,
+  AdminInstructorSessionDetail,
+  AdminInstructorSessionsFilters,
   AdminRoom,
   AssignPrivateSessionBody,
   CreateGroupRoomBody,
@@ -43,6 +46,22 @@ export const adminApi = {
 
   listInstructors: () =>
     apiRequest<AdminInstructor[]>(API_ENDPOINTS.ADMIN.INSTRUCTORS),
+
+  getInstructorDetail: (id: string, filters?: AdminInstructorSessionsFilters) => {
+    const params: Record<string, string> = {};
+    if (filters?.page) params.page = String(filters.page);
+    if (filters?.pageSize) params.pageSize = String(filters.pageSize);
+    if (filters?.dateFrom) params.dateFrom = filters.dateFrom;
+    if (filters?.dateTo) params.dateTo = filters.dateTo;
+    return apiRequest<AdminInstructorDetail>(API_ENDPOINTS.ADMIN.INSTRUCTOR_DETAIL(id), {
+      params: Object.keys(params).length ? params : undefined,
+    });
+  },
+
+  getInstructorSessionDetail: (instructorId: string, roomId: string) =>
+    apiRequest<AdminInstructorSessionDetail>(
+      API_ENDPOINTS.ADMIN.INSTRUCTOR_SESSION_DETAIL(instructorId, roomId),
+    ),
 
   createInstructor: (body: CreateInstructorBody) =>
     apiRequest<{ id: string; name: string; email: string }>(API_ENDPOINTS.ADMIN.INSTRUCTORS, {

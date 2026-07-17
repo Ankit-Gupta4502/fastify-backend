@@ -3,6 +3,7 @@ import { ArrowLeft, User } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorCard } from "@/shared/components/misc/error-card";
 import { Chip } from "@/shared/components/misc/chip";
+import { SectionCard } from "@/shared/components/misc/section-card";
 import { useAdminUserDetail } from "@/features/admin/hooks/use-admin";
 import { UserOverviewSection } from "@/features/admin/components/users/user-overview-section";
 import { UserSubscriptionsSection } from "@/features/admin/components/users/user-subscriptions-section";
@@ -12,17 +13,6 @@ import { UserPrivateRequestsSection } from "@/features/admin/components/users/us
 export const Route = createFileRoute("/admin/users/$userId")({
   component: AdminUserDetailPage,
 });
-
-function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
-      <div className="px-5 py-4 border-b border-border/40">
-        <h2 className="text-sm font-semibold">{title}</h2>
-      </div>
-      <div className="px-5 py-4">{children}</div>
-    </div>
-  );
-}
 
 function AdminUserDetailPage() {
   const { userId } = Route.useParams();

@@ -47,6 +47,9 @@ import { Route as UserDashboardIndexRouteImport } from './routes/_user/dashboard
 import { Route as UserBillingIndexRouteImport } from './routes/_user/billing/index'
 import { Route as InstructorDashboardUpcomingRouteImport } from './routes/instructor/dashboard/upcoming'
 import { Route as AdminUsersUserIdRouteImport } from './routes/admin/users/$userId'
+import { Route as AdminInstructorsInstructorIdRouteImport } from './routes/admin/instructors/$instructorId'
+import { Route as AdminInstructorsInstructorIdIndexRouteImport } from './routes/admin/instructors/$instructorId.index'
+import { Route as AdminInstructorsInstructorIdSessionsRoomIdRouteImport } from './routes/admin/instructors/$instructorId.sessions.$roomId'
 
 const InstructorRouteRoute = InstructorRouteRouteImport.update({
   id: '/instructor',
@@ -243,6 +246,24 @@ const AdminUsersUserIdRoute = AdminUsersUserIdRouteImport.update({
   path: '/users/$userId',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminInstructorsInstructorIdRoute =
+  AdminInstructorsInstructorIdRouteImport.update({
+    id: '/instructors/$instructorId',
+    path: '/instructors/$instructorId',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
+const AdminInstructorsInstructorIdIndexRoute =
+  AdminInstructorsInstructorIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AdminInstructorsInstructorIdRoute,
+  } as any)
+const AdminInstructorsInstructorIdSessionsRoomIdRoute =
+  AdminInstructorsInstructorIdSessionsRoomIdRouteImport.update({
+    id: '/sessions/$roomId',
+    path: '/sessions/$roomId',
+    getParentRoute: () => AdminInstructorsInstructorIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -260,6 +281,7 @@ export interface FileRoutesByFullPath {
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/verify-email/': typeof VerifyEmailIndexRoute
+  '/admin/instructors/$instructorId': typeof AdminInstructorsInstructorIdRouteWithChildren
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/billing/': typeof UserBillingIndexRoute
@@ -282,6 +304,8 @@ export interface FileRoutesByFullPath {
   '/instructor/profile/': typeof InstructorProfileIndexRoute
   '/session/$roomId/': typeof SessionRoomIdIndexRoute
   '/workshops/$workshopId/': typeof WorkshopsWorkshopIdIndexRoute
+  '/admin/instructors/$instructorId/': typeof AdminInstructorsInstructorIdIndexRoute
+  '/admin/instructors/$instructorId/sessions/$roomId': typeof AdminInstructorsInstructorIdSessionsRoomIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -320,6 +344,8 @@ export interface FileRoutesByTo {
   '/instructor/profile': typeof InstructorProfileIndexRoute
   '/session/$roomId': typeof SessionRoomIdIndexRoute
   '/workshops/$workshopId': typeof WorkshopsWorkshopIdIndexRoute
+  '/admin/instructors/$instructorId': typeof AdminInstructorsInstructorIdIndexRoute
+  '/admin/instructors/$instructorId/sessions/$roomId': typeof AdminInstructorsInstructorIdSessionsRoomIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -339,6 +365,7 @@ export interface FileRoutesById {
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/verify-email/': typeof VerifyEmailIndexRoute
+  '/admin/instructors/$instructorId': typeof AdminInstructorsInstructorIdRouteWithChildren
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/_user/billing/': typeof UserBillingIndexRoute
@@ -361,6 +388,8 @@ export interface FileRoutesById {
   '/instructor/profile/': typeof InstructorProfileIndexRoute
   '/session/$roomId/': typeof SessionRoomIdIndexRoute
   '/workshops/$workshopId/': typeof WorkshopsWorkshopIdIndexRoute
+  '/admin/instructors/$instructorId/': typeof AdminInstructorsInstructorIdIndexRoute
+  '/admin/instructors/$instructorId/sessions/$roomId': typeof AdminInstructorsInstructorIdSessionsRoomIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -380,6 +409,7 @@ export interface FileRouteTypes {
     | '/reset-password/'
     | '/terms/'
     | '/verify-email/'
+    | '/admin/instructors/$instructorId'
     | '/admin/users/$userId'
     | '/instructor/dashboard/upcoming'
     | '/billing/'
@@ -402,6 +432,8 @@ export interface FileRouteTypes {
     | '/instructor/profile/'
     | '/session/$roomId/'
     | '/workshops/$workshopId/'
+    | '/admin/instructors/$instructorId/'
+    | '/admin/instructors/$instructorId/sessions/$roomId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -440,6 +472,8 @@ export interface FileRouteTypes {
     | '/instructor/profile'
     | '/session/$roomId'
     | '/workshops/$workshopId'
+    | '/admin/instructors/$instructorId'
+    | '/admin/instructors/$instructorId/sessions/$roomId'
   id:
     | '__root__'
     | '/'
@@ -458,6 +492,7 @@ export interface FileRouteTypes {
     | '/reset-password/'
     | '/terms/'
     | '/verify-email/'
+    | '/admin/instructors/$instructorId'
     | '/admin/users/$userId'
     | '/instructor/dashboard/upcoming'
     | '/_user/billing/'
@@ -480,6 +515,8 @@ export interface FileRouteTypes {
     | '/instructor/profile/'
     | '/session/$roomId/'
     | '/workshops/$workshopId/'
+    | '/admin/instructors/$instructorId/'
+    | '/admin/instructors/$instructorId/sessions/$roomId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -770,6 +807,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersUserIdRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/instructors/$instructorId': {
+      id: '/admin/instructors/$instructorId'
+      path: '/instructors/$instructorId'
+      fullPath: '/admin/instructors/$instructorId'
+      preLoaderRoute: typeof AdminInstructorsInstructorIdRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/instructors/$instructorId/': {
+      id: '/admin/instructors/$instructorId/'
+      path: '/'
+      fullPath: '/admin/instructors/$instructorId/'
+      preLoaderRoute: typeof AdminInstructorsInstructorIdIndexRouteImport
+      parentRoute: typeof AdminInstructorsInstructorIdRoute
+    }
+    '/admin/instructors/$instructorId/sessions/$roomId': {
+      id: '/admin/instructors/$instructorId/sessions/$roomId'
+      path: '/sessions/$roomId'
+      fullPath: '/admin/instructors/$instructorId/sessions/$roomId'
+      preLoaderRoute: typeof AdminInstructorsInstructorIdSessionsRoomIdRouteImport
+      parentRoute: typeof AdminInstructorsInstructorIdRoute
+    }
   }
 }
 
@@ -793,7 +851,26 @@ const UserRouteRouteWithChildren = UserRouteRoute._addFileChildren(
   UserRouteRouteChildren,
 )
 
+interface AdminInstructorsInstructorIdRouteChildren {
+  AdminInstructorsInstructorIdIndexRoute: typeof AdminInstructorsInstructorIdIndexRoute
+  AdminInstructorsInstructorIdSessionsRoomIdRoute: typeof AdminInstructorsInstructorIdSessionsRoomIdRoute
+}
+
+const AdminInstructorsInstructorIdRouteChildren: AdminInstructorsInstructorIdRouteChildren =
+  {
+    AdminInstructorsInstructorIdIndexRoute:
+      AdminInstructorsInstructorIdIndexRoute,
+    AdminInstructorsInstructorIdSessionsRoomIdRoute:
+      AdminInstructorsInstructorIdSessionsRoomIdRoute,
+  }
+
+const AdminInstructorsInstructorIdRouteWithChildren =
+  AdminInstructorsInstructorIdRoute._addFileChildren(
+    AdminInstructorsInstructorIdRouteChildren,
+  )
+
 interface AdminRouteRouteChildren {
+  AdminInstructorsInstructorIdRoute: typeof AdminInstructorsInstructorIdRouteWithChildren
   AdminUsersUserIdRoute: typeof AdminUsersUserIdRoute
   AdminContactQueriesIndexRoute: typeof AdminContactQueriesIndexRoute
   AdminDemoRequestsIndexRoute: typeof AdminDemoRequestsIndexRoute
@@ -807,6 +884,8 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminInstructorsInstructorIdRoute:
+    AdminInstructorsInstructorIdRouteWithChildren,
   AdminUsersUserIdRoute: AdminUsersUserIdRoute,
   AdminContactQueriesIndexRoute: AdminContactQueriesIndexRoute,
   AdminDemoRequestsIndexRoute: AdminDemoRequestsIndexRoute,

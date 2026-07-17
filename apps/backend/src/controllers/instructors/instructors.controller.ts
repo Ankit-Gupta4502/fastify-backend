@@ -20,6 +20,7 @@ import { formatForInstructor } from "../../services/timezone.service";
 import {
   instructorsSwaggerSchemas,
   listInstructorsQuerySchema,
+  updateInstructorAvailabilityBodySchema,
   updateInstructorProfileBodySchema,
 } from "../../validation/instructors.validation.schema";
 import { errorResponse, successResponse, validateWithZod } from "../../utils";
@@ -81,6 +82,17 @@ export class InstructorsController {
             ],
           },
           this.updateProfile,
+        );
+
+        router.put(
+          "/instructor/availability",
+          {
+            preHandler: [
+              this.authMiddleware.handle,
+              requireRole(USER_ROLES.INSTRUCTOR),
+            ],
+          },
+          this.updateAvailability,
         );
 
         router.get(
@@ -267,6 +279,8 @@ export class InstructorsController {
         yearsOfExperience: instructorDetails.yearsOfExperience,
         specialty: instructorDetails.specialty,
         status: instructorDetails.status,
+        availability: instructorDetails.availabilityJson,
+        availabilityUpdatedAt: instructorDetails.availabilityUpdatedAt,
       })
       .from(instructorDetails)
       .innerJoin(user, eq(instructorDetails.userId, user.id))
@@ -277,7 +291,14 @@ export class InstructorsController {
       return reply.status(statusCode).send(payload);
     }
 
-    const { statusCode, payload } = successResponse({ message: "Profile", data: row });
+    const { statusCode, payload } = successResponse({
+      message: "Profile",
+      data: {
+        ...row,
+        availability: row.availability ?? [],
+        availabilityUpdatedAt: row.availabilityUpdatedAt?.toISOString() ?? null,
+      },
+    });
     return reply.status(statusCode).send(payload);
   };
 
@@ -309,6 +330,23 @@ export class InstructorsController {
     ]);
 
     const { statusCode, payload } = successResponse({ message: "Profile updated", data: null });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private updateAvailability = async (request: FastifyRequest, reply: FastifyReply) => {
+    const me = request.user!;
+
+    const invalid = validateWithZod(request, reply, { body: updateInstructorAvailabilityBodySchema });
+    if (invalid) return invalid;
+
+    const { availability } = request.body as z.infer<typeof updateInstructorAvailabilityBodySchema>;
+
+    await drizzle
+      .update(instructorDetails)
+      .set({ availabilityJson: availability, availabilityUpdatedAt: new Date() })
+      .where(eq(instructorDetails.userId, me.id));
+
+    const { statusCode, payload } = successResponse({ message: "Availability updated", data: null });
     return reply.status(statusCode).send(payload);
   };
 

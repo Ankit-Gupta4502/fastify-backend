@@ -1,5 +1,9 @@
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { UpdateGroupRoomBody, UpdateInstructorStatsBody } from "@yoga-app/shared";
+import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+  AdminInstructorSessionsFilters,
+  UpdateGroupRoomBody,
+  UpdateInstructorStatsBody,
+} from "@yoga-app/shared";
 import type { AdminUsersFilters } from "@/api/admin";
 import { adminApi } from "@/api/admin";
 import { queryKeys } from "@/lib/react-query/query-keys";
@@ -39,6 +43,26 @@ export function useAdminUserDetail(id: string) {
 
 export function useAdminInstructors() {
   return useQuery(adminQueryOptions.instructors());
+}
+
+export function useAdminInstructorDetail(id: string, filters?: AdminInstructorSessionsFilters) {
+  return useQuery({
+    queryKey: queryKeys.admin.instructorDetail(id, filters),
+    queryFn: () => adminApi.getInstructorDetail(id, filters),
+    staleTime: 30_000,
+    // Sessions pagination/date filters change the query key, but the profile
+    // and wallet sections shouldn't flash back to a loading state for that —
+    // keep the previous page's data on screen while the next page loads.
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useAdminInstructorSessionDetail(instructorId: string, roomId: string) {
+  return useQuery({
+    queryKey: queryKeys.admin.instructorSessionDetail(instructorId, roomId),
+    queryFn: () => adminApi.getInstructorSessionDetail(instructorId, roomId),
+    staleTime: 30_000,
+  });
 }
 
 export function useAdminGroupRooms() {
