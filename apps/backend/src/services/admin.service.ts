@@ -184,6 +184,8 @@ export async function listInstructors(db: AppDatabase) {
       sortOrder: instructorDetails.sortOrder,
       rating: instructorDetails.rating,
       studentsGuided: instructorDetails.studentsGuided,
+      availability: instructorDetails.availabilityJson,
+      availabilityUpdatedAt: instructorDetails.availabilityUpdatedAt,
     })
     .from(instructorDetails)
     .innerJoin(user, eq(instructorDetails.userId, user.id))
@@ -194,6 +196,8 @@ export async function listInstructors(db: AppDatabase) {
     specialty: r.specialty ?? [],
     maxConcurrentSessions: r.maxConcurrentSessions ?? 1,
     sortOrder: r.sortOrder ?? 0,
+    availability: r.availability ?? [],
+    availabilityUpdatedAt: r.availabilityUpdatedAt?.toISOString() ?? null,
   }));
 }
 

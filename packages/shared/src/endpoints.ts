@@ -33,6 +33,7 @@ export const API_ENDPOINTS = {
     EXPERT_PROFILE: (id: string) => `/instructor/${id}/profile`,
     MY_SCHEDULE: "/instructor/schedule",
     MY_PROFILE: "/instructor/profile",
+    MY_AVAILABILITY: "/instructor/availability",
     MY_WALLET: "/instructor/wallet",
   },
   UPLOADS: {

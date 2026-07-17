@@ -22,6 +22,32 @@ export const updateInstructorProfileBodySchema = z.object({
 
 export type UpdateInstructorProfileBody = z.infer<typeof updateInstructorProfileBodySchema>;
 
+const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+export const updateInstructorAvailabilityBodySchema = z.object({
+  availability: z
+    .array(
+      z
+        .object({
+          dow: z.number().int().min(0).max(6),
+          start: z.string().regex(TIME_REGEX, "Invalid time"),
+          end: z.string().regex(TIME_REGEX, "Invalid time"),
+        })
+        .refine((w) => w.start < w.end, {
+          message: "End time must be after start time",
+          path: ["end"],
+        }),
+    )
+    .max(7)
+    .refine((windows) => new Set(windows.map((w) => w.dow)).size === windows.length, {
+      message: "Each day can only appear once",
+    }),
+});
+
+export type UpdateInstructorAvailabilityBody = z.infer<
+  typeof updateInstructorAvailabilityBodySchema
+>;
+
 export const instructorsSwaggerSchemas = {
   list: {
     description: "List instructors, optionally filtered by status/specialty",

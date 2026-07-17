@@ -1,3 +1,5 @@
+import type { AvailabilityWindow } from "./instructors";
+
 export interface AdminUserPreferences {
   gender: string;
   phone: string | null;
@@ -39,6 +41,8 @@ export interface AdminInstructor {
   sortOrder: number;
   rating: number;
   studentsGuided: number;
+  availability: AvailabilityWindow[];
+  availabilityUpdatedAt: string | null;
 }
 
 export interface UpdateInstructorStatsBody {

@@ -8,6 +8,8 @@ import { Chip } from "@/shared/components/misc/chip";
 import { DataTable, type DataTableColumn } from "@/shared/components/tables";
 import { InstructorStatsDialog } from "@/features/admin/components/instructor-stats-dialog";
 import { cn } from "@/shared/lib/utils";
+import { relativeFromNow } from "@/shared/lib/timezone";
+import { AVAILABILITY_DAYS } from "@/shared/constants";
 
 interface InstructorsTableProps {
   instructors: AdminInstructor[];
@@ -22,6 +24,7 @@ const COLUMNS: DataTableColumn[] = [
   { key: "status", header: "Status" },
   { key: "approval", header: "Approval" },
   { key: "specialties", header: "Specialties" },
+  { key: "availability", header: "Availability" },
   { key: "maxSessions", header: "Max sessions" },
   { key: "rating", header: "Rating" },
   { key: "studentsGuided", header: "Students guided" },
@@ -118,6 +121,27 @@ export function InstructorsTable({ instructors, isLoading, error }: InstructorsT
                       ))
                     : <span className="text-muted-foreground">—</span>}
                 </div>
+              </TableCell>
+
+              <TableCell>
+                {ins.availability.length > 0 ? (
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap gap-1">
+                      {AVAILABILITY_DAYS.filter(({ dow }) =>
+                        ins.availability.some((w) => w.dow === dow),
+                      ).map(({ dow, short }) => (
+                        <Chip key={dow} variant="info">{short}</Chip>
+                      ))}
+                    </div>
+                    {ins.availabilityUpdatedAt && (
+                      <p className="text-[10px] text-muted-foreground">
+                        Updated {relativeFromNow(ins.availabilityUpdatedAt)}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground">Not set</span>
+                )}
               </TableCell>
 
               <TableCell className="text-muted-foreground">{ins.maxConcurrentSessions}</TableCell>

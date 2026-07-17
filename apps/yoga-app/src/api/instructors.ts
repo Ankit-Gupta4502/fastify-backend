@@ -3,6 +3,7 @@ import {
   type InstructorListItem,
   type InstructorProfile,
   type PublicInstructorProfile,
+  type UpdateAvailabilityBody,
   type UpdateProfileBody,
   type WalletBalance,
 } from "@yoga-app/shared";
@@ -28,6 +29,12 @@ export const instructorsApi = {
 
   updateProfile: (body: UpdateProfileBody) =>
     apiRequest<null>(API_ENDPOINTS.INSTRUCTORS.MY_PROFILE, {
+      method: "PUT",
+      data: body,
+    }),
+
+  updateAvailability: (body: UpdateAvailabilityBody) =>
+    apiRequest<null>(API_ENDPOINTS.INSTRUCTORS.MY_AVAILABILITY, {
       method: "PUT",
       data: body,
     }),

@@ -46,6 +46,16 @@ export function useUpdateInstructorProfile() {
   });
 }
 
+export function useUpdateInstructorAvailability() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: instructorsApi.updateAvailability,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.instructors.myProfile() });
+    },
+  });
+}
+
 export function useUploadAttachment() {
   return useMutation({
     mutationFn: (file: File) => uploadsApi.uploadAttachment(file),

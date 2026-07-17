@@ -1,0 +1,1 @@
+ALTER TABLE "instructor_details" ADD COLUMN "availability_updated_at" timestamp with time zone;

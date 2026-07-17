@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useInstructorProfile } from "@/features/instructor/hooks/use-instructors";
 import { ProfileForm } from "@/features/instructor/components/profile-form";
+import { AvailabilityForm } from "@/features/instructor/components/availability-form";
 
 export const Route = createFileRoute("/instructor/profile/")({
   component: InstructorProfilePage,
@@ -35,7 +36,12 @@ function InstructorProfilePage() {
           Could not load profile. Please try again.
         </div>
       ) : profile ? (
-        <ProfileForm profile={profile} />
+        <>
+          <ProfileForm profile={profile} />
+          <div className="border-t border-border/60 pt-8">
+            <AvailabilityForm profile={profile} />
+          </div>
+        </>
       ) : null}
     </div>
   );
