@@ -595,7 +595,11 @@ export async function getUserDetail(db: AppDatabase, userId: string) {
 
 // ─── Admin: get single instructor detail ─────────────────────────────────────
 
-export async function getInstructorDetail(db: AppDatabase, instructorId: string) {
+export async function getInstructorDetail(
+  db: AppDatabase,
+  instructorId: string,
+  sessionsFilter?: { page?: number; pageSize?: number; dateFrom?: string; dateTo?: string },
+) {
   const [i] = await db
     .select({
       id: user.id,
@@ -641,6 +645,20 @@ export async function getInstructorDetail(db: AppDatabase, instructorId: string)
 
   const balancePaise = wallet?.balancePaise ?? 0;
 
+  const page = sessionsFilter?.page ?? 1;
+  const pageSize = sessionsFilter?.pageSize ?? 10;
+
+  const sessionsWhere = and(
+    eq(rooms.instructorId, instructorId),
+    sessionsFilter?.dateFrom ? gt(rooms.scheduledStart, new Date(sessionsFilter.dateFrom)) : undefined,
+    sessionsFilter?.dateTo ? sql`${rooms.scheduledStart} <= ${new Date(sessionsFilter.dateTo)}` : undefined,
+  );
+
+  const [{ count: sessionsTotal }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(rooms)
+    .where(sessionsWhere);
+
   const sessionRows = await db
     .select({
       id: rooms.id,
@@ -653,9 +671,10 @@ export async function getInstructorDetail(db: AppDatabase, instructorId: string)
       meetLink: rooms.meetLink,
     })
     .from(rooms)
-    .where(eq(rooms.instructorId, instructorId))
+    .where(sessionsWhere)
     .orderBy(desc(rooms.scheduledStart))
-    .limit(50);
+    .limit(pageSize)
+    .offset((page - 1) * pageSize);
 
   const roomIds = sessionRows.map((r) => r.id);
   const participantCounts = roomIds.length
@@ -691,17 +710,23 @@ export async function getInstructorDetail(db: AppDatabase, instructorId: string)
         createdAt: t.createdAt.toISOString(),
       })),
     },
-    sessions: sessionRows.map((r) => ({
-      id: r.id,
-      type: r.type,
-      status: r.status,
-      scheduledStart: r.scheduledStart.toISOString(),
-      scheduledEnd: r.scheduledEnd.toISOString(),
-      capacity: r.capacity,
-      currentOccupancy: r.currentOccupancy,
-      meetLink: r.meetLink,
-      participantCount: participantCounts.find((p) => p.roomId === r.id)?.count ?? 0,
-    })),
+    sessions: {
+      items: sessionRows.map((r) => ({
+        id: r.id,
+        type: r.type,
+        status: r.status,
+        scheduledStart: r.scheduledStart.toISOString(),
+        scheduledEnd: r.scheduledEnd.toISOString(),
+        capacity: r.capacity,
+        currentOccupancy: r.currentOccupancy,
+        meetLink: r.meetLink,
+        participantCount: participantCounts.find((p) => p.roomId === r.id)?.count ?? 0,
+      })),
+      total: sessionsTotal,
+      page,
+      pageSize,
+      totalPages: Math.max(1, Math.ceil(sessionsTotal / pageSize)),
+    },
   };
 }
 

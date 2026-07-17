@@ -33,6 +33,7 @@ import {
   createInstructorBodySchema,
   instructorIdParamsSchema,
   instructorSessionParamsSchema,
+  instructorDetailQuerySchema,
   listUsersQuerySchema,
   userIdParamsSchema,
   createGroupRoomBodySchema,
@@ -126,11 +127,17 @@ export class AdminController {
   };
 
   private getInstructorDetail = async (request: FastifyRequest, reply: FastifyReply) => {
-    const invalid = validateWithZod(request, reply, { params: instructorIdParamsSchema });
-    if (invalid) return invalid;
+    const invalidParams = validateWithZod(request, reply, { params: instructorIdParamsSchema });
+    if (invalidParams) return invalidParams;
+
+    const invalidQuery = validateWithZod(request, reply, { query: instructorDetailQuerySchema });
+    if (invalidQuery) return invalidQuery;
 
     const { id } = request.params as z.infer<typeof instructorIdParamsSchema>;
-    const data = await getInstructorDetail(drizzle, id);
+    const { page, pageSize, dateFrom, dateTo } = request.query as z.infer<
+      typeof instructorDetailQuerySchema
+    >;
+    const data = await getInstructorDetail(drizzle, id, { page, pageSize, dateFrom, dateTo });
     if (!data) {
       const { statusCode, payload } = errorResponse({ message: "Instructor not found", statusCode: 404 });
       return reply.status(statusCode).send(payload);

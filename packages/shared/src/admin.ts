@@ -1,4 +1,5 @@
 import type { AvailabilityWindow, WalletBalance } from "./instructors";
+import type { PaginatedResult } from "./api";
 
 export interface AdminUserPreferences {
   gender: string;
@@ -166,9 +167,16 @@ export interface AdminInstructorSession {
   participantCount: number;
 }
 
+export interface AdminInstructorSessionsFilters {
+  page?: number;
+  pageSize?: number;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 export interface AdminInstructorDetail extends AdminInstructor {
   wallet: WalletBalance;
-  sessions: AdminInstructorSession[];
+  sessions: PaginatedResult<AdminInstructorSession>;
 }
 
 export interface AdminSessionParticipant {
