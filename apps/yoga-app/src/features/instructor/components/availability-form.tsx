@@ -15,16 +15,6 @@ export function AvailabilityForm({ profile }: AvailabilityFormProps) {
   const { form, onSubmit, saved, isSaving, saveError } = useAvailabilityForm(profile);
   const { watch, setValue, formState: { errors } } = form;
   const days = watch("days");
-  const monday = days[0];
-  const canCopyMonday = monday.enabled && days.some((d, i) => i !== 0 && d.enabled);
-
-  function copyMondayToAll() {
-    days.forEach((day, i) => {
-      if (i === 0 || !day.enabled) return;
-      setValue(`days.${i}.start`, monday.start, { shouldValidate: true });
-      setValue(`days.${i}.end`, monday.end, { shouldValidate: true });
-    });
-  }
 
   return (
     <form onSubmit={onSubmit} className="space-y-4 max-w-2xl">
@@ -83,16 +73,6 @@ export function AvailabilityForm({ profile }: AvailabilityFormProps) {
           );
         })}
       </div>
-
-      {canCopyMonday && (
-        <button
-          type="button"
-          onClick={copyMondayToAll}
-          className="text-xs font-medium text-primary hover:underline"
-        >
-          Copy Monday&rsquo;s hours to all enabled days
-        </button>
-      )}
 
       <div className="flex items-center gap-3 pt-2">
         <Button type="submit" className="rounded-xl px-8" disabled={isSaving}>
