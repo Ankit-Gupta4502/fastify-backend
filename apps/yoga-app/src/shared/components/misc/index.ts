@@ -5,6 +5,7 @@ export * from "./error-card";
 export * from "./feedback-banner";
 export * from "./instructor-avatar";
 export * from "./not-found";
+export * from "./section-card";
 export * from "./section-header";
 export * from "./stat-card";
 export * from "./subscription-status-chip";

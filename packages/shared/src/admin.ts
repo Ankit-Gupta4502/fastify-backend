@@ -1,4 +1,4 @@
-import type { AvailabilityWindow } from "./instructors";
+import type { AvailabilityWindow, WalletBalance } from "./instructors";
 
 export interface AdminUserPreferences {
   gender: string;
@@ -152,4 +152,43 @@ export interface AdminUserPrivateRequest {
 export interface AdminUserDetail extends AdminUser {
   rooms: AdminUserRoom[];
   privateRequests: AdminUserPrivateRequest[];
+}
+
+export interface AdminInstructorSession {
+  id: string;
+  type: string;
+  status: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+  capacity: number;
+  currentOccupancy: number;
+  meetLink: string | null;
+  participantCount: number;
+}
+
+export interface AdminInstructorDetail extends AdminInstructor {
+  wallet: WalletBalance;
+  sessions: AdminInstructorSession[];
+}
+
+export interface AdminSessionParticipant {
+  userId: string;
+  name: string;
+  email: string;
+  joinedAt: string;
+  leftAt: string | null;
+  status: string;
+}
+
+export interface AdminInstructorSessionDetail {
+  room: {
+    id: string;
+    type: string;
+    status: string;
+    scheduledStart: string;
+    scheduledEnd: string;
+    meetLink: string | null;
+  };
+  instructor: { joinedAt: string; leftAt: string | null } | null;
+  participants: AdminSessionParticipant[];
 }

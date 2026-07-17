@@ -3,6 +3,8 @@ import type {
   AdminUser,
   AdminUserDetail,
   AdminInstructor,
+  AdminInstructorDetail,
+  AdminInstructorSessionDetail,
   AdminRoom,
   AssignPrivateSessionBody,
   CreateGroupRoomBody,
@@ -43,6 +45,14 @@ export const adminApi = {
 
   listInstructors: () =>
     apiRequest<AdminInstructor[]>(API_ENDPOINTS.ADMIN.INSTRUCTORS),
+
+  getInstructorDetail: (id: string) =>
+    apiRequest<AdminInstructorDetail>(API_ENDPOINTS.ADMIN.INSTRUCTOR_DETAIL(id)),
+
+  getInstructorSessionDetail: (instructorId: string, roomId: string) =>
+    apiRequest<AdminInstructorSessionDetail>(
+      API_ENDPOINTS.ADMIN.INSTRUCTOR_SESSION_DETAIL(instructorId, roomId),
+    ),
 
   createInstructor: (body: CreateInstructorBody) =>
     apiRequest<{ id: string; name: string; email: string }>(API_ENDPOINTS.ADMIN.INSTRUCTORS, {

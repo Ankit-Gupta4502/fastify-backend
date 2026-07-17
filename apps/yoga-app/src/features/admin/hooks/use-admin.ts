@@ -41,6 +41,22 @@ export function useAdminInstructors() {
   return useQuery(adminQueryOptions.instructors());
 }
 
+export function useAdminInstructorDetail(id: string) {
+  return useQuery({
+    queryKey: queryKeys.admin.instructorDetail(id),
+    queryFn: () => adminApi.getInstructorDetail(id),
+    staleTime: 30_000,
+  });
+}
+
+export function useAdminInstructorSessionDetail(instructorId: string, roomId: string) {
+  return useQuery({
+    queryKey: queryKeys.admin.instructorSessionDetail(instructorId, roomId),
+    queryFn: () => adminApi.getInstructorSessionDetail(instructorId, roomId),
+    staleTime: 30_000,
+  });
+}
+
 export function useAdminGroupRooms() {
   return useQuery(adminQueryOptions.groupRooms());
 }

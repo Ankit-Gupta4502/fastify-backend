@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import type { AdminInstructor } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
 import { TableCell } from "@/components/ui/table";
@@ -32,6 +33,7 @@ const COLUMNS: DataTableColumn[] = [
 ];
 
 export function InstructorsTable({ instructors, isLoading, error }: InstructorsTableProps) {
+  const navigate = useNavigate();
   const approve = useApproveInstructor();
   const priority = useUpdateInstructorPriority();
   const [statsTarget, setStatsTarget] = useState<AdminInstructor | null>(null);
@@ -58,12 +60,17 @@ export function InstructorsTable({ instructors, isLoading, error }: InstructorsT
         errorMessage="Failed to load instructors."
         emptyMessage={'No instructors yet. Use "Add Instructor" to create one.'}
         getRowKey={(ins) => ins.id}
+        getRowProps={(ins) => ({
+          className: "cursor-pointer",
+          onClick: () =>
+            navigate({ to: "/admin/instructors/$instructorId", params: { instructorId: ins.id } }),
+        })}
         renderCells={(ins, idx) => {
           const isApprovePending = approve.isPending && approve.variables?.id === ins.id;
           const isPriorityPending = priority.isPending && priority.variables?.id === ins.id;
           return (
             <>
-              <TableCell>
+              <TableCell onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-0.5">
                   <button
                     className="p-0.5 rounded hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
@@ -155,7 +162,7 @@ export function InstructorsTable({ instructors, isLoading, error }: InstructorsT
 
               <TableCell className="text-muted-foreground">{ins.studentsGuided}</TableCell>
 
-              <TableCell>
+              <TableCell onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-end gap-2">
                   <Button
                     size="icon-sm"

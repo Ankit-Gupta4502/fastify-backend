@@ -6,6 +6,7 @@ export * from "./create-room-dialog-config";
 export * from "./demo-requests-table";
 export * from "./demo-status-chip";
 export * from "./instructor-combobox";
+export * from "./instructors";
 export * from "./instructors-table";
 export * from "./review-demo-dialog";
 export * from "./room-form-dialog";
