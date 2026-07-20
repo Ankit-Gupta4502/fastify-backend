@@ -1,7 +1,7 @@
 export type InstructorStatus = "available" | "busy" | "offline";
 
 export interface AvailabilityWindow {
-  dow: number; // 0 = Sunday ... 6 = Saturday
+  dow: number; // 0 = Sunday ... 6 = Saturday; a day can have multiple windows
   start: string; // "HH:mm"
   end: string; // "HH:mm"
 }

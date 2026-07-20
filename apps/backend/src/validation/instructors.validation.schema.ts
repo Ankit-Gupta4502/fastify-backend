@@ -24,23 +24,43 @@ export type UpdateInstructorProfileBody = z.infer<typeof updateInstructorProfile
 
 const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+const availabilityWindowSchema = z
+  .object({
+    dow: z.number().int().min(0).max(6),
+    start: z.string().regex(TIME_REGEX, "Invalid time"),
+    end: z.string().regex(TIME_REGEX, "Invalid time"),
+  })
+  .refine((window) => window.start < window.end, {
+    message: "End time must be after start time",
+    path: ["end"],
+  });
+
 export const updateInstructorAvailabilityBodySchema = z.object({
   availability: z
-    .array(
-      z
-        .object({
-          dow: z.number().int().min(0).max(6),
-          start: z.string().regex(TIME_REGEX, "Invalid time"),
-          end: z.string().regex(TIME_REGEX, "Invalid time"),
-        })
-        .refine((w) => w.start < w.end, {
-          message: "End time must be after start time",
-          path: ["end"],
-        }),
-    )
-    .max(7)
-    .refine((windows) => new Set(windows.map((w) => w.dow)).size === windows.length, {
-      message: "Each day can only appear once",
+    .array(availabilityWindowSchema)
+    .max(56)
+    .superRefine((windows, context) => {
+      const byDay = new Map<number, Array<{ start: string; end: string; index: number }>>();
+
+      windows.forEach((window, index) => {
+        const dayWindows = byDay.get(window.dow) ?? [];
+        dayWindows.push({ ...window, index });
+        byDay.set(window.dow, dayWindows);
+      });
+
+      byDay.forEach((dayWindows) => {
+        const ordered = [...dayWindows].sort((a, b) => a.start.localeCompare(b.start));
+        ordered.forEach((window, index) => {
+          const previous = ordered[index - 1];
+          if (previous && window.start < previous.end) {
+            context.addIssue({
+              code: "custom",
+              message: "Availability windows on the same day cannot overlap",
+              path: [window.index, "start"],
+            });
+          }
+        });
+      });
     }),
 });
 

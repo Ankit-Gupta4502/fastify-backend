@@ -1,10 +1,11 @@
 import type { InstructorProfile } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Plus, Trash2 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { relativeFromNow } from "@/shared/lib/timezone";
 import { AVAILABILITY_DAYS } from "@/shared/constants";
+import { AvailabilityTimePicker } from "./availability-time-picker";
 import { useAvailabilityForm } from "./use-availability-form";
 
 interface AvailabilityFormProps {
@@ -15,6 +16,16 @@ export function AvailabilityForm({ profile }: AvailabilityFormProps) {
   const { form, onSubmit, saved, isSaving, saveError } = useAvailabilityForm(profile);
   const { watch, setValue, formState: { errors } } = form;
   const days = watch("days");
+
+  const addSlot = (dayIndex: number) => {
+    const slots = days[dayIndex].slots;
+    setValue(`days.${dayIndex}.slots`, [...slots, { start: "09:00", end: "18:00" }], { shouldValidate: true });
+  };
+
+  const removeSlot = (dayIndex: number, slotIndex: number) => {
+    const slots = days[dayIndex].slots;
+    setValue(`days.${dayIndex}.slots`, slots.filter((_, index) => index !== slotIndex), { shouldValidate: true });
+  };
 
   return (
     <form onSubmit={onSubmit} className="space-y-4 max-w-2xl">
@@ -32,9 +43,8 @@ export function AvailabilityForm({ profile }: AvailabilityFormProps) {
       <div className="rounded-2xl border border-border/60 divide-y divide-border/40 overflow-hidden">
         {AVAILABILITY_DAYS.map(({ dow, label, short }, index) => {
           const day = days[index];
-          const dayError = errors.days?.[index]?.end;
           return (
-            <div key={dow} className="flex flex-wrap items-center gap-3 px-4 py-3">
+            <div key={dow} className="flex flex-wrap items-start gap-3 px-4 py-3">
               <button
                 type="button"
                 onClick={() => setValue(`days.${index}.enabled`, !day.enabled, { shouldValidate: true })}
@@ -50,21 +60,34 @@ export function AvailabilityForm({ profile }: AvailabilityFormProps) {
               </button>
 
               {day.enabled ? (
-                <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
-                  <Input
-                    type="time"
-                    className="rounded-xl w-32"
-                    value={day.start}
-                    onChange={(e) => setValue(`days.${index}.start`, e.target.value, { shouldValidate: true })}
-                  />
-                  <span className="text-muted-foreground text-xs">to</span>
-                  <Input
-                    type="time"
-                    className="rounded-xl w-32"
-                    value={day.end}
-                    onChange={(e) => setValue(`days.${index}.end`, e.target.value, { shouldValidate: true })}
-                  />
-                  {dayError && <p className="text-xs text-destructive w-full">{dayError.message}</p>}
+                <div className="space-y-2 flex-1 min-w-0">
+                  {day.slots.map((slot, slotIndex) => {
+                    const slotError = errors.days?.[index]?.slots?.[slotIndex]?.end;
+                    return (
+                      <div key={slotIndex} className="flex flex-wrap items-center gap-2">
+                        <AvailabilityTimePicker
+                          value={slot.start}
+                          onValueChange={(value) => setValue(`days.${index}.slots.${slotIndex}.start`, value, { shouldValidate: true })}
+                          ariaLabel={`${label} time slot ${slotIndex + 1} start time`}
+                        />
+                        <span className="text-muted-foreground text-xs">to</span>
+                        <AvailabilityTimePicker
+                          value={slot.end}
+                          onValueChange={(value) => setValue(`days.${index}.slots.${slotIndex}.end`, value, { shouldValidate: true })}
+                          ariaLabel={`${label} time slot ${slotIndex + 1} end time`}
+                        />
+                        {day.slots.length > 1 && (
+                          <Button type="button" variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-destructive" onClick={() => removeSlot(index, slotIndex)} aria-label={`Remove ${label} time slot ${slotIndex + 1}`}>
+                            <Trash2 className="size-4" />
+                          </Button>
+                        )}
+                        {slotError && <p className="text-xs text-destructive w-full">{slotError.message}</p>}
+                      </div>
+                    );
+                  })}
+                  <Button type="button" variant="ghost" size="sm" className="rounded-xl text-primary" onClick={() => addSlot(index)}>
+                    <Plus className="size-4" /> Add time slot
+                  </Button>
                 </div>
               ) : (
                 <span className="text-xs text-muted-foreground">Unavailable</span>

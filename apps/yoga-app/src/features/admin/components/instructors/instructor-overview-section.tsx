@@ -63,12 +63,12 @@ export function InstructorOverviewSection({ instructor }: { instructor: AdminIns
           <div className="space-y-2">
             <div className="rounded-2xl border border-border/60 divide-y divide-border/40 overflow-hidden">
               {AVAILABILITY_DAYS.map(({ dow, label, short }) => {
-                const window = instructor.availability.find((w) => w.dow === dow);
+                const windows = instructor.availability.filter((window) => window.dow === dow);
                 return (
                   <div key={dow} className="flex items-center gap-3 px-4 py-2.5">
                     <span
                       className={
-                        window
+                        windows.length > 0
                           ? "w-14 shrink-0 text-xs font-semibold text-primary"
                           : "w-14 shrink-0 text-xs text-muted-foreground"
                       }
@@ -77,7 +77,9 @@ export function InstructorOverviewSection({ instructor }: { instructor: AdminIns
                       {short}
                     </span>
                     <span className="text-sm">
-                      {window ? `${window.start} – ${window.end}` : <span className="text-muted-foreground">Unavailable</span>}
+                      {windows.length > 0
+                        ? windows.map((window) => `${window.start} – ${window.end}`).join(", ")
+                        : <span className="text-muted-foreground">Unavailable</span>}
                     </span>
                   </div>
                 );

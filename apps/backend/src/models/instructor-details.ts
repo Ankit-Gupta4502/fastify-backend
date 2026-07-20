@@ -43,6 +43,7 @@ export const instructorDetails = pgTable(
     maxConcurrentSessions: integer("max_concurrent_sessions")
       .notNull()
       .default(1),
+    // A day may have multiple availability windows (for example, 09:00–12:00 and 14:00–18:00).
     availabilityJson: jsonb("availability_json").$type<AvailabilityWindow[]>(),
     availabilityUpdatedAt: timestamp("availability_updated_at", { withTimezone: true }),
 
