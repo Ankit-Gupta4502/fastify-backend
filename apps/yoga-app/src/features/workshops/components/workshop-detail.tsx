@@ -1,4 +1,4 @@
-import { CalendarDays, Users, Video } from "lucide-react";
+import { CalendarDays, Video } from "lucide-react";
 import type { Workshop } from "@yoga-app/shared";
 import { formatCompact, userTimezone } from "@/shared/lib/timezone";
 import { useWorkshopPricing } from "@/features/workshops/hooks/use-workshop-pricing";
@@ -7,8 +7,6 @@ import { WorkshopRegisterCta } from "@/features/workshops/components/workshop-re
 
 export function WorkshopDetail({ workshop }: { workshop: Workshop }) {
   const tz = userTimezone();
-  const spotsLeft = workshop.maxAttendees - workshop.attendeeCount;
-  const full = spotsLeft <= 0;
 
   const { price, currency } = useWorkshopPricing(workshop);
 
@@ -32,21 +30,16 @@ export function WorkshopDetail({ workshop }: { workshop: Workshop }) {
               {formatCompact(workshop.scheduledAt, tz)}
             </span>
           )}
-          <span className="flex items-center gap-1.5">
-            <Users className="size-4" />
-            {full ? (
-              <span className="text-destructive font-medium">Full</span>
-            ) : (
-              <span>
-                <span className="font-semibold text-foreground">{spotsLeft}</span> spots left
-              </span>
-            )}
-          </span>
           {workshop.meetLink && workshop.isRegistered && (
-            <span className="flex items-center gap-1.5">
+            <a
+              href={workshop.meetLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:text-primary transition-colors"
+            >
               <Video className="size-4 text-primary" />
               Google Meet
-            </span>
+            </a>
           )}
           {price != null && price > 0 && (
             <span className="font-bold text-foreground">
