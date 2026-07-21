@@ -110,6 +110,7 @@ export const ROOT_GLOBAL_META = [
 
 // Builder for dynamic expert profile pages.
 export function buildExpertHead(instructor: {
+  id: string;
   name: string;
   tagline?: string | null;
   specialty?: string[] | null;
@@ -124,7 +125,7 @@ export function buildExpertHead(instructor: {
     title,
     description,
     keywords: `${instructor.name}, yoga instructor, ${instructor.specialty?.join(", ")}, book yoga class, online yoga`,
-    canonical: `${SITE.url}/experts/`,
+    canonical: `${SITE.url}/experts/${instructor.id}`,
     ogImage: instructor.profileImageUrl ?? undefined,
   });
 }

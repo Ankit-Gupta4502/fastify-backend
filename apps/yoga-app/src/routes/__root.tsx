@@ -61,7 +61,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
       { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
       { rel: "manifest", href: "/site.webmanifest" },
-      ...PAGE_SEO.home.links,
+      // NOTE: no canonical link here — every route sets its own via PAGE_SEO,
+      // and TanStack Router doesn't dedupe links by `rel`, so a root-level
+      // canonical would render alongside each page's own canonical tag.
     ],
   }),
   component: RootLayout,
