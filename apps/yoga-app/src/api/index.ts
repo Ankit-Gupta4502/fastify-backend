@@ -92,3 +92,9 @@ export { uploadsApi } from "./uploads";
 export { instructorsApi } from "./instructors";
 export { plansApi, type MyPlanResponse } from "./plans";
 export { paymentsApi } from "./payments";
+export {
+  referralsApi,
+  type ReferralDashboardResponse,
+  type ReferredUserSummary,
+  type ReferredUserStatus,
+} from "./referrals";

@@ -19,6 +19,7 @@ export const authSwaggerSchemas = {
         name: { type: "string" as const },
         email: { type: "string" as const, format: "email" },
         password: { type: "string" as const, minLength: 8 },
+        referralCode: { type: "string" as const },
       },
     },
   },

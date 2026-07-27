@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "../../db";
 import { plans, userSubscriptions } from "../../schema/schema";
 import { verifyWebhookSignature } from "../../services/razorpay.service";
+import { rewardReferrerIfEligible } from "../../services/referral.service";
 import { successResponse } from "../../utils";
 
 interface RazorpayPaymentEntity {
@@ -205,6 +206,7 @@ export class RazorpayWebhookController {
     const [existing] = await drizzle
       .select({
         id: userSubscriptions.id,
+        userId: userSubscriptions.userId,
         status: userSubscriptions.status,
         sessionsTotal: userSubscriptions.sessionsTotal,
         billingInterval: plans.billingInterval,
@@ -243,6 +245,8 @@ export class RazorpayWebhookController {
       { subscriptionId: existing.id, razorpayOrderId },
       "razorpay webhook: subscription activated",
     );
+
+    await rewardReferrerIfEligible(existing.userId, request.log);
   }
 
   private async markOrderFailed(request: FastifyRequest, razorpayOrderId: string) {
@@ -276,6 +280,7 @@ export class RazorpayWebhookController {
     const [existing] = await drizzle
       .select({
         id: userSubscriptions.id,
+        userId: userSubscriptions.userId,
         status: userSubscriptions.status,
         sessionsTotal: userSubscriptions.sessionsTotal,
         billingInterval: plans.billingInterval,
@@ -314,6 +319,8 @@ export class RazorpayWebhookController {
       { subscriptionId: existing.id, razorpaySubscriptionId },
       "razorpay webhook: subscription activated",
     );
+
+    await rewardReferrerIfEligible(existing.userId, request.log);
   }
 
   private async renewSubscription(

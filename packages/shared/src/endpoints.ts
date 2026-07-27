@@ -103,4 +103,7 @@ export const API_ENDPOINTS = {
   SYSTEM: {
     HEALTH: "/health",
   },
+  REFERRALS: {
+    ME: "/referrals/me",
+  },
 } as const;

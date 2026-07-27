@@ -67,4 +67,8 @@ export const queryKeys = {
     all: ["contact"] as const,
     adminList: () => [...queryKeys.contact.all, "admin-list"] as const,
   },
+  referrals: {
+    all: ["referrals"] as const,
+    mine: () => [...queryKeys.referrals.all, "mine"] as const,
+  },
 } as const;

@@ -30,6 +30,18 @@ export const auth = betterAuth({
         defaultValue: USER_ROLES.USER,
         input: true,
       },
+      // Set once at signup from the referral code in the register request.
+      referredByUserId: {
+        type: "string",
+        required: false,
+        input: true,
+      },
+      // Server-generated shareable code (referral.service.ts) — never client input.
+      referralCode: {
+        type: "string",
+        required: false,
+        input: false,
+      },
     },
   },
   advanced: {

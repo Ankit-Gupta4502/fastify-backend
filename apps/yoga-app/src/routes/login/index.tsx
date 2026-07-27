@@ -6,7 +6,10 @@ import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/shared/compo
 import { useLogin } from "@/features/auth/hooks/use-login";
 import { LoginCard } from "@/features/auth/components/login/login-card";
 
-const searchSchema = z.object({ redirect: z.string().optional() });
+const searchSchema = z.object({
+  redirect: z.string().optional(),
+  ref: z.string().optional(),
+});
 
 export const Route = createFileRoute("/login/")({
   validateSearch: searchSchema,
@@ -17,7 +20,7 @@ export const Route = createFileRoute("/login/")({
 });
 
 function LoginPage() {
-  const { redirect: redirectTo } = Route.useSearch();
+  const { redirect: redirectTo, ref: referralCode } = Route.useSearch();
   const {
     mode,
     feedback,
@@ -32,7 +35,7 @@ function LoginPage() {
     onForgotSubmit,
     handleGoogleSignIn,
     switchMode,
-  } = useLogin(redirectTo);
+  } = useLogin(redirectTo, referralCode);
 
   return (
     <div className="relative flex min-h-[88vh] items-center justify-center px-4 py-10 overflow-hidden">

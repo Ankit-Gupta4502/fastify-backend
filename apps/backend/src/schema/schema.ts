@@ -69,3 +69,9 @@ export { userAcquisition } from "../models/user-acquisition";
 export { privateSessionRequests } from "../models/private-session-requests";
 
 export { contactQueries, contactQueryStatusEnum } from "../models/contact";
+
+export {
+  referralRewards,
+  referralRewardsRelations,
+  referralRewardStatusEnum,
+} from "../models/referral";

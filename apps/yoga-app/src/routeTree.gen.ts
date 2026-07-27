@@ -41,6 +41,7 @@ import { Route as AdminInstructorsIndexRouteImport } from './routes/admin/instru
 import { Route as AdminDemoRequestsIndexRouteImport } from './routes/admin/demo-requests/index'
 import { Route as AdminContactQueriesIndexRouteImport } from './routes/admin/contact-queries/index'
 import { Route as UserRoomsIndexRouteImport } from './routes/_user/rooms/index'
+import { Route as UserReferralsIndexRouteImport } from './routes/_user/referrals/index'
 import { Route as UserPrivateSessionsIndexRouteImport } from './routes/_user/private-sessions/index'
 import { Route as UserEditProfileIndexRouteImport } from './routes/_user/edit-profile/index'
 import { Route as UserDashboardIndexRouteImport } from './routes/_user/dashboard/index'
@@ -214,6 +215,11 @@ const UserRoomsIndexRoute = UserRoomsIndexRouteImport.update({
   path: '/rooms/',
   getParentRoute: () => UserRouteRoute,
 } as any)
+const UserReferralsIndexRoute = UserReferralsIndexRouteImport.update({
+  id: '/referrals/',
+  path: '/referrals/',
+  getParentRoute: () => UserRouteRoute,
+} as any)
 const UserPrivateSessionsIndexRoute =
   UserPrivateSessionsIndexRouteImport.update({
     id: '/private-sessions/',
@@ -288,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof UserDashboardIndexRoute
   '/edit-profile/': typeof UserEditProfileIndexRoute
   '/private-sessions/': typeof UserPrivateSessionsIndexRoute
+  '/referrals/': typeof UserReferralsIndexRoute
   '/rooms/': typeof UserRoomsIndexRoute
   '/admin/contact-queries/': typeof AdminContactQueriesIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
@@ -328,6 +335,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof UserDashboardIndexRoute
   '/edit-profile': typeof UserEditProfileIndexRoute
   '/private-sessions': typeof UserPrivateSessionsIndexRoute
+  '/referrals': typeof UserReferralsIndexRoute
   '/rooms': typeof UserRoomsIndexRoute
   '/admin/contact-queries': typeof AdminContactQueriesIndexRoute
   '/admin/demo-requests': typeof AdminDemoRequestsIndexRoute
@@ -372,6 +380,7 @@ export interface FileRoutesById {
   '/_user/dashboard/': typeof UserDashboardIndexRoute
   '/_user/edit-profile/': typeof UserEditProfileIndexRoute
   '/_user/private-sessions/': typeof UserPrivateSessionsIndexRoute
+  '/_user/referrals/': typeof UserReferralsIndexRoute
   '/_user/rooms/': typeof UserRoomsIndexRoute
   '/admin/contact-queries/': typeof AdminContactQueriesIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
@@ -416,6 +425,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/edit-profile/'
     | '/private-sessions/'
+    | '/referrals/'
     | '/rooms/'
     | '/admin/contact-queries/'
     | '/admin/demo-requests/'
@@ -456,6 +466,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/edit-profile'
     | '/private-sessions'
+    | '/referrals'
     | '/rooms'
     | '/admin/contact-queries'
     | '/admin/demo-requests'
@@ -499,6 +510,7 @@ export interface FileRouteTypes {
     | '/_user/dashboard/'
     | '/_user/edit-profile/'
     | '/_user/private-sessions/'
+    | '/_user/referrals/'
     | '/_user/rooms/'
     | '/admin/contact-queries/'
     | '/admin/demo-requests/'
@@ -765,6 +777,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserRoomsIndexRouteImport
       parentRoute: typeof UserRouteRoute
     }
+    '/_user/referrals/': {
+      id: '/_user/referrals/'
+      path: '/referrals'
+      fullPath: '/referrals/'
+      preLoaderRoute: typeof UserReferralsIndexRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
     '/_user/private-sessions/': {
       id: '/_user/private-sessions/'
       path: '/private-sessions'
@@ -836,6 +855,7 @@ interface UserRouteRouteChildren {
   UserDashboardIndexRoute: typeof UserDashboardIndexRoute
   UserEditProfileIndexRoute: typeof UserEditProfileIndexRoute
   UserPrivateSessionsIndexRoute: typeof UserPrivateSessionsIndexRoute
+  UserReferralsIndexRoute: typeof UserReferralsIndexRoute
   UserRoomsIndexRoute: typeof UserRoomsIndexRoute
 }
 
@@ -844,6 +864,7 @@ const UserRouteRouteChildren: UserRouteRouteChildren = {
   UserDashboardIndexRoute: UserDashboardIndexRoute,
   UserEditProfileIndexRoute: UserEditProfileIndexRoute,
   UserPrivateSessionsIndexRoute: UserPrivateSessionsIndexRoute,
+  UserReferralsIndexRoute: UserReferralsIndexRoute,
   UserRoomsIndexRoute: UserRoomsIndexRoute,
 }
 

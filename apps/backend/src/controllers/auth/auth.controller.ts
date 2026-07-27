@@ -29,6 +29,10 @@ import {
   validateWithZod,
 } from "../../utils";
 import { logger } from "better-auth";
+import {
+  ensureReferralCode,
+  resolveReferrerByCode,
+} from "../../services/referral.service";
 
 export class AuthController {
   constructor(private readonly app: FastifyInstance) {
@@ -101,14 +105,34 @@ export class AuthController {
 
     const body = request.body as z.infer<typeof registerBodySchema>;
 
+    let referredByUserId: string | undefined;
+    if (body.referralCode) {
+      const referrer = await resolveReferrerByCode(body.referralCode);
+      if (referrer) {
+        referredByUserId = referrer.id;
+      } else {
+        request.log.warn(
+          { referralCode: body.referralCode },
+          "register: referral code did not match any user — continuing without referral",
+        );
+      }
+    }
+
     try {
       const { headers, response: data } = await auth.api.signUpEmail({
-        body: { ...body, role: USER_ROLES.USER },
+        body: { ...body, role: USER_ROLES.USER, referredByUserId },
         headers: fromNodeHeaders(request.headers),
         returnHeaders: true,
       });
 
       applyAuthResponseHeaders(reply, headers);
+
+      const newUser = await drizzle.query.user.findFirst({
+        where: eq(user.email, body.email),
+      });
+      if (newUser) {
+        await ensureReferralCode(newUser.id);
+      }
 
       const { statusCode, payload } = successResponse({
         message: "Registration successful",

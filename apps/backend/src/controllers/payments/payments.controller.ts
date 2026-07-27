@@ -21,6 +21,7 @@ import {
   getRazorpayKeyId,
   verifySubscriptionSignature,
 } from "../../services/razorpay.service";
+import { rewardReferrerIfEligible } from "../../services/referral.service";
 import { detectCountry, errorResponse, successResponse, validateWithZod } from "../../utils";
 
 export class PaymentsController {
@@ -436,6 +437,8 @@ export class PaymentsController {
             eq(userSubscriptions.status, "pending_payment"),
           ),
         );
+
+      await rewardReferrerIfEligible(sub.userId, request.log);
     } catch (err) {
       request.log.error({ err }, "failed to activate subscription after verified payment");
       const { statusCode, payload } = errorResponse({

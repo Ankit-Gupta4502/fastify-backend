@@ -246,6 +246,13 @@
       "when": 1784055824970,
       "tag": "0034_normal_freak",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1785128281818,
+      "tag": "0035_fair_nightcrawler",
+      "breakpoints": true
     }
   ]
 }

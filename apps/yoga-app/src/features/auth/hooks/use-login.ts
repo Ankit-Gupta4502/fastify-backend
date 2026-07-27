@@ -19,7 +19,7 @@ function fireAcquisition() {
 
 export type LoginMode = "login" | "register" | "forgot";
 
-export function useLogin(redirectTo?: string) {
+export function useLogin(redirectTo?: string, referralCode?: string) {
   const [mode, setMode] = useState<LoginMode>("login");
   const [feedback, setFeedback] = useState<string | null>(null);
   const { login, register: registerUserMutation, getGoogleUrl } = useAuth();
@@ -49,7 +49,9 @@ export function useLogin(redirectTo?: string) {
   async function onRegisterSubmit(values: RegisterBody) {
     setFeedback(null);
     try {
-      await registerUserMutation.mutateAsync(values);
+      await registerUserMutation.mutateAsync(
+        referralCode ? { ...values, referralCode } : values,
+      );
       fireAcquisition();
       setFeedback("Account created! Redirecting…");
       setTimeout(() => navigate({ to: "/verify-email", replace: true }), 1500);
