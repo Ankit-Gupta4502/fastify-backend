@@ -16,6 +16,7 @@ export const loginBodySchema = z.object({
 
 export const socialCallbackQuerySchema = z.object({
   callbackURL: z.url().optional(),
+  ref: z.string().trim().min(1).optional(),
 });
 
 export const forgotPasswordSchema = z.object({

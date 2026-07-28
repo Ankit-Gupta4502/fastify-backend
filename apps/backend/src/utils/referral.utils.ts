@@ -15,5 +15,5 @@ export function generateReferralCode(): string {
 }
 
 export function buildReferralLink(code: string): string {
-  return `${config.frontend.url}/register?ref=${code}`;
+  return `${config.frontend.url}/login?ref=${code}`;
 }

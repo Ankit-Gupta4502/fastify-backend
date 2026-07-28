@@ -23,6 +23,7 @@ import {
   verifyEmailSchema,
 } from "../../validation/auth.validation.schema";
 import { USER_ROLES } from "../../constants/roles";
+import { REFERRAL_COOKIE_NAME, REFERRAL_COOKIE_MAX_AGE_SECONDS } from "../../constants/referral";
 import {
   errorResponse,
   successResponse,
@@ -272,6 +273,25 @@ export class AuthController {
 
     const query = request.query as z.infer<typeof socialCallbackQuerySchema>;
     const callbackURL = query.callbackURL ?? config.frontend.url;
+
+    // Fetch Metadata: a same-origin/same-site request either omits this header
+    // (older browsers) or sends same-origin/same-site/none. "cross-site" means
+    // the request was triggered by a third-party page (e.g. an <img> pixel) —
+    // refuse to plant the referral cookie in that case, since Set-Cookie is
+    // honored regardless of CORS and SameSite=Lax doesn't block being *set*.
+    const isCrossSite = request.headers["sec-fetch-site"] === "cross-site";
+
+    if (query.ref && !isCrossSite) {
+      // Read back in the `user.create` databaseHook (lib/auth.ts) once Google
+      // redirects back here and the new account is about to be inserted —
+      // the referral code can't otherwise survive that redirect round trip.
+      reply.setCookie(REFERRAL_COOKIE_NAME, query.ref, {
+        path: "/",
+        maxAge: REFERRAL_COOKIE_MAX_AGE_SECONDS,
+        httpOnly: true,
+        sameSite: "lax",
+      });
+    }
 
     try {
       const { response, headers } = await auth.api.signInSocial({

@@ -20,7 +20,7 @@ function fireAcquisition() {
 export type LoginMode = "login" | "register" | "forgot";
 
 export function useLogin(redirectTo?: string, referralCode?: string) {
-  const [mode, setMode] = useState<LoginMode>("login");
+  const [mode, setMode] = useState<LoginMode>(referralCode ? "register" : "login");
   const [feedback, setFeedback] = useState<string | null>(null);
   const { login, register: registerUserMutation, getGoogleUrl } = useAuth();
   const navigate = useNavigate();
@@ -79,7 +79,7 @@ export function useLogin(redirectTo?: string, referralCode?: string) {
       ? new URL(redirectTo, window.location.origin).toString()
       : window.location.origin;
     try {
-      const response = await getGoogleUrl(callbackURL);
+      const response = await getGoogleUrl(callbackURL, referralCode);
       if (response.data?.url) window.location.assign(response.data.url);
     } catch (error) {
       setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Google sign-in failed");

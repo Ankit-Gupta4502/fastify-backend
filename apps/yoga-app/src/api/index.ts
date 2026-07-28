@@ -43,9 +43,9 @@ export const authApi = {
       method: "POST",
     }),
     
-  getGoogleUrl: (callbackURL: string) =>
+  getGoogleUrl: (callbackURL: string, referralCode?: string) =>
     apiRequest<{ url: string | null }>(ENDPOINTS.AUTH.GOOGLE, {
-      params: { callbackURL },
+      params: referralCode ? { callbackURL, ref: referralCode } : { callbackURL },
     }),
 
   forgotPassword: (payload: ForgotPasswordBody) =>

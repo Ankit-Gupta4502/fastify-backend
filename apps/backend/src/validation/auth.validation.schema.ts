@@ -56,6 +56,10 @@ export const authSwaggerSchemas = {
           type: "string" as const,
           description: "Frontend URL to return to after sign-in",
         },
+        ref: {
+          type: "string" as const,
+          description: "Referral code to attach if this sign-in creates a new account",
+        },
       },
     },
   },

@@ -4,7 +4,9 @@ import { DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_URL } from "@yoga-app/shared";
 import { drizzle } from "../db";
 import * as schema from "../schema/schema";
 import { USER_ROLES, USER_ROLE_VALUES } from "../constants/roles";
+import { REFERRAL_COOKIE_NAME } from "../constants/referral";
 import { EmailService } from "../services/EmailService";
+import { resolveReferrerByCode } from "../services/referral.service";
 import { config } from "../config";
 
 const baseURL =
@@ -48,6 +50,29 @@ export const auth = betterAuth({
     useSecureCookies:false,
     database: {
       generateId: "uuid",
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        // Attaches the referrer for social sign-ups (email/password registration
+        // already sets referredByUserId explicitly via the /auth/register body).
+        // The referral code can't travel through the OAuth redirect as a query
+        // param, so the frontend stashes it in a cookie before redirecting to
+        // the provider, and we read it back here right before the row is inserted.
+        before: async (newUser, ctx) => {
+          if (newUser.referredByUserId) return;
+          // Only trust the cookie for user rows created by the OAuth callback
+          // itself — otherwise a stray/planted cookie (e.g. via a cross-site
+          // request to /auth/google) could silently attach a referrer to an
+          // unrelated email/password signup in the same browser.
+          if (ctx?.path !== "/callback/:id") return;
+          const code = ctx?.getCookie(REFERRAL_COOKIE_NAME);
+          if (!code) return;
+          const referrer = await resolveReferrerByCode(code);
+          if (referrer) return { data: { ...newUser, referredByUserId: referrer.id } };
+        },
+      },
     },
   },
   emailAndPassword: {
