@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Loader2, UserPlus } from "lucide-react";
+import { Loader2, Plus, UserPlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -18,36 +18,37 @@ interface InviteMembersDialogProps {
   organizationId: string;
 }
 
-function parseEmails(raw: string): string[] {
-  return Array.from(
-    new Set(
-      raw
-        .split(/[\n,]/)
-        .map((s) => s.trim())
-        .filter(Boolean),
-    ),
-  );
-}
-
 export function InviteMembersDialog({ organizationId }: InviteMembersDialogProps) {
   const [open, setOpen] = useState(false);
-  const [raw, setRaw] = useState("");
+  const [emails, setEmails] = useState<string[]>([""]);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ invited: string[]; skipped: string[] } | null>(null);
   const invite = useInviteMembers(organizationId);
 
+  function updateEmail(index: number, value: string) {
+    setEmails((prev) => prev.map((e, i) => (i === index ? value : e)));
+  }
+
+  function addField() {
+    setEmails((prev) => [...prev, ""]);
+  }
+
+  function removeField(index: number) {
+    setEmails((prev) => (prev.length === 1 ? prev : prev.filter((_, i) => i !== index)));
+  }
+
   function handleSubmit() {
     setError(null);
     setResult(null);
-    const emails = parseEmails(raw);
-    if (emails.length === 0) {
+    const cleaned = Array.from(new Set(emails.map((e) => e.trim()).filter(Boolean)));
+    if (cleaned.length === 0) {
       setError("Enter at least one email address");
       return;
     }
-    invite.mutate(emails, {
+    invite.mutate(cleaned, {
       onSuccess: (response) => {
         if (response.data) setResult(response.data);
-        setRaw("");
+        setEmails([""]);
       },
       onError: (err) => setError(err instanceof Error ? err.message : "Failed to send invites"),
     });
@@ -74,20 +75,45 @@ export function InviteMembersDialog({ organizationId }: InviteMembersDialogProps
       <DialogContent className="max-w-md rounded-3xl">
         <DialogHeader>
           <DialogTitle>Invite teammates</DialogTitle>
-          <DialogDescription>
-            One email per line, or separate with commas. Each person gets an invite link by email.
-          </DialogDescription>
+          <DialogDescription>Each person gets an invite link by email.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2">
-          <Label htmlFor="invite-emails" className="text-xs font-medium">Email addresses</Label>
-          <Textarea
-            id="invite-emails"
-            rows={5}
-            placeholder={"jane@company.com\njohn@company.com"}
-            value={raw}
-            onChange={(e) => setRaw(e.target.value)}
-          />
+          <Label className="text-xs font-medium">Email addresses</Label>
+          <div className="space-y-2">
+            {emails.map((email, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  type="email"
+                  placeholder="jane@company.com"
+                  value={email}
+                  onChange={(e) => updateEmail(index, e.target.value)}
+                  className="h-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="rounded-lg shrink-0 text-muted-foreground hover:text-destructive"
+                  onClick={() => removeField(index)}
+                  disabled={emails.length === 1}
+                >
+                  <X className="size-3.5" />
+                  <span className="sr-only">Remove</span>
+                </Button>
+              </div>
+            ))}
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5 rounded-xl"
+            onClick={addField}
+          >
+            <Plus className="size-3.5" />
+            Add more
+          </Button>
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}

@@ -87,7 +87,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   shellComponent: RootDocument,
 });
 
-const SHELL_HIDDEN_PREFIXES = ["/_user", "/instructor", "/admin", "/session/"];
+const SHELL_HIDDEN_PREFIXES = ["/_user", "/instructor", "/admin", "/org", "/session/"];
 
 function RootLayout() {
   const { matches } = useRouterState();
