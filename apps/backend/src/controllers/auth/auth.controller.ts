@@ -25,6 +25,12 @@ import {
 import { USER_ROLES } from "../../constants/roles";
 import { REFERRAL_COOKIE_NAME, REFERRAL_COOKIE_MAX_AGE_SECONDS } from "../../constants/referral";
 import {
+  PENDING_ORG_COOKIE_NAME,
+  PENDING_ORG_COOKIE_MAX_AGE_SECONDS,
+  PENDING_ORG_INVITE_COOKIE_NAME,
+  PENDING_ORG_INVITE_COOKIE_MAX_AGE_SECONDS,
+} from "../../constants/organization";
+import {
   errorResponse,
   successResponse,
   validateWithZod,
@@ -34,6 +40,10 @@ import {
   ensureReferralCode,
   resolveReferrerByCode,
 } from "../../services/referral.service";
+import {
+  acceptOrgInvite,
+  createOrganizationForUser,
+} from "../../services/organization.service";
 
 export class AuthController {
   constructor(private readonly app: FastifyInstance) {
@@ -133,6 +143,20 @@ export class AuthController {
       });
       if (newUser) {
         await ensureReferralCode(newUser.id);
+
+        if (body.organization) {
+          await createOrganizationForUser({
+            createdByUserId: newUser.id,
+            createdByEmail: newUser.email,
+            name: body.organization.name,
+            sizeBand: body.organization.sizeBand,
+          });
+        } else if (body.orgInviteToken) {
+          await acceptOrgInvite(body.orgInviteToken, {
+            id: newUser.id,
+            email: newUser.email,
+          });
+        }
       }
 
       const { statusCode, payload } = successResponse({
@@ -288,6 +312,31 @@ export class AuthController {
       reply.setCookie(REFERRAL_COOKIE_NAME, query.ref, {
         path: "/",
         maxAge: REFERRAL_COOKIE_MAX_AGE_SECONDS,
+        httpOnly: true,
+        sameSite: "lax",
+      });
+    }
+
+    if (query.orgName && query.orgSizeBand && !isCrossSite) {
+      // Same round-trip problem as the referral cookie above — "sign up as a
+      // company" details are read back in the `user.create.after` databaseHook
+      // (lib/auth.ts) once the new user row actually exists.
+      reply.setCookie(
+        PENDING_ORG_COOKIE_NAME,
+        JSON.stringify({ name: query.orgName, sizeBand: query.orgSizeBand }),
+        {
+          path: "/",
+          maxAge: PENDING_ORG_COOKIE_MAX_AGE_SECONDS,
+          httpOnly: true,
+          sameSite: "lax",
+        },
+      );
+    } else if (query.orgInviteToken && !isCrossSite) {
+      // Same mechanism, for a NEW user accepting an org invite instead of
+      // creating an org — mutually exclusive with the branch above.
+      reply.setCookie(PENDING_ORG_INVITE_COOKIE_NAME, query.orgInviteToken, {
+        path: "/",
+        maxAge: PENDING_ORG_INVITE_COOKIE_MAX_AGE_SECONDS,
         httpOnly: true,
         sameSite: "lax",
       });

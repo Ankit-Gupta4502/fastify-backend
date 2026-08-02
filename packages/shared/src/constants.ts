@@ -44,3 +44,13 @@ export const PUBLIC_USER_ROLE_VALUES = [
   USER_ROLES.USER,
   USER_ROLES.INSTRUCTOR,
 ] as const;
+
+// Volume-discount bands an organization picks/updates its headcount against.
+export const ORGANIZATION_SIZE_BANDS = [
+  "5-10",
+  "10-50",
+  "50-100",
+  "100+",
+] as const;
+
+export type OrganizationSizeBand = (typeof ORGANIZATION_SIZE_BANDS)[number];

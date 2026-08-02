@@ -253,6 +253,27 @@
       "when": 1785128281818,
       "tag": "0035_fair_nightcrawler",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1785602667166,
+      "tag": "0036_add_corporate_organizations",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1785603678165,
+      "tag": "0037_corporate_plans_add_linked_plan",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1785603698675,
+      "tag": "0038_corporate_plans_drop_redundant_columns",
+      "breakpoints": true
     }
   ]
 }

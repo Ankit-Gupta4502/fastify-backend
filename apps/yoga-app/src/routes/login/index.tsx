@@ -9,6 +9,7 @@ import { LoginCard } from "@/features/auth/components/login/login-card";
 const searchSchema = z.object({
   redirect: z.string().optional(),
   ref: z.string().optional(),
+  orgInvite: z.string().optional(),
 });
 
 export const Route = createFileRoute("/login/")({
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/login/")({
 });
 
 function LoginPage() {
-  const { redirect: redirectTo, ref: referralCode } = Route.useSearch();
+  const { redirect: redirectTo, ref: referralCode, orgInvite: orgInviteToken } = Route.useSearch();
   const {
     mode,
     feedback,
@@ -30,12 +31,18 @@ function LoginPage() {
     isSubmitting,
     isForgotPending,
     isGooglePending,
+    accountType,
+    setAccountType,
+    orgName,
+    setOrgName,
+    orgSizeBand,
+    setOrgSizeBand,
     onLoginSubmit,
     onRegisterSubmit,
     onForgotSubmit,
     handleGoogleSignIn,
     switchMode,
-  } = useLogin(redirectTo, referralCode);
+  } = useLogin(redirectTo, referralCode, orgInviteToken);
 
   return (
     <div className="relative flex min-h-[88vh] items-center justify-center px-4 py-10 overflow-hidden">
@@ -102,6 +109,13 @@ function LoginPage() {
           isSubmitting={isSubmitting}
           isForgotPending={isForgotPending}
           isGooglePending={isGooglePending}
+          accountType={accountType}
+          setAccountType={setAccountType}
+          orgName={orgName}
+          setOrgName={setOrgName}
+          orgSizeBand={orgSizeBand}
+          setOrgSizeBand={setOrgSizeBand}
+          orgInviteToken={orgInviteToken}
           onLoginSubmit={onLoginSubmit}
           onRegisterSubmit={onRegisterSubmit}
           onForgotSubmit={onForgotSubmit}

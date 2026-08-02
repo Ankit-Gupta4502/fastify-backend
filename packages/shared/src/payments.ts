@@ -20,12 +20,16 @@ export function calcCustomPriceInrPaise(sessionCount: number): number {
 export const createOrderBodySchema = z.object({
   planId: z.uuid("Invalid plan id"),
   country: z.string().length(2).optional(), // ISO 3166-1 alpha-2, e.g. "IN"
+  // When present, replaces the flat PRICE_DISCOUNT with the coupon's own
+  // discount (e.g. an organization's corporate self-pay coupon).
+  couponCode: z.string().trim().min(1).optional(),
 });
 
 export const createCustomOrderBodySchema = z.object({
   sessionCount: z.number().int().min(4, "Minimum 4 sessions").max(50, "Maximum 50 sessions"),
   planName: z.enum(["private", "prenatal_postnatal", "therapeutic_yoga"]),
   country: z.string().length(2).optional(),
+  couponCode: z.string().trim().min(1).optional(),
 });
 export type CreateOrderBody = z.infer<typeof createOrderBodySchema>;
 export type CreateCustomOrderBody = z.infer<typeof createCustomOrderBodySchema>;

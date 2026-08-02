@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "@tanstack/react-router";
-import { type LoginBody, type RegisterBody, type ForgotPasswordBody } from "@yoga-app/shared";
+import {
+  type LoginBody,
+  type RegisterBody,
+  type ForgotPasswordBody,
+  type OrganizationSizeBand,
+} from "@yoga-app/shared";
 
 import { loginFormOptions, registerFormOptions, forgotPasswordFormOptions } from "@/features/auth/schemas/auth.schema";
 import { useAuth } from "@/features/auth/hooks/use-auth";
@@ -18,9 +23,10 @@ function fireAcquisition() {
 }
 
 export type LoginMode = "login" | "register" | "forgot";
+export type AccountType = "individual" | "company";
 
-export function useLogin(redirectTo?: string, referralCode?: string) {
-  const [mode, setMode] = useState<LoginMode>(referralCode ? "register" : "login");
+export function useLogin(redirectTo?: string, referralCode?: string, orgInviteToken?: string) {
+  const [mode, setMode] = useState<LoginMode>(referralCode || orgInviteToken ? "register" : "login");
   const [feedback, setFeedback] = useState<string | null>(null);
   const { login, register: registerUserMutation, getGoogleUrl } = useAuth();
   const navigate = useNavigate();
@@ -30,6 +36,12 @@ export function useLogin(redirectTo?: string, referralCode?: string) {
   const isSubmitting = login.isPending || registerUserMutation.isPending;
   const [isForgotPending, setIsForgotPending] = useState(false);
   const [isGooglePending, setIsGooglePending] = useState(false);
+
+  // "Sign up as a company" — irrelevant (and hidden) when arriving via an
+  // org invite link, since that always joins an existing org instead.
+  const [accountType, setAccountType] = useState<AccountType>("individual");
+  const [orgName, setOrgName] = useState("");
+  const [orgSizeBand, setOrgSizeBand] = useState<OrganizationSizeBand | "">("");
 
   async function onLoginSubmit(values: LoginBody) {
     setFeedback(null);
@@ -48,10 +60,21 @@ export function useLogin(redirectTo?: string, referralCode?: string) {
 
   async function onRegisterSubmit(values: RegisterBody) {
     setFeedback(null);
+
+    if (accountType === "company" && !orgInviteToken && (!orgName.trim() || !orgSizeBand)) {
+      setFeedback("Please enter your organization name and team size");
+      return;
+    }
+
     try {
-      await registerUserMutation.mutateAsync(
-        referralCode ? { ...values, referralCode } : values,
-      );
+      await registerUserMutation.mutateAsync({
+        ...values,
+        ...(referralCode && { referralCode }),
+        ...(orgInviteToken && { orgInviteToken }),
+        ...(accountType === "company" && !orgInviteToken && {
+          organization: { name: orgName.trim(), sizeBand: orgSizeBand as OrganizationSizeBand },
+        }),
+      });
       fireAcquisition();
       setFeedback("Account created! Redirecting…");
       setTimeout(() => navigate({ to: "/verify-email", replace: true }), 1500);
@@ -74,12 +97,26 @@ export function useLogin(redirectTo?: string, referralCode?: string) {
   }
 
   async function handleGoogleSignIn() {
+    setFeedback(null);
+
+    if (accountType === "company" && !orgInviteToken && (!orgName.trim() || !orgSizeBand)) {
+      setFeedback("Please enter your organization name and team size");
+      return;
+    }
+
     setIsGooglePending(true);
     const callbackURL = redirectTo
       ? new URL(redirectTo, window.location.origin).toString()
       : window.location.origin;
     try {
-      const response = await getGoogleUrl(callbackURL, referralCode);
+      const response = await getGoogleUrl(callbackURL, {
+        ref: referralCode,
+        orgInviteToken,
+        ...(accountType === "company" && !orgInviteToken && {
+          orgName: orgName.trim(),
+          orgSizeBand: orgSizeBand as string,
+        }),
+      });
       if (response.data?.url) window.location.assign(response.data.url);
     } catch (error) {
       setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Google sign-in failed");
@@ -93,6 +130,9 @@ export function useLogin(redirectTo?: string, referralCode?: string) {
     loginForm.reset();
     registerForm.reset();
     forgotForm.reset();
+    setAccountType("individual");
+    setOrgName("");
+    setOrgSizeBand("");
   };
 
   return {
@@ -104,6 +144,12 @@ export function useLogin(redirectTo?: string, referralCode?: string) {
     isSubmitting,
     isForgotPending,
     isGooglePending,
+    accountType,
+    setAccountType,
+    orgName,
+    setOrgName,
+    orgSizeBand,
+    setOrgSizeBand,
     onLoginSubmit,
     onRegisterSubmit,
     onForgotSubmit,

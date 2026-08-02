@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OrgRouteRouteImport } from './routes/org/route'
 import { Route as InstructorRouteRouteImport } from './routes/instructor/route'
 import { Route as DemoRouteRouteImport } from './routes/demo/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
@@ -27,6 +28,9 @@ import { Route as AdminLoginIndexRouteImport } from './routes/admin-login/index'
 import { Route as DemoSuccessRouteImport } from './routes/demo/success'
 import { Route as WorkshopsWorkshopIdIndexRouteImport } from './routes/workshops/$workshopId/index'
 import { Route as SessionRoomIdIndexRouteImport } from './routes/session.$roomId/index'
+import { Route as OrgMembersIndexRouteImport } from './routes/org/members/index'
+import { Route as OrgClassesIndexRouteImport } from './routes/org/classes/index'
+import { Route as OrgBillingIndexRouteImport } from './routes/org/billing/index'
 import { Route as InstructorProfileIndexRouteImport } from './routes/instructor/profile/index'
 import { Route as InstructorEarningsIndexRouteImport } from './routes/instructor/earnings/index'
 import { Route as InstructorDashboardIndexRouteImport } from './routes/instructor/dashboard/index'
@@ -52,6 +56,11 @@ import { Route as AdminInstructorsInstructorIdRouteImport } from './routes/admin
 import { Route as AdminInstructorsInstructorIdIndexRouteImport } from './routes/admin/instructors/$instructorId.index'
 import { Route as AdminInstructorsInstructorIdSessionsRoomIdRouteImport } from './routes/admin/instructors/$instructorId.sessions.$roomId'
 
+const OrgRouteRoute = OrgRouteRouteImport.update({
+  id: '/org',
+  path: '/org',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InstructorRouteRoute = InstructorRouteRouteImport.update({
   id: '/instructor',
   path: '/instructor',
@@ -141,6 +150,21 @@ const SessionRoomIdIndexRoute = SessionRoomIdIndexRouteImport.update({
   id: '/session/$roomId/',
   path: '/session/$roomId/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const OrgMembersIndexRoute = OrgMembersIndexRouteImport.update({
+  id: '/members/',
+  path: '/members/',
+  getParentRoute: () => OrgRouteRoute,
+} as any)
+const OrgClassesIndexRoute = OrgClassesIndexRouteImport.update({
+  id: '/classes/',
+  path: '/classes/',
+  getParentRoute: () => OrgRouteRoute,
+} as any)
+const OrgBillingIndexRoute = OrgBillingIndexRouteImport.update({
+  id: '/billing/',
+  path: '/billing/',
+  getParentRoute: () => OrgRouteRoute,
 } as any)
 const InstructorProfileIndexRoute = InstructorProfileIndexRouteImport.update({
   id: '/profile/',
@@ -276,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/demo': typeof DemoRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/org': typeof OrgRouteRouteWithChildren
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login/': typeof AdminLoginIndexRoute
   '/contact/': typeof ContactIndexRoute
@@ -309,6 +334,9 @@ export interface FileRoutesByFullPath {
   '/instructor/dashboard/': typeof InstructorDashboardIndexRoute
   '/instructor/earnings/': typeof InstructorEarningsIndexRoute
   '/instructor/profile/': typeof InstructorProfileIndexRoute
+  '/org/billing/': typeof OrgBillingIndexRoute
+  '/org/classes/': typeof OrgClassesIndexRoute
+  '/org/members/': typeof OrgMembersIndexRoute
   '/session/$roomId/': typeof SessionRoomIdIndexRoute
   '/workshops/$workshopId/': typeof WorkshopsWorkshopIdIndexRoute
   '/admin/instructors/$instructorId/': typeof AdminInstructorsInstructorIdIndexRoute
@@ -318,6 +346,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/org': typeof OrgRouteRouteWithChildren
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login': typeof AdminLoginIndexRoute
   '/contact': typeof ContactIndexRoute
@@ -350,6 +379,9 @@ export interface FileRoutesByTo {
   '/instructor/dashboard': typeof InstructorDashboardIndexRoute
   '/instructor/earnings': typeof InstructorEarningsIndexRoute
   '/instructor/profile': typeof InstructorProfileIndexRoute
+  '/org/billing': typeof OrgBillingIndexRoute
+  '/org/classes': typeof OrgClassesIndexRoute
+  '/org/members': typeof OrgMembersIndexRoute
   '/session/$roomId': typeof SessionRoomIdIndexRoute
   '/workshops/$workshopId': typeof WorkshopsWorkshopIdIndexRoute
   '/admin/instructors/$instructorId': typeof AdminInstructorsInstructorIdIndexRoute
@@ -362,6 +394,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/demo': typeof DemoRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/org': typeof OrgRouteRouteWithChildren
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login/': typeof AdminLoginIndexRoute
   '/contact/': typeof ContactIndexRoute
@@ -395,6 +428,9 @@ export interface FileRoutesById {
   '/instructor/dashboard/': typeof InstructorDashboardIndexRoute
   '/instructor/earnings/': typeof InstructorEarningsIndexRoute
   '/instructor/profile/': typeof InstructorProfileIndexRoute
+  '/org/billing/': typeof OrgBillingIndexRoute
+  '/org/classes/': typeof OrgClassesIndexRoute
+  '/org/members/': typeof OrgMembersIndexRoute
   '/session/$roomId/': typeof SessionRoomIdIndexRoute
   '/workshops/$workshopId/': typeof WorkshopsWorkshopIdIndexRoute
   '/admin/instructors/$instructorId/': typeof AdminInstructorsInstructorIdIndexRoute
@@ -407,6 +443,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/demo'
     | '/instructor'
+    | '/org'
     | '/demo/success'
     | '/admin-login/'
     | '/contact/'
@@ -440,6 +477,9 @@ export interface FileRouteTypes {
     | '/instructor/dashboard/'
     | '/instructor/earnings/'
     | '/instructor/profile/'
+    | '/org/billing/'
+    | '/org/classes/'
+    | '/org/members/'
     | '/session/$roomId/'
     | '/workshops/$workshopId/'
     | '/admin/instructors/$instructorId/'
@@ -449,6 +489,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/instructor'
+    | '/org'
     | '/demo/success'
     | '/admin-login'
     | '/contact'
@@ -481,6 +522,9 @@ export interface FileRouteTypes {
     | '/instructor/dashboard'
     | '/instructor/earnings'
     | '/instructor/profile'
+    | '/org/billing'
+    | '/org/classes'
+    | '/org/members'
     | '/session/$roomId'
     | '/workshops/$workshopId'
     | '/admin/instructors/$instructorId'
@@ -492,6 +536,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/demo'
     | '/instructor'
+    | '/org'
     | '/demo/success'
     | '/admin-login/'
     | '/contact/'
@@ -525,6 +570,9 @@ export interface FileRouteTypes {
     | '/instructor/dashboard/'
     | '/instructor/earnings/'
     | '/instructor/profile/'
+    | '/org/billing/'
+    | '/org/classes/'
+    | '/org/members/'
     | '/session/$roomId/'
     | '/workshops/$workshopId/'
     | '/admin/instructors/$instructorId/'
@@ -537,6 +585,7 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   DemoRouteRoute: typeof DemoRouteRouteWithChildren
   InstructorRouteRoute: typeof InstructorRouteRouteWithChildren
+  OrgRouteRoute: typeof OrgRouteRouteWithChildren
   AdminLoginIndexRoute: typeof AdminLoginIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
   ExpertsIndexRoute: typeof ExpertsIndexRoute
@@ -553,6 +602,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/org': {
+      id: '/org'
+      path: '/org'
+      fullPath: '/org'
+      preLoaderRoute: typeof OrgRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/instructor': {
       id: '/instructor'
       path: '/instructor'
@@ -678,6 +734,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/session/$roomId/'
       preLoaderRoute: typeof SessionRoomIdIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/org/members/': {
+      id: '/org/members/'
+      path: '/members'
+      fullPath: '/org/members/'
+      preLoaderRoute: typeof OrgMembersIndexRouteImport
+      parentRoute: typeof OrgRouteRoute
+    }
+    '/org/classes/': {
+      id: '/org/classes/'
+      path: '/classes'
+      fullPath: '/org/classes/'
+      preLoaderRoute: typeof OrgClassesIndexRouteImport
+      parentRoute: typeof OrgRouteRoute
+    }
+    '/org/billing/': {
+      id: '/org/billing/'
+      path: '/billing'
+      fullPath: '/org/billing/'
+      preLoaderRoute: typeof OrgBillingIndexRouteImport
+      parentRoute: typeof OrgRouteRoute
     }
     '/instructor/profile/': {
       id: '/instructor/profile/'
@@ -955,12 +1032,29 @@ const InstructorRouteRouteWithChildren = InstructorRouteRoute._addFileChildren(
   InstructorRouteRouteChildren,
 )
 
+interface OrgRouteRouteChildren {
+  OrgBillingIndexRoute: typeof OrgBillingIndexRoute
+  OrgClassesIndexRoute: typeof OrgClassesIndexRoute
+  OrgMembersIndexRoute: typeof OrgMembersIndexRoute
+}
+
+const OrgRouteRouteChildren: OrgRouteRouteChildren = {
+  OrgBillingIndexRoute: OrgBillingIndexRoute,
+  OrgClassesIndexRoute: OrgClassesIndexRoute,
+  OrgMembersIndexRoute: OrgMembersIndexRoute,
+}
+
+const OrgRouteRouteWithChildren = OrgRouteRoute._addFileChildren(
+  OrgRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   UserRouteRoute: UserRouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   DemoRouteRoute: DemoRouteRouteWithChildren,
   InstructorRouteRoute: InstructorRouteRouteWithChildren,
+  OrgRouteRoute: OrgRouteRouteWithChildren,
   AdminLoginIndexRoute: AdminLoginIndexRoute,
   ContactIndexRoute: ContactIndexRoute,
   ExpertsIndexRoute: ExpertsIndexRoute,

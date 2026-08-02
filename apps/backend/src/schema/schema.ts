@@ -62,6 +62,7 @@ export {
   userSubscriptions,
   userSubscriptionRelations,
   subscriptionStatusEnum,
+  userSubscriptionSourceEnum,
 } from "../models/user-subscription";
 
 export { userPreferences } from "../models/user-preferences";
@@ -75,3 +76,34 @@ export {
   referralRewardsRelations,
   referralRewardStatusEnum,
 } from "../models/referral";
+
+export {
+  organizations,
+  organizationsRelations,
+  organizationSizeBandEnum,
+} from "../models/organizations";
+
+export {
+  organizationMembers,
+  organizationMembersRelations,
+  organizationMemberRoleEnum,
+  organizationMemberStatusEnum,
+} from "../models/organization-members";
+
+export {
+  corporatePlans,
+  corporatePlansRelations,
+} from "../models/corporate-plans";
+
+export {
+  corporateSeatTiers,
+  corporateSeatTiersRelations,
+} from "../models/corporate-seat-tiers";
+
+export {
+  organizationSubscriptions,
+  organizationSubscriptionsRelations,
+  organizationSubscriptionStatusEnum,
+} from "../models/organization-subscriptions";
+
+export { coupons, couponsRelations, couponTypeEnum, couponScopeEnum } from "../models/coupons";

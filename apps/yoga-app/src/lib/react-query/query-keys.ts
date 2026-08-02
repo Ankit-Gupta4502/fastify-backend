@@ -71,4 +71,13 @@ export const queryKeys = {
     all: ["referrals"] as const,
     mine: () => [...queryKeys.referrals.all, "mine"] as const,
   },
+  organizations: {
+    all: ["organizations"] as const,
+    mine: () => [...queryKeys.organizations.all, "mine"] as const,
+    members: (organizationId: string) => [...queryKeys.organizations.all, "members", organizationId] as const,
+    classes: (organizationId: string) => [...queryKeys.organizations.all, "classes", organizationId] as const,
+    coupon: (organizationId: string) => [...queryKeys.organizations.all, "coupon", organizationId] as const,
+    corporatePlans: () => [...queryKeys.organizations.all, "corporate-plans"] as const,
+    invitePreview: (token: string) => [...queryKeys.organizations.all, "invite-preview", token] as const,
+  },
 } as const;

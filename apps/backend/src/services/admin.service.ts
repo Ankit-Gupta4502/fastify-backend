@@ -276,6 +276,7 @@ export async function listGroupRooms(db: AppDatabase) {
       currentOccupancy: rooms.currentOccupancy,
       status: rooms.status,
       meetLink: rooms.meetLink,
+      organizationId: rooms.organizationId,
     })
     .from(rooms)
     .innerJoin(user, eq(rooms.instructorId, user.id))
@@ -298,6 +299,9 @@ export async function createGroupRoom(
     scheduledEndUtc: Date;
     capacity: number;
     meetLink: string;
+    // null/omitted = public. Set = restricted to that organization's joined
+    // members only (they can still join public classes too).
+    organizationId?: string | null;
   },
 ) {
   const [instructor] = await db
@@ -337,6 +341,7 @@ export async function createGroupRoom(
       scheduledStart: params.scheduledStartUtc,
       scheduledEnd: params.scheduledEndUtc,
       meetLink: params.meetLink,
+      organizationId: params.organizationId ?? null,
     })
     .returning();
 
@@ -361,6 +366,8 @@ export async function updateGroupRoom(
     scheduledEndUtc?: Date;
     capacity?: number;
     meetLink?: string;
+    // undefined = leave unchanged. null = make public. Set = restrict to org.
+    organizationId?: string | null;
   },
 ) {
   const [existing] = await db
@@ -423,6 +430,10 @@ export async function updateGroupRoom(
       scheduledEnd,
       capacity,
       meetLink: params.meetLink !== undefined ? params.meetLink : existing.meetLink,
+      organizationId:
+        params.organizationId !== undefined
+          ? params.organizationId
+          : existing.organizationId,
     })
     .where(eq(rooms.id, roomId));
 

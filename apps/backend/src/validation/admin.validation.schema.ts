@@ -61,6 +61,8 @@ export const createGroupRoomBodySchema = z
       .string()
       .url()
       .refine((v) => v.startsWith("https://"), { message: "meetLink must use https" }),
+    // Omitted/null = public. Set = restricted to that organization's members.
+    organizationId: z.string().uuid().optional().nullable(),
   })
   .refine((v) => new Date(v.scheduledEndUtc) > new Date(v.scheduledStartUtc), {
     message: "scheduledEndUtc must be after scheduledStartUtc",
@@ -89,6 +91,7 @@ export const updateGroupRoomBodySchema = z
       .url()
       .refine((v) => v.startsWith("https://"), { message: "meetLink must use https" })
       .optional(),
+    organizationId: z.string().uuid().optional().nullable(),
   })
   .refine((v) => Object.keys(v).length > 0, {
     message: "At least one field must be provided",

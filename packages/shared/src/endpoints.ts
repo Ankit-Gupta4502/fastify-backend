@@ -106,4 +106,20 @@ export const API_ENDPOINTS = {
   REFERRALS: {
     ME: "/referrals/me",
   },
+  ORGANIZATIONS: {
+    MY_ORGANIZATIONS: "/organizations/me",
+    INVITE_PREVIEW: (token: string) => `/organizations/invites/${token}`,
+    ACCEPT_INVITE: (token: string) => `/organizations/invites/${token}/accept`,
+    MEMBERS: (organizationId: string) => `/organizations/${organizationId}/members`,
+    PROMOTE_MEMBER: (organizationId: string, memberId: string) =>
+      `/organizations/${organizationId}/members/${memberId}/promote`,
+    REMOVE_MEMBER: (organizationId: string, memberId: string) =>
+      `/organizations/${organizationId}/members/${memberId}`,
+    CLASSES: (organizationId: string) => `/organizations/${organizationId}/classes`,
+    INVITE_MEMBERS: (organizationId: string) => `/organizations/${organizationId}/invites`,
+    COUPON: (organizationId: string) => `/organizations/${organizationId}/coupon`,
+    CORPORATE_PLANS: "/organizations/corporate-plans",
+    SEAT_PURCHASE: (organizationId: string) => `/organizations/${organizationId}/subscriptions`,
+    SEAT_PURCHASE_VERIFY: (organizationId: string) => `/organizations/${organizationId}/subscriptions/verify`,
+  },
 } as const;

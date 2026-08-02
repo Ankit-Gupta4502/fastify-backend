@@ -339,6 +339,7 @@ export class AdminController {
         scheduledEndUtc: new Date(body.scheduledEndUtc),
         capacity: body.capacity,
         meetLink: body.meetLink,
+        organizationId: body.organizationId ?? null,
       });
 
       const { statusCode, payload } = successResponse({
@@ -386,6 +387,7 @@ export class AdminController {
         scheduledEndUtc: body.scheduledEndUtc ? new Date(body.scheduledEndUtc) : undefined,
         capacity: body.capacity,
         meetLink: body.meetLink,
+        organizationId: body.organizationId,
       });
 
       const { statusCode, payload } = successResponse({ message: "Group room updated", data });

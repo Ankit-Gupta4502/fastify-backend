@@ -43,9 +43,17 @@ export const authApi = {
       method: "POST",
     }),
     
-  getGoogleUrl: (callbackURL: string, referralCode?: string) =>
+  getGoogleUrl: (
+    callbackURL: string,
+    opts?: {
+      ref?: string;
+      orgName?: string;
+      orgSizeBand?: string;
+      orgInviteToken?: string;
+    },
+  ) =>
     apiRequest<{ url: string | null }>(ENDPOINTS.AUTH.GOOGLE, {
-      params: referralCode ? { callbackURL, ref: referralCode } : { callbackURL },
+      params: { callbackURL, ...opts },
     }),
 
   forgotPassword: (payload: ForgotPasswordBody) =>
@@ -98,3 +106,14 @@ export {
   type ReferredUserSummary,
   type ReferredUserStatus,
 } from "./referrals";
+export {
+  organizationsApi,
+  type OrganizationInvitePreview,
+  type MyOrganizationSummary,
+  type OrganizationMember,
+  type OrganizationClass,
+  type OrganizationClassAttendee,
+  type OrganizationCoupon,
+  type CorporatePlan,
+  type SeatPurchaseResult,
+} from "./organizations";

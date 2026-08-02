@@ -2,7 +2,7 @@ import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/r
 import { workshopsApi } from "@/api/workshops";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import type { Workshop, WorkshopJoinBody, CreateWorkshopBody, UpdateWorkshopBody } from "@yoga-app/shared";
-import { openRazorpayCheckout } from "@/features/payments/services/razorpay.service";
+import { openRazorpayCheckout } from "@/shared/lib/razorpay";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { getStoredUtm } from "@/shared/lib/utm";
 import { ApiRequestError } from "@/lib/http";
