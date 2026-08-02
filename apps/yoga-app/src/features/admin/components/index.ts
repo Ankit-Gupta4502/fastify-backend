@@ -1,6 +1,8 @@
 export * from "./admin-nav";
 export * from "./cancel-room-dialog";
 export * from "./contact-queries-table";
+export * from "./corporate-plan-form-dialog";
+export * from "./corporate-plans-table";
 export * from "./contact-status-chip";
 export * from "./create-room-dialog-config";
 export * from "./demo-requests-table";
@@ -8,6 +10,8 @@ export * from "./demo-status-chip";
 export * from "./instructor-combobox";
 export * from "./instructors";
 export * from "./instructors-table";
+export * from "./plan-form-dialog";
+export * from "./plans-table";
 export * from "./review-demo-dialog";
 export * from "./room-form-dialog";
 export * from "./room-form-schema";

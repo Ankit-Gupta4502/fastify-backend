@@ -46,6 +46,8 @@ export const queryKeys = {
     groupRooms: () => [...queryKeys.admin.all, "group-rooms"] as const,
     privateRequests: () => [...queryKeys.admin.all, "private-requests"] as const,
     workshops: () => [...queryKeys.admin.all, "workshops"] as const,
+    plans: () => [...queryKeys.admin.all, "plans"] as const,
+    corporatePlans: () => [...queryKeys.admin.all, "corporate-plans"] as const,
   },
   workshops: {
     all: ["workshops"] as const,

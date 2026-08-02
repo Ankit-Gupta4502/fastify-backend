@@ -4,7 +4,11 @@ import type {
   UpdateGroupRoomBody,
   UpdateInstructorStatsBody,
 } from "@yoga-app/shared";
-import type { AdminUsersFilters } from "@/api/admin";
+import type {
+  AdminUsersFilters,
+  UpdateCorporatePlanBody,
+  UpdatePlanBody,
+} from "@/api/admin";
 import { adminApi } from "@/api/admin";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
@@ -25,6 +29,18 @@ export const adminQueryOptions = {
     queryOptions({
       queryKey: queryKeys.admin.groupRooms(),
       queryFn: adminApi.listGroupRooms,
+      staleTime: 30_000,
+    }),
+  plans: () =>
+    queryOptions({
+      queryKey: queryKeys.admin.plans(),
+      queryFn: adminApi.listPlans,
+      staleTime: 30_000,
+    }),
+  corporatePlans: () =>
+    queryOptions({
+      queryKey: queryKeys.admin.corporatePlans(),
+      queryFn: adminApi.listCorporatePlans,
       staleTime: 30_000,
     }),
 };
@@ -173,6 +189,55 @@ export function useRejectPrivateRequest() {
     onSuccess: () => {
       // Invalidate all status tabs so counts stay fresh after a status change
       void qc.invalidateQueries({ queryKey: queryKeys.admin.privateRequests() });
+    },
+  });
+}
+
+export function useAdminPlans() {
+  return useQuery(adminQueryOptions.plans());
+}
+
+export function useCreatePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: adminApi.createPlan,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.plans() });
+    },
+  });
+}
+
+export function useUpdatePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdatePlanBody }) => adminApi.updatePlan(id, body),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.plans() });
+    },
+  });
+}
+
+export function useAdminCorporatePlans() {
+  return useQuery(adminQueryOptions.corporatePlans());
+}
+
+export function useCreateCorporatePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: adminApi.createCorporatePlan,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.corporatePlans() });
+    },
+  });
+}
+
+export function useUpdateCorporatePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateCorporatePlanBody }) =>
+      adminApi.updateCorporatePlan(id, body),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.corporatePlans() });
     },
   });
 }

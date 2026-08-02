@@ -11,6 +11,7 @@ import {
   CreditCard,
   UserRound,
   MessageCircle,
+  Tag,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import { useAuth } from "@/features/auth/hooks/use-auth";
 
 const navItems = [
   { label: "Users", to: "/admin/users", icon: Users },
+  { label: "Plans", to: "/admin/plans", icon: Tag },
   { label: "Subscriptions", to: "/admin/subscriptions", icon: CreditCard },
   { label: "Instructors", to: "/admin/instructors", icon: GraduationCap },
   { label: "Demo Requests", to: "/admin/demo-requests", icon: ClipboardList },

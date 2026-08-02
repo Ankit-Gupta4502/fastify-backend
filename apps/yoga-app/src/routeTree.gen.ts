@@ -42,6 +42,7 @@ import { Route as AdminSubscriptionsIndexRouteImport } from './routes/admin/subs
 import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
 import { Route as AdminReviewsIndexRouteImport } from './routes/admin/reviews/index'
 import { Route as AdminPrivateSessionsIndexRouteImport } from './routes/admin/private-sessions/index'
+import { Route as AdminPlansIndexRouteImport } from './routes/admin/plans/index'
 import { Route as AdminInstructorsIndexRouteImport } from './routes/admin/instructors/index'
 import { Route as AdminDemoRequestsIndexRouteImport } from './routes/admin/demo-requests/index'
 import { Route as AdminContactQueriesIndexRouteImport } from './routes/admin/contact-queries/index'
@@ -224,6 +225,11 @@ const AdminPrivateSessionsIndexRoute =
     path: '/private-sessions/',
     getParentRoute: () => AdminRouteRoute,
   } as any)
+const AdminPlansIndexRoute = AdminPlansIndexRouteImport.update({
+  id: '/plans/',
+  path: '/plans/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminInstructorsIndexRoute = AdminInstructorsIndexRouteImport.update({
   id: '/instructors/',
   path: '/instructors/',
@@ -331,6 +337,7 @@ export interface FileRoutesByFullPath {
   '/admin/contact-queries/': typeof AdminContactQueriesIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
+  '/admin/plans/': typeof AdminPlansIndexRoute
   '/admin/private-sessions/': typeof AdminPrivateSessionsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
@@ -377,6 +384,7 @@ export interface FileRoutesByTo {
   '/admin/contact-queries': typeof AdminContactQueriesIndexRoute
   '/admin/demo-requests': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors': typeof AdminInstructorsIndexRoute
+  '/admin/plans': typeof AdminPlansIndexRoute
   '/admin/private-sessions': typeof AdminPrivateSessionsIndexRoute
   '/admin/reviews': typeof AdminReviewsIndexRoute
   '/admin/rooms': typeof AdminRoomsIndexRoute
@@ -427,6 +435,7 @@ export interface FileRoutesById {
   '/admin/contact-queries/': typeof AdminContactQueriesIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
+  '/admin/plans/': typeof AdminPlansIndexRoute
   '/admin/private-sessions/': typeof AdminPrivateSessionsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
@@ -477,6 +486,7 @@ export interface FileRouteTypes {
     | '/admin/contact-queries/'
     | '/admin/demo-requests/'
     | '/admin/instructors/'
+    | '/admin/plans/'
     | '/admin/private-sessions/'
     | '/admin/reviews/'
     | '/admin/rooms/'
@@ -523,6 +533,7 @@ export interface FileRouteTypes {
     | '/admin/contact-queries'
     | '/admin/demo-requests'
     | '/admin/instructors'
+    | '/admin/plans'
     | '/admin/private-sessions'
     | '/admin/reviews'
     | '/admin/rooms'
@@ -572,6 +583,7 @@ export interface FileRouteTypes {
     | '/admin/contact-queries/'
     | '/admin/demo-requests/'
     | '/admin/instructors/'
+    | '/admin/plans/'
     | '/admin/private-sessions/'
     | '/admin/reviews/'
     | '/admin/rooms/'
@@ -846,6 +858,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPrivateSessionsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/plans/': {
+      id: '/admin/plans/'
+      path: '/plans'
+      fullPath: '/admin/plans/'
+      preLoaderRoute: typeof AdminPlansIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/instructors/': {
       id: '/admin/instructors/'
       path: '/instructors'
@@ -993,6 +1012,7 @@ interface AdminRouteRouteChildren {
   AdminContactQueriesIndexRoute: typeof AdminContactQueriesIndexRoute
   AdminDemoRequestsIndexRoute: typeof AdminDemoRequestsIndexRoute
   AdminInstructorsIndexRoute: typeof AdminInstructorsIndexRoute
+  AdminPlansIndexRoute: typeof AdminPlansIndexRoute
   AdminPrivateSessionsIndexRoute: typeof AdminPrivateSessionsIndexRoute
   AdminReviewsIndexRoute: typeof AdminReviewsIndexRoute
   AdminRoomsIndexRoute: typeof AdminRoomsIndexRoute
@@ -1008,6 +1028,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminContactQueriesIndexRoute: AdminContactQueriesIndexRoute,
   AdminDemoRequestsIndexRoute: AdminDemoRequestsIndexRoute,
   AdminInstructorsIndexRoute: AdminInstructorsIndexRoute,
+  AdminPlansIndexRoute: AdminPlansIndexRoute,
   AdminPrivateSessionsIndexRoute: AdminPrivateSessionsIndexRoute,
   AdminReviewsIndexRoute: AdminReviewsIndexRoute,
   AdminRoomsIndexRoute: AdminRoomsIndexRoute,

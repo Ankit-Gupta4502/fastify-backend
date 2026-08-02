@@ -27,6 +27,7 @@ import { DemoController } from "./controllers/demo/demo.controller";
 import { ContactController } from "./controllers/contact/contact.controller";
 import { ReferralController } from "./controllers/referrals/referral.controller";
 import { OrganizationsController } from "./controllers/organizations/organizations.controller";
+import { PlansAdminController } from "./controllers/admin/plans-admin.controller";
 import fastifyMultipart from "@fastify/multipart";
 import { errorResponse } from "./utils";
 import { FastifyError } from "fastify";
@@ -175,6 +176,7 @@ const start = async () => {
     new ContactController(authMiddleware, fastify);
     new ReferralController(authMiddleware, fastify);
     new OrganizationsController(authMiddleware, fastify);
+    new PlansAdminController(authMiddleware, fastify);
 
 
     fastify.get("/health", async (request: FastifyRequest) => {

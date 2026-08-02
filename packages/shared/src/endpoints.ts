@@ -71,6 +71,10 @@ export const API_ENDPOINTS = {
     REJECT_PRIVATE_REQUEST: (id: string) => `/admin/rooms/private-requests/${id}/reject`,
     REVIEWS: "/admin/reviews",
     REVIEW: (id: string) => `/admin/reviews/${id}`,
+    PLANS: "/admin/plans",
+    UPDATE_PLAN: (id: string) => `/admin/plans/${id}`,
+    CORPORATE_PLANS: "/admin/corporate-plans",
+    UPDATE_CORPORATE_PLAN: (id: string) => `/admin/corporate-plans/${id}`,
   },
   WORKSHOPS: {
     LIST: "/workshops",

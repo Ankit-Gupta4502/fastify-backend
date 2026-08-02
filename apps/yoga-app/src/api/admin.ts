@@ -18,6 +18,61 @@ import type {
 import { API_ENDPOINTS } from "@yoga-app/shared";
 import { apiRequest } from "../lib/http";
 
+export interface AdminPlan {
+  id: string;
+  name: string;
+  category: string;
+  billingInterval: string;
+  sessionsPerWeek: number | null;
+  sessionsPerMonth: number | null;
+  allowsPrivate: boolean;
+  allowsTimeFlexibility: boolean;
+  maxRoomCapacity: number | null;
+  priceCents: number | null;
+  priceInrPaise: number | null;
+  pricePerSessionCents: number | null;
+  pricePerSessionInrPaise: number | null;
+  createdAt: string;
+}
+
+export interface CreatePlanBody {
+  name: string;
+  category?: string;
+  billingInterval?: "week" | "month";
+  sessionsPerWeek?: number | null;
+  sessionsPerMonth?: number | null;
+  allowsPrivate?: boolean;
+  allowsTimeFlexibility?: boolean;
+  maxRoomCapacity?: number | null;
+  priceCents?: number | null;
+  priceInrPaise?: number | null;
+  pricePerSessionCents?: number | null;
+  pricePerSessionInrPaise?: number | null;
+}
+
+export type UpdatePlanBody = Partial<CreatePlanBody>;
+
+export interface AdminCorporatePlan {
+  id: string;
+  name: string;
+  linkedPlanId: string;
+  linkedPlanName: string;
+  basePricePerSeatCents: number | null;
+  basePricePerSeatInrPaise: number | null;
+  billingInterval: string;
+  createdAt: string;
+}
+
+export interface CreateCorporatePlanBody {
+  name: string;
+  linkedPlanId: string;
+  billingInterval?: "week" | "month";
+  basePricePerSeatCents?: number | null;
+  basePricePerSeatInrPaise?: number | null;
+}
+
+export type UpdateCorporatePlanBody = Partial<CreateCorporatePlanBody>;
+
 export interface AdminUsersFilters {
   search?: string;
   role?: string;
@@ -120,5 +175,24 @@ export const adminApi = {
     apiRequest<null>(API_ENDPOINTS.ADMIN.REJECT_PRIVATE_REQUEST(id), {
       method: "PATCH",
       data: { adminNote: adminNote ?? null },
+    }),
+
+  listPlans: () => apiRequest<AdminPlan[]>(API_ENDPOINTS.ADMIN.PLANS),
+
+  createPlan: (body: CreatePlanBody) =>
+    apiRequest<AdminPlan>(API_ENDPOINTS.ADMIN.PLANS, { method: "POST", data: body }),
+
+  updatePlan: (id: string, body: UpdatePlanBody) =>
+    apiRequest<AdminPlan>(API_ENDPOINTS.ADMIN.UPDATE_PLAN(id), { method: "PATCH", data: body }),
+
+  listCorporatePlans: () => apiRequest<AdminCorporatePlan[]>(API_ENDPOINTS.ADMIN.CORPORATE_PLANS),
+
+  createCorporatePlan: (body: CreateCorporatePlanBody) =>
+    apiRequest<AdminCorporatePlan>(API_ENDPOINTS.ADMIN.CORPORATE_PLANS, { method: "POST", data: body }),
+
+  updateCorporatePlan: (id: string, body: UpdateCorporatePlanBody) =>
+    apiRequest<AdminCorporatePlan>(API_ENDPOINTS.ADMIN.UPDATE_CORPORATE_PLAN(id), {
+      method: "PATCH",
+      data: body,
     }),
 };
