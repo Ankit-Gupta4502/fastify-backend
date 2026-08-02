@@ -63,6 +63,13 @@ export async function createOrganizationForUser(
       isActive: true,
     });
 
+    // Choosing "Company" (at signup or post-signup onboarding) answers the
+    // individual-vs-organization question — no need to ask again.
+    await trx
+      .update(user)
+      .set({ onboardingCompletedAt: new Date() })
+      .where(eq(user.id, input.createdByUserId));
+
     return { organizationId: organization.id };
   });
 }
@@ -233,6 +240,13 @@ export async function acceptOrgInvite(
         joinedAt: new Date(),
       })
       .where(eq(organizationMembers.id, invite.id));
+
+    // Joining an org via invite answers the individual-vs-organization
+    // onboarding question too — they're clearly not signing up solo.
+    await trx
+      .update(user)
+      .set({ onboardingCompletedAt: new Date() })
+      .where(eq(user.id, acceptingUser.id));
 
     await trySponsorMember(trx, invite.organizationId, invite.id, acceptingUser.id);
 

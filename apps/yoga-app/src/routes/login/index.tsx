@@ -31,12 +31,6 @@ function LoginPage() {
     isSubmitting,
     isForgotPending,
     isGooglePending,
-    accountType,
-    setAccountType,
-    orgName,
-    setOrgName,
-    orgSizeBand,
-    setOrgSizeBand,
     onLoginSubmit,
     onRegisterSubmit,
     onForgotSubmit,
@@ -109,12 +103,6 @@ function LoginPage() {
           isSubmitting={isSubmitting}
           isForgotPending={isForgotPending}
           isGooglePending={isGooglePending}
-          accountType={accountType}
-          setAccountType={setAccountType}
-          orgName={orgName}
-          setOrgName={setOrgName}
-          orgSizeBand={orgSizeBand}
-          setOrgSizeBand={setOrgSizeBand}
           orgInviteToken={orgInviteToken}
           onLoginSubmit={onLoginSubmit}
           onRegisterSubmit={onRegisterSubmit}

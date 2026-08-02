@@ -36,6 +36,11 @@ export const user = pgTable("user", {
   referredByUserId: uuid("referred_by_user_id").references(
     (): AnyPgColumn => user.id,
   ),
+  // Set once the user answers "individual or organization" post-signup — gates
+  // the /onboarding redirect. Null = hasn't answered yet.
+  onboardingCompletedAt: timestamp("onboarding_completed_at", {
+    withTimezone: true,
+  }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()

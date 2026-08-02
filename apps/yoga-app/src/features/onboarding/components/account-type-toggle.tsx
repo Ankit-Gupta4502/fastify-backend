@@ -1,6 +1,7 @@
 import { Building2, User } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { type AccountType } from "@/features/auth/hooks/use-login";
+
+export type AccountType = "individual" | "company";
 
 interface AccountTypeToggleProps {
   value: AccountType;

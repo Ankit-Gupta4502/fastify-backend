@@ -57,6 +57,13 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      // Set directly via organization.service.ts / user.controller.ts, never
+      // through better-auth's own create/update — never client input.
+      onboardingCompletedAt: {
+        type: "date",
+        required: false,
+        input: false,
+      },
     },
   },
   advanced: {

@@ -1,14 +1,12 @@
 import { useForm } from "react-hook-form";
 import { ArrowLeft } from "lucide-react";
-import { type LoginBody, type RegisterBody, type ForgotPasswordBody, type OrganizationSizeBand } from "@yoga-app/shared";
+import { type LoginBody, type RegisterBody, type ForgotPasswordBody } from "@yoga-app/shared";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/shared/lib/utils";
-import { type AccountType, type LoginMode } from "@/features/auth/hooks/use-login";
-import { AccountTypeToggle } from "@/features/auth/components/login/account-type-toggle";
+import { type LoginMode } from "@/features/auth/hooks/use-login";
 import { LoginForm } from "@/features/auth/components/login/login-form";
-import { OrganizationFields } from "@/features/auth/components/login/organization-fields";
 import { OrgInviteBanner } from "@/features/auth/components/login/org-invite-banner";
 import { RegisterForm } from "@/features/auth/components/login/register-form";
 import { ForgotPasswordForm } from "@/features/auth/components/login/forgot-password-form";
@@ -22,12 +20,6 @@ interface LoginCardProps {
   isSubmitting: boolean;
   isForgotPending: boolean;
   isGooglePending: boolean;
-  accountType: AccountType;
-  setAccountType: (next: AccountType) => void;
-  orgName: string;
-  setOrgName: (value: string) => void;
-  orgSizeBand: OrganizationSizeBand | "";
-  setOrgSizeBand: (value: OrganizationSizeBand) => void;
   orgInviteToken?: string;
   onLoginSubmit: (values: LoginBody) => Promise<void>;
   onRegisterSubmit: (values: RegisterBody) => Promise<void>;
@@ -45,12 +37,6 @@ export function LoginCard({
   isSubmitting,
   isForgotPending,
   isGooglePending,
-  accountType,
-  setAccountType,
-  orgName,
-  setOrgName,
-  orgSizeBand,
-  setOrgSizeBand,
   orgInviteToken,
   onLoginSubmit,
   onRegisterSubmit,
@@ -101,19 +87,8 @@ export function LoginCard({
 
       <CardContent className="pt-4 pb-7 px-7">
 
-        {/* ── Register mode: invite banner OR account-type toggle ── */}
+        {/* ── Register mode: invite banner (individual-vs-company is asked post-signup, in /onboarding) ── */}
         {mode === "register" && orgInviteToken && <OrgInviteBanner token={orgInviteToken} />}
-        {mode === "register" && !orgInviteToken && (
-          <AccountTypeToggle value={accountType} onChange={setAccountType} />
-        )}
-        {mode === "register" && !orgInviteToken && accountType === "company" && (
-          <OrganizationFields
-            name={orgName}
-            onNameChange={setOrgName}
-            sizeBand={orgSizeBand}
-            onSizeBandChange={setOrgSizeBand}
-          />
-        )}
 
         {/* ── Active form ── */}
         {mode === "login" && (

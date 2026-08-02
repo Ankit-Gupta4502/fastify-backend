@@ -18,6 +18,7 @@ export interface SessionPayload {
     role: UserRole;
     image?: string | null;
     emailVerified: boolean;
+    onboardingCompletedAt?: string | null;
   };
 }
 
@@ -81,10 +82,20 @@ export const authApi = {
     }),
 };
 
+export type CompleteOnboardingPayload =
+  | { accountType: "individual" }
+  | { accountType: "company"; organization: { name: string; sizeBand: string } };
+
 // User Fetchers
 export const userApi = {
-  fetchDetail: () => 
+  fetchDetail: () =>
     apiRequest<SessionPayload["user"]>(ENDPOINTS.USER.DETAIL),
+
+  completeOnboarding: (payload: CompleteOnboardingPayload) =>
+    apiRequest<{ organizationId: string | null }>(ENDPOINTS.USER.ONBOARDING, {
+      method: "POST",
+      data: payload,
+    }),
 };
 
 // System Fetchers

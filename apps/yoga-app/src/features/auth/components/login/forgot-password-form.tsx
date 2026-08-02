@@ -4,7 +4,7 @@ import { type ForgotPasswordBody } from "@yoga-app/shared";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/shared/lib/utils";
-import { Field, SubmitButton } from "@/features/auth/components/login/form-ui";
+import { Field, SubmitButton } from "@/shared/components/forms/form-ui";
 
 interface ForgotPasswordFormProps {
   form: ReturnType<typeof useForm<ForgotPasswordBody>>;

@@ -20,6 +20,7 @@ import { Route as TermsIndexRouteImport } from './routes/terms/index'
 import { Route as ResetPasswordIndexRouteImport } from './routes/reset-password/index'
 import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
 import { Route as PricingIndexRouteImport } from './routes/pricing/index'
+import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as ExpertsIndexRouteImport } from './routes/experts/index'
 import { Route as DemoIndexRouteImport } from './routes/demo/index'
@@ -108,6 +109,11 @@ const PrivacyIndexRoute = PrivacyIndexRouteImport.update({
 const PricingIndexRoute = PricingIndexRouteImport.update({
   id: '/pricing/',
   path: '/pricing/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
+  id: '/onboarding/',
+  path: '/onboarding/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginIndexRoute = LoginIndexRouteImport.update({
@@ -307,6 +313,7 @@ export interface FileRoutesByFullPath {
   '/demo/': typeof DemoIndexRoute
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
@@ -353,6 +360,7 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoIndexRoute
   '/experts': typeof ExpertsIndexRoute
   '/login': typeof LoginIndexRoute
+  '/onboarding': typeof OnboardingIndexRoute
   '/pricing': typeof PricingIndexRoute
   '/privacy': typeof PrivacyIndexRoute
   '/reset-password': typeof ResetPasswordIndexRoute
@@ -401,6 +409,7 @@ export interface FileRoutesById {
   '/demo/': typeof DemoIndexRoute
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
@@ -450,6 +459,7 @@ export interface FileRouteTypes {
     | '/demo/'
     | '/experts/'
     | '/login/'
+    | '/onboarding/'
     | '/pricing/'
     | '/privacy/'
     | '/reset-password/'
@@ -496,6 +506,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/experts'
     | '/login'
+    | '/onboarding'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
@@ -543,6 +554,7 @@ export interface FileRouteTypes {
     | '/demo/'
     | '/experts/'
     | '/login/'
+    | '/onboarding/'
     | '/pricing/'
     | '/privacy/'
     | '/reset-password/'
@@ -590,6 +602,7 @@ export interface RootRouteChildren {
   ContactIndexRoute: typeof ContactIndexRoute
   ExpertsIndexRoute: typeof ExpertsIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
+  OnboardingIndexRoute: typeof OnboardingIndexRoute
   PricingIndexRoute: typeof PricingIndexRoute
   PrivacyIndexRoute: typeof PrivacyIndexRoute
   ResetPasswordIndexRoute: typeof ResetPasswordIndexRoute
@@ -677,6 +690,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing/'
       preLoaderRoute: typeof PricingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/': {
+      id: '/onboarding/'
+      path: '/onboarding'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof OnboardingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login/': {
@@ -1059,6 +1079,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactIndexRoute: ContactIndexRoute,
   ExpertsIndexRoute: ExpertsIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
+  OnboardingIndexRoute: OnboardingIndexRoute,
   PricingIndexRoute: PricingIndexRoute,
   PrivacyIndexRoute: PrivacyIndexRoute,
   ResetPasswordIndexRoute: ResetPasswordIndexRoute,

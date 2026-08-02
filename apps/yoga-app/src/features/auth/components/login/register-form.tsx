@@ -5,7 +5,7 @@ import { type RegisterBody } from "@yoga-app/shared";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/shared/lib/utils";
-import { Field, SubmitButton } from "@/features/auth/components/login/form-ui";
+import { Field, SubmitButton } from "@/shared/components/forms/form-ui";
 
 interface RegisterFormProps {
   form: ReturnType<typeof useForm<RegisterBody>>;

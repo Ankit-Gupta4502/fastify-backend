@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
     DETAIL: "/user/detail",
     PREFERENCES: "/user/preferences",
     ACQUISITION: "/user/acquisition",
+    ONBOARDING: "/user/onboarding",
   },
   ROOMS: {
     PUBLIC_PREVIEW: "/rooms/public/preview",

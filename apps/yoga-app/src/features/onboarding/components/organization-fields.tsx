@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/shared/lib/utils";
-import { Field } from "@/features/auth/components/login/form-ui";
+import { Field } from "@/shared/components/forms/form-ui";
 
 const SIZE_BAND_LABELS: Record<OrganizationSizeBand, string> = {
   "5-10": "5–10 members",

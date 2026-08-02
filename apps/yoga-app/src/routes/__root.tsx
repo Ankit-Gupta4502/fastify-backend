@@ -4,16 +4,18 @@ import {
   Outlet,
   Scripts,
   createRootRouteWithContext,
+  redirect,
   useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
+import { USER_ROLES } from "@yoga-app/shared";
 import { captureUtm } from "@/shared/lib/utm";
 import { PAGE_SEO, ROOT_GLOBAL_META } from "@/shared/lib/seo";
 import Layout from "@/app/layouts/public-layout";
 import { ReactQueryProvider } from "../lib/react-query/query-client";
 import { AuthWrapper } from "@/features/auth/components/auth-wrapper";
-import { useAuthStore } from "@/features/auth/store/auth.store";
+import { useAuthStore, type AuthUser } from "@/features/auth/store/auth.store";
 import { fetchUserFn } from "@/features/auth/services/server-auth.service";
 import { userApi } from "../api";
 import type { RouterContext } from "../router";
@@ -23,17 +25,31 @@ import appCss from "../styles.css?url";
 // component reads getStoredUtm() synchronously during render (see WorkshopCard, WorkshopDetail, etc).
 captureUtm();
 
+// Catches every new signup path uniformly (email/password AND Google,
+// including auto-registration on a brand-new Google account) — anyone with
+// role=user who hasn't answered "individual or organization" yet gets routed
+// there before anything else, since /onboarding is the only place that asks.
+function redirectToOnboardingIfNeeded(user: AuthUser | null, pathname: string) {
+  if (!user) return;
+  if (user.role !== USER_ROLES.USER) return;
+  if (user.onboardingCompletedAt) return;
+  if (pathname === "/onboarding") return;
+  throw redirect({ to: "/onboarding" });
+}
+
 export const Route = createRootRouteWithContext<RouterContext>()({
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     // SSR — always fetch with forwarded cookies so guards have the user on first render
     if (typeof window === "undefined") {
       const user = await fetchUserFn();
+      redirectToOnboardingIfNeeded(user, location.pathname);
       return { user };
     }
 
     // Client — store already hydrated from initial load, skip the fetch entirely
     const store = useAuthStore.getState();
     if (!store.isLoading) {
+      redirectToOnboardingIfNeeded(store.user, location.pathname);
       return { user: store.user };
     }
 
@@ -42,6 +58,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       const result = await userApi.fetchDetail();
       const user = result.success && result.data ? result.data : null;
       store.setUser(user);
+      redirectToOnboardingIfNeeded(user, location.pathname);
       return { user };
     } catch {
       store.setUser(null);
