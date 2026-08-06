@@ -60,8 +60,11 @@ export function useLogin(redirectTo?: string, referralCode?: string, orgInviteTo
         ...(orgInviteToken && { orgInviteToken }),
       });
       fireAcquisition();
-      setFeedback("Account created! Redirecting…");
-      setTimeout(() => navigate({ to: "/verify-email", replace: true }), 1500);
+      // Always through /onboarding first (it decides individual-vs-company,
+      // then routes to /verify-email itself only if the email isn't already
+      // verified) — matches what the root guard would enforce anyway, so
+      // this avoids a flash of the wrong page while that guard catches up.
+      navigate({ to: "/onboarding", replace: true });
     } catch (error) {
       setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Registration failed");
     }

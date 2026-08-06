@@ -23,6 +23,7 @@ export const Route = createFileRoute("/onboarding/")({
 
 function OnboardingPage() {
   const navigate = useNavigate();
+  const { user } = Route.useRouteContext();
   const complete = useCompleteOnboarding();
   const [accountType, setAccountType] = useState<AccountType>("individual");
   const [orgName, setOrgName] = useState("");
@@ -43,10 +44,13 @@ function OnboardingPage() {
         : { accountType },
       {
         onSuccess: (response) => {
+          // Google accounts already come back with emailVerified: true — no
+          // need to detour through /verify-email for those.
+          const needsVerification = !user?.emailVerified;
           if (response.data?.organizationId) {
-            navigate({ to: "/org/members", replace: true });
+            navigate({ to: needsVerification ? "/verify-email" : "/org/members", replace: true });
           } else {
-            navigate({ to: "/verify-email", replace: true });
+            navigate({ to: needsVerification ? "/verify-email" : "/", replace: true });
           }
         },
         onError: (err) =>

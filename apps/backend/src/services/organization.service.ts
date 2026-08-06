@@ -518,10 +518,13 @@ export async function verifyOrganizationSeatPurchase(params: {
 
   const now = new Date();
   const expiresAt = new Date(now);
+  // setUTCDate/setUTCMonth, not setDate/setMonth — those read/write the
+  // Node process's local timezone, so on a server not running with TZ=UTC
+  // this would land on the wrong calendar day near midnight UTC.
   if (corporatePlan?.billingInterval === "week") {
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    expiresAt.setUTCDate(expiresAt.getUTCDate() + 7);
   } else {
-    expiresAt.setMonth(expiresAt.getMonth() + 1);
+    expiresAt.setUTCMonth(expiresAt.getUTCMonth() + 1);
   }
 
   await drizzle

@@ -460,8 +460,11 @@ export class PaymentsController {
       if (sub.billingInterval === "week") {
         expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       } else {
+        // setUTCMonth, not setMonth — setMonth reads/writes the Node
+        // process's local timezone, which would land on the wrong calendar
+        // day near midnight UTC on any server not explicitly running TZ=UTC.
         expiresAt = new Date(now);
-        expiresAt.setMonth(expiresAt.getMonth() + 1);
+        expiresAt.setUTCMonth(expiresAt.getUTCMonth() + 1);
       }
 
       await drizzle

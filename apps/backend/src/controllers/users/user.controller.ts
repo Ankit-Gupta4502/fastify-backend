@@ -209,6 +209,11 @@ export class UserController {
         sizeBand: body.organization.sizeBand,
       });
 
+      await drizzle
+        .update(userTable)
+        .set({ onboardingCompletedAt: new Date() })
+        .where(eq(userTable.id, userId));
+
       const { statusCode, payload } = successResponse({
         message: "Organization created",
         data: { organizationId },

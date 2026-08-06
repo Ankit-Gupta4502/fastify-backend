@@ -428,7 +428,8 @@ function computeExpiresAt(
   if (billingInterval === "week") {
     return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   }
+  // setUTCMonth, not setMonth — see payments.controller.ts's verify() for why.
   const d = new Date(now);
-  d.setMonth(d.getMonth() + 1);
+  d.setUTCMonth(d.getUTCMonth() + 1);
   return d;
 }

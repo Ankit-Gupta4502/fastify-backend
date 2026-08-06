@@ -29,11 +29,15 @@ captureUtm();
 // including auto-registration on a brand-new Google account) — anyone with
 // role=user who hasn't answered "individual or organization" yet gets routed
 // there before anything else, since /onboarding is the only place that asks.
+// /verify-email is exempt: it needs to stay put on a refresh even before
+// onboarding is done (e.g. someone re-opens their verification link later).
+const ONBOARDING_REDIRECT_EXEMPT_PATHS = ["/onboarding", "/verify-email"];
+
 function redirectToOnboardingIfNeeded(user: AuthUser | null, pathname: string) {
   if (!user) return;
   if (user.role !== USER_ROLES.USER) return;
   if (user.onboardingCompletedAt) return;
-  if (pathname === "/onboarding") return;
+  if (ONBOARDING_REDIRECT_EXEMPT_PATHS.includes(pathname)) return;
   throw redirect({ to: "/onboarding" });
 }
 
