@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { user } from "./auth.schema";
 import { coupons } from "./coupons";
 import { organizationMembers } from "./organization-members";
@@ -24,6 +24,13 @@ export const organizations = pgTable("organizations", {
   createdByUserId: uuid("created_by_user_id")
     .notNull()
     .references(() => user.id),
+  // Set by a platform admin once sales has negotiated terms — until then the
+  // org's billing page stays locked (no seat purchases, no coupon).
+  billingApprovedAt: timestamp("billing_approved_at", { withTimezone: true }),
+  // Negotiated per-seat price for this org specifically — replaces any
+  // generic volume-tier formula, since sales negotiates each deal directly.
+  pricePerSeatCents: integer("price_per_seat_cents"),
+  pricePerSeatInrPaise: integer("price_per_seat_inr_paise"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

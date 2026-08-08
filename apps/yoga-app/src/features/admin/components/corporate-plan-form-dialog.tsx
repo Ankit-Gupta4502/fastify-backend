@@ -35,15 +35,7 @@ function toFormState(corporatePlan: AdminCorporatePlan | null): CreateCorporateP
     name: corporatePlan?.name ?? "",
     linkedPlanId: corporatePlan?.linkedPlanId ?? "",
     billingInterval: (corporatePlan?.billingInterval as "week" | "month") ?? "month",
-    basePricePerSeatCents: corporatePlan?.basePricePerSeatCents ?? null,
-    basePricePerSeatInrPaise: corporatePlan?.basePricePerSeatInrPaise ?? null,
   };
-}
-
-function toNullableInt(value: string): number | null {
-  if (value.trim() === "") return null;
-  const n = Number(value);
-  return Number.isFinite(n) ? Math.round(n) : null;
 }
 
 export function CorporatePlanFormDialog({ open, onOpenChange, corporatePlan }: CorporatePlanFormDialogProps) {
@@ -121,45 +113,25 @@ export function CorporatePlanFormDialog({ open, onOpenChange, corporatePlan }: C
               </SelectContent>
             </Select>
             <p className="text-[11px] text-muted-foreground">
-              Sponsored seats get session limits/capacity from this plan — the corporate plan only adds bulk pricing.
+              Sponsored seats get session limits/capacity from this plan. Per-seat pricing is set per
+              organization (Admin → Organizations), not here — sales negotiates that per deal.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Billing interval</Label>
-              <Select
-                value={form.billingInterval}
-                onValueChange={(v) => setForm((f) => ({ ...f, billingInterval: v as "week" | "month" }))}
-              >
-                <SelectTrigger className="h-10 w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="week">Week</SelectItem>
-                  <SelectItem value="month">Month</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div />
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Per-seat price (USD cents)</Label>
-              <Input
-                type="number"
-                value={form.basePricePerSeatCents ?? ""}
-                onChange={(e) => setForm((f) => ({ ...f, basePricePerSeatCents: toNullableInt(e.target.value) }))}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Per-seat price (INR paise)</Label>
-              <Input
-                type="number"
-                value={form.basePricePerSeatInrPaise ?? ""}
-                onChange={(e) => setForm((f) => ({ ...f, basePricePerSeatInrPaise: toNullableInt(e.target.value) }))}
-              />
-            </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">Billing interval</Label>
+            <Select
+              value={form.billingInterval}
+              onValueChange={(v) => setForm((f) => ({ ...f, billingInterval: v as "week" | "month" }))}
+            >
+              <SelectTrigger className="h-10 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="week">Week</SelectItem>
+                <SelectItem value="month">Month</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

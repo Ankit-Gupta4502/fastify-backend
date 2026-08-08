@@ -75,6 +75,10 @@ export const API_ENDPOINTS = {
     UPDATE_PLAN: (id: string) => `/admin/plans/${id}`,
     CORPORATE_PLANS: "/admin/corporate-plans",
     UPDATE_CORPORATE_PLAN: (id: string) => `/admin/corporate-plans/${id}`,
+    ORGANIZATIONS: "/admin/organizations",
+    SET_ORGANIZATION_BILLING_APPROVAL: (id: string) => `/admin/organizations/${id}/billing-approval`,
+    SET_ORGANIZATION_PRICING: (id: string) => `/admin/organizations/${id}/pricing`,
+    SET_ORGANIZATION_COUPON: (id: string) => `/admin/organizations/${id}/coupon`,
   },
   WORKSHOPS: {
     LIST: "/workshops",

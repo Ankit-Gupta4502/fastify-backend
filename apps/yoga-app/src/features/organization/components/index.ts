@@ -1,3 +1,4 @@
+export * from "./billing-pending-approval";
 export * from "./class-attendees-dialog";
 export * from "./classes-agenda";
 export * from "./corporate-coupon-card";

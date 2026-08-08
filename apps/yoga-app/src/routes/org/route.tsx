@@ -14,7 +14,11 @@ export const Route = createFileRoute("/org")({
       throw redirect({ to: "/org/members" });
     }
 
-    return { organizationId: adminOrg.organizationId, organizationName: adminOrg.name };
+    return {
+      organizationId: adminOrg.organizationId,
+      organizationName: adminOrg.name,
+      billingApproved: adminOrg.billingApproved,
+    };
   },
   component: OrgLayout,
 });

@@ -6,6 +6,8 @@ import type {
 } from "@yoga-app/shared";
 import type {
   AdminUsersFilters,
+  SetOrganizationCouponBody,
+  SetOrganizationPricingBody,
   UpdateCorporatePlanBody,
   UpdatePlanBody,
 } from "@/api/admin";
@@ -41,6 +43,12 @@ export const adminQueryOptions = {
     queryOptions({
       queryKey: queryKeys.admin.corporatePlans(),
       queryFn: adminApi.listCorporatePlans,
+      staleTime: 30_000,
+    }),
+  organizations: () =>
+    queryOptions({
+      queryKey: queryKeys.admin.organizations(),
+      queryFn: adminApi.listOrganizations,
       staleTime: 30_000,
     }),
 };
@@ -238,6 +246,43 @@ export function useUpdateCorporatePlan() {
       adminApi.updateCorporatePlan(id, body),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.admin.corporatePlans() });
+    },
+  });
+}
+
+export function useAdminOrganizations() {
+  return useQuery(adminQueryOptions.organizations());
+}
+
+export function useSetOrganizationBillingApproval() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, approved }: { id: string; approved: boolean }) =>
+      adminApi.setOrganizationBillingApproval(id, approved),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.organizations() });
+    },
+  });
+}
+
+export function useSetOrganizationPricing() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: SetOrganizationPricingBody }) =>
+      adminApi.setOrganizationPricing(id, body),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.organizations() });
+    },
+  });
+}
+
+export function useSetOrganizationCoupon() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: SetOrganizationCouponBody }) =>
+      adminApi.setOrganizationCoupon(id, body),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.organizations() });
     },
   });
 }

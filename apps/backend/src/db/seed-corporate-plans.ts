@@ -5,36 +5,7 @@ import { backendEnvPath } from "../config/env";
 dotenv.config({ path: backendEnvPath });
 
 const { drizzle } = await import("./index");
-const { corporatePlans, corporateSeatTiers, plans } = await import(
-  "../schema/schema"
-);
-
-const SEAT_TIERS = [
-  { label: "5-10", minSeats: 5, maxSeats: 10, discountPercent: 5, sortOrder: 0 },
-  { label: "10-50", minSeats: 10, maxSeats: 50, discountPercent: 10, sortOrder: 1 },
-  { label: "50-100", minSeats: 50, maxSeats: 100, discountPercent: 15, sortOrder: 2 },
-  { label: "100+", minSeats: 100, maxSeats: null, discountPercent: 20, sortOrder: 3 },
-];
-
-async function seedSeatTiers() {
-  for (const tier of SEAT_TIERS) {
-    const [existing] = await drizzle
-      .select({ id: corporateSeatTiers.id })
-      .from(corporateSeatTiers)
-      .where(eq(corporateSeatTiers.label, tier.label));
-
-    if (existing) {
-      await drizzle
-        .update(corporateSeatTiers)
-        .set(tier)
-        .where(eq(corporateSeatTiers.id, existing.id));
-      console.log(`updated seat tier: ${tier.label}`);
-    } else {
-      await drizzle.insert(corporateSeatTiers).values(tier);
-      console.log(`inserted seat tier: ${tier.label}`);
-    }
-  }
-}
+const { corporatePlans, plans } = await import("../schema/schema");
 
 async function seedCorporatePlans() {
   const [groupLivePlan] = await drizzle
@@ -55,8 +26,6 @@ async function seedCorporatePlans() {
   const values = {
     name,
     linkedPlanId: groupLivePlan.id,
-    basePricePerSeatCents: groupLivePlan.priceCents,
-    basePricePerSeatInrPaise: groupLivePlan.priceInrPaise,
     billingInterval: groupLivePlan.billingInterval,
   };
 
@@ -72,7 +41,6 @@ async function seedCorporatePlans() {
   }
 }
 
-await seedSeatTiers();
 await seedCorporatePlans();
-console.log("Corporate plans/seat tiers seeded successfully");
+console.log("Corporate plans seeded successfully");
 process.exit(0);

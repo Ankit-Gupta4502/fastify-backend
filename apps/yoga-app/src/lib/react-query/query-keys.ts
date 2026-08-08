@@ -48,6 +48,7 @@ export const queryKeys = {
     workshops: () => [...queryKeys.admin.all, "workshops"] as const,
     plans: () => [...queryKeys.admin.all, "plans"] as const,
     corporatePlans: () => [...queryKeys.admin.all, "corporate-plans"] as const,
+    organizations: () => [...queryKeys.admin.all, "organizations"] as const,
   },
   workshops: {
     all: ["workshops"] as const,

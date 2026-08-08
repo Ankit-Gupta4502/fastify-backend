@@ -96,11 +96,6 @@ export {
 } from "../models/corporate-plans";
 
 export {
-  corporateSeatTiers,
-  corporateSeatTiersRelations,
-} from "../models/corporate-seat-tiers";
-
-export {
   organizationSubscriptions,
   organizationSubscriptionsRelations,
   organizationSubscriptionStatusEnum,

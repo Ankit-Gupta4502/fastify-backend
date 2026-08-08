@@ -8,7 +8,6 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { corporatePlans } from "./corporate-plans";
-import { corporateSeatTiers } from "./corporate-seat-tiers";
 import { organizations } from "./organizations";
 
 // Separate from user_subscriptions' status enum on purpose — this table's
@@ -21,6 +20,8 @@ export const organizationSubscriptionStatusEnum = pgEnum(
 
 // One row per bulk seat purchase ("top-ups" create a new row rather than
 // mutating an existing one — see plan doc for the no-proration rationale).
+// Pricing is per-seat-per-org (organizations.pricePerSeatCents/InrPaise),
+// negotiated by sales — there is no volume-tier formula.
 export const organizationSubscriptions = pgTable("organization_subscriptions", {
   id: uuid("id").defaultRandom().primaryKey(),
   organizationId: uuid("organization_id")
@@ -29,9 +30,6 @@ export const organizationSubscriptions = pgTable("organization_subscriptions", {
   corporatePlanId: uuid("corporate_plan_id")
     .notNull()
     .references(() => corporatePlans.id),
-  seatTierId: uuid("seat_tier_id")
-    .notNull()
-    .references(() => corporateSeatTiers.id),
   seatsPurchased: integer("seats_purchased").notNull(),
   pricePaidTotalCents: integer("price_paid_total_cents"),
   pricePaidTotalInrPaise: integer("price_paid_total_inr_paise"),
@@ -56,10 +54,6 @@ export const organizationSubscriptionsRelations = relations(
     corporatePlan: one(corporatePlans, {
       fields: [organizationSubscriptions.corporatePlanId],
       references: [corporatePlans.id],
-    }),
-    seatTier: one(corporateSeatTiers, {
-      fields: [organizationSubscriptions.seatTierId],
-      references: [corporateSeatTiers.id],
     }),
   }),
 );

@@ -1,9 +1,8 @@
 import type { OrganizationSizeBand } from "@yoga-app/shared";
-import { and, desc, eq, gt, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { drizzle } from "../db";
 import {
   corporatePlans,
-  corporateSeatTiers,
   coupons,
   organizationMembers,
   organizationSubscriptions,
@@ -15,7 +14,6 @@ import {
   userSubscriptions,
 } from "../schema/schema";
 import { ROOM_TYPE } from "../constants/sessions";
-import { CORPORATE_SELF_PAY_DISCOUNT_PERCENT } from "../constants/organization";
 import { generateReferralCode } from "../utils/referral.utils";
 import { sendOrganizationInviteEmail } from "./organization-invite-email.service";
 import { getRazorpay, getRazorpayKeyId } from "./razorpay.service";
@@ -51,17 +49,10 @@ export async function createOrganizationForUser(
       joinedAt: new Date(),
     });
 
-    // Auto-generate the org's self-pay discount coupon — members who don't
-    // get a sponsored seat use this at checkout instead of the flat
-    // site-wide discount (see coupon.service.ts).
-    await trx.insert(coupons).values({
-      code: generateReferralCode(),
-      type: "percent",
-      value: CORPORATE_SELF_PAY_DISCOUNT_PERCENT,
-      scope: "organization",
-      organizationId: organization.id,
-      isActive: true,
-    });
+    // No coupon and no billing yet — a platform admin has to review the org,
+    // set its negotiated per-seat price, and set its self-pay coupon before
+    // the billing page unlocks (see setOrganizationBillingApproval/
+    // setOrganizationPricing/setOrganizationCoupon below).
 
     // Choosing "Company" (at signup or post-signup onboarding) answers the
     // individual-vs-organization question — no need to ask again.
@@ -371,24 +362,6 @@ export async function listCorporatePlans() {
   return drizzle.select().from(corporatePlans);
 }
 
-async function findSeatTier(seats: number) {
-  const [tier] = await drizzle
-    .select()
-    .from(corporateSeatTiers)
-    .where(
-      and(
-        lte(corporateSeatTiers.minSeats, seats),
-        or(
-          isNull(corporateSeatTiers.maxSeats),
-          sql`${corporateSeatTiers.maxSeats} >= ${seats}`,
-        ),
-      ),
-    )
-    .orderBy(desc(corporateSeatTiers.minSeats))
-    .limit(1);
-  return tier ?? null;
-}
-
 export interface CreateSeatPurchaseInput {
   organizationId: string;
   corporatePlanId: string;
@@ -403,12 +376,17 @@ export type CreateSeatPurchaseResult =
       keyId: string;
       organizationSubscriptionId: string;
     }
-  | { ok: false; error: "corporate_plan_not_found" | "no_matching_seat_tier" | "pricing_not_configured" };
+  | {
+      ok: false;
+      error: "corporate_plan_not_found" | "billing_not_approved" | "pricing_not_configured";
+    };
 
 // Sells a block of N seats as a single bulk Razorpay subscription — the
 // "parent" organization_subscriptions row, distinct from any individual
 // userSubscriptions row (see plan doc: avoids Razorpay's 1-subscription =
-// 1 unique-constrained-row limitation in the webhook resolver).
+// 1 unique-constrained-row limitation in the webhook resolver). Pricing is
+// per-seat-per-org (negotiated by sales, set by a platform admin) — there is
+// no volume-tier formula.
 export async function createOrganizationSeatPurchase(
   input: CreateSeatPurchaseInput,
 ): Promise<CreateSeatPurchaseResult> {
@@ -418,18 +396,18 @@ export async function createOrganizationSeatPurchase(
     .where(eq(corporatePlans.id, input.corporatePlanId));
   if (!corporatePlan) return { ok: false, error: "corporate_plan_not_found" };
 
-  const tier = await findSeatTier(input.seats);
-  if (!tier) return { ok: false, error: "no_matching_seat_tier" };
+  const organization = await getOrganizationById(input.organizationId);
+  if (!organization?.billingApprovedAt) {
+    return { ok: false, error: "billing_not_approved" };
+  }
 
-  const baseAmount = input.isIndia
-    ? corporatePlan.basePricePerSeatInrPaise
-    : corporatePlan.basePricePerSeatCents;
-  if (baseAmount == null) return { ok: false, error: "pricing_not_configured" };
+  const pricePerSeat = input.isIndia
+    ? organization.pricePerSeatInrPaise
+    : organization.pricePerSeatCents;
+  if (pricePerSeat == null) return { ok: false, error: "pricing_not_configured" };
 
   const currency = input.isIndia ? "INR" : "USD";
-  const totalAmount = Math.round(
-    baseAmount * input.seats * (1 - tier.discountPercent / 100),
-  );
+  const totalAmount = pricePerSeat * input.seats;
   const period = corporatePlan.billingInterval === "week" ? "weekly" as const : "monthly" as const;
 
   const rpPlan = await getRazorpay().plans.create({
@@ -463,7 +441,6 @@ export async function createOrganizationSeatPurchase(
     .values({
       organizationId: input.organizationId,
       corporatePlanId: corporatePlan.id,
-      seatTierId: tier.id,
       seatsPurchased: input.seats,
       pricePaidTotalCents: currency === "USD" ? totalAmount : null,
       pricePaidTotalInrPaise: currency === "INR" ? totalAmount : null,
@@ -624,10 +601,12 @@ export interface MyOrganizationSummary {
   name: string;
   sizeBand: string;
   role: "admin" | "member";
+  billingApproved: boolean;
 }
 
 // Every org this user is a joined member of — powers the org dashboard's
-// "which organization am I looking at" gate on the frontend.
+// "which organization am I looking at" gate on the frontend, and whether the
+// billing page is unlocked yet.
 export async function listOrganizationsForUser(
   userId: string,
 ): Promise<MyOrganizationSummary[]> {
@@ -637,6 +616,7 @@ export async function listOrganizationsForUser(
       name: organizations.name,
       sizeBand: organizations.sizeBand,
       role: organizationMembers.role,
+      billingApprovedAt: organizations.billingApprovedAt,
     })
     .from(organizationMembers)
     .innerJoin(
@@ -649,7 +629,10 @@ export async function listOrganizationsForUser(
         eq(organizationMembers.status, "joined"),
       ),
     );
-  return rows;
+  return rows.map(({ billingApprovedAt, ...rest }) => ({
+    ...rest,
+    billingApproved: billingApprovedAt !== null,
+  }));
 }
 
 export type PromoteMemberResult = { ok: true } | { ok: false; error: "not_found" };
@@ -730,4 +713,126 @@ export async function removeOrgMember(
   }
 
   return { ok: true };
+}
+
+// ─── Platform-admin org management ───────────────────────────────────────────
+// Billing approval, per-seat pricing, and the self-pay coupon are all set by
+// internal BYYT staff (requireRole(ADMIN), not the org's own admin) — sales
+// negotiates these terms per org, there's no self-service path for them.
+
+export interface AdminOrganizationSummary {
+  id: string;
+  name: string;
+  sizeBand: string;
+  createdAt: Date;
+  memberCount: number;
+  billingApprovedAt: Date | null;
+  pricePerSeatCents: number | null;
+  pricePerSeatInrPaise: number | null;
+}
+
+export async function listOrganizationsForAdmin(): Promise<AdminOrganizationSummary[]> {
+  const rows = await drizzle
+    .select({
+      id: organizations.id,
+      name: organizations.name,
+      sizeBand: organizations.sizeBand,
+      createdAt: organizations.createdAt,
+      billingApprovedAt: organizations.billingApprovedAt,
+      pricePerSeatCents: organizations.pricePerSeatCents,
+      pricePerSeatInrPaise: organizations.pricePerSeatInrPaise,
+      memberCount: sql<number>`count(${organizationMembers.id}) filter (where ${organizationMembers.status} = 'joined')`,
+    })
+    .from(organizations)
+    .leftJoin(
+      organizationMembers,
+      eq(organizationMembers.organizationId, organizations.id),
+    )
+    .groupBy(organizations.id)
+    .orderBy(desc(organizations.createdAt));
+
+  return rows.map((r) => ({ ...r, memberCount: Number(r.memberCount) }));
+}
+
+export type SetBillingApprovalResult = { ok: true } | { ok: false; error: "not_found" };
+
+export async function setOrganizationBillingApproval(
+  organizationId: string,
+  approved: boolean,
+): Promise<SetBillingApprovalResult> {
+  const [row] = await drizzle
+    .update(organizations)
+    .set({ billingApprovedAt: approved ? new Date() : null })
+    .where(eq(organizations.id, organizationId))
+    .returning({ id: organizations.id });
+  if (!row) return { ok: false, error: "not_found" };
+  return { ok: true };
+}
+
+export interface SetOrganizationPricingInput {
+  pricePerSeatCents: number | null;
+  pricePerSeatInrPaise: number | null;
+}
+
+export type SetOrganizationPricingResult = { ok: true } | { ok: false; error: "not_found" };
+
+export async function setOrganizationPricing(
+  organizationId: string,
+  input: SetOrganizationPricingInput,
+): Promise<SetOrganizationPricingResult> {
+  const [row] = await drizzle
+    .update(organizations)
+    .set(input)
+    .where(eq(organizations.id, organizationId))
+    .returning({ id: organizations.id });
+  if (!row) return { ok: false, error: "not_found" };
+  return { ok: true };
+}
+
+export interface SetOrganizationCouponInput {
+  type: "percent" | "flat";
+  value: number;
+}
+
+export type SetOrganizationCouponResult =
+  | { ok: true; code: string }
+  | { ok: false; error: "org_not_found" };
+
+// Upserts the org's one self-pay coupon — created on first call (no coupon
+// exists until an admin sets one), updated on later calls.
+export async function setOrganizationCoupon(
+  organizationId: string,
+  input: SetOrganizationCouponInput,
+): Promise<SetOrganizationCouponResult> {
+  const organization = await getOrganizationById(organizationId);
+  if (!organization) return { ok: false, error: "org_not_found" };
+
+  const [existing] = await drizzle
+    .select({ id: coupons.id, code: coupons.code })
+    .from(coupons)
+    .where(
+      and(
+        eq(coupons.organizationId, organizationId),
+        eq(coupons.scope, "organization"),
+      ),
+    );
+
+  if (existing) {
+    await drizzle
+      .update(coupons)
+      .set({ type: input.type, value: input.value, isActive: true })
+      .where(eq(coupons.id, existing.id));
+    return { ok: true, code: existing.code };
+  }
+
+  const code = generateReferralCode();
+  await drizzle.insert(coupons).values({
+    code,
+    type: input.type,
+    value: input.value,
+    scope: "organization",
+    organizationId,
+    isActive: true,
+  });
+  return { ok: true, code };
 }

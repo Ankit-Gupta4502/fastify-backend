@@ -37,8 +37,6 @@ export async function listCorporatePlansAdmin(db: AppDatabase) {
       name: corporatePlans.name,
       linkedPlanId: corporatePlans.linkedPlanId,
       linkedPlanName: plans.name,
-      basePricePerSeatCents: corporatePlans.basePricePerSeatCents,
-      basePricePerSeatInrPaise: corporatePlans.basePricePerSeatInrPaise,
       billingInterval: corporatePlans.billingInterval,
       createdAt: corporatePlans.createdAt,
     })

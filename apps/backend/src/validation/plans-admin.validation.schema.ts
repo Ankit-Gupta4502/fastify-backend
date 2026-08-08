@@ -32,8 +32,6 @@ export const createCorporatePlanBodySchema = z.object({
   name: z.string().trim().min(1).max(60),
   linkedPlanId: z.uuid("Invalid linked plan id"),
   billingInterval: z.enum(["week", "month"]).default("month"),
-  basePricePerSeatCents: z.number().int().min(0).optional().nullable(),
-  basePricePerSeatInrPaise: z.number().int().min(0).optional().nullable(),
 });
 
 export const updateCorporatePlanBodySchema = createCorporatePlanBodySchema.partial().refine(

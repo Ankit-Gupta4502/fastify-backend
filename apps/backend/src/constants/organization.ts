@@ -9,7 +9,3 @@ export const PENDING_ORG_COOKIE_MAX_AGE_SECONDS = 600;
 // (a NEW user signing up via an invite link, as opposed to creating an org).
 export const PENDING_ORG_INVITE_COOKIE_NAME = "byyt_pending_org_invite";
 export const PENDING_ORG_INVITE_COOKIE_MAX_AGE_SECONDS = 600;
-
-// Site-wide discount % for org members who self-pay instead of using a
-// sponsored seat — one fixed rate for every organization (not negotiated).
-export const CORPORATE_SELF_PAY_DISCOUNT_PERCENT = 10;

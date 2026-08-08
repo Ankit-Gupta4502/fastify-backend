@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { BillingPendingApproval } from "@/features/organization/components/billing-pending-approval";
 import { CorporateCouponCard } from "@/features/organization/components/corporate-coupon-card";
 import { SeatPurchaseCard } from "@/features/organization/components/seat-purchase-card";
 
@@ -7,7 +8,7 @@ export const Route = createFileRoute("/org/billing/")({
 });
 
 function BillingPage() {
-  const { organizationId } = Route.useRouteContext();
+  const { organizationId, billingApproved } = Route.useRouteContext();
 
   return (
     <div className="space-y-6">
@@ -18,10 +19,14 @@ function BillingPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <SeatPurchaseCard organizationId={organizationId} />
-        <CorporateCouponCard organizationId={organizationId} />
-      </div>
+      {billingApproved ? (
+        <div className="grid gap-6 md:grid-cols-2">
+          <SeatPurchaseCard organizationId={organizationId} />
+          <CorporateCouponCard organizationId={organizationId} />
+        </div>
+      ) : (
+        <BillingPendingApproval />
+      )}
     </div>
   );
 }

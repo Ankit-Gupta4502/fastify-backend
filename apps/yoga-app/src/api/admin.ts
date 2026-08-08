@@ -57,8 +57,6 @@ export interface AdminCorporatePlan {
   name: string;
   linkedPlanId: string;
   linkedPlanName: string;
-  basePricePerSeatCents: number | null;
-  basePricePerSeatInrPaise: number | null;
   billingInterval: string;
   createdAt: string;
 }
@@ -67,11 +65,29 @@ export interface CreateCorporatePlanBody {
   name: string;
   linkedPlanId: string;
   billingInterval?: "week" | "month";
-  basePricePerSeatCents?: number | null;
-  basePricePerSeatInrPaise?: number | null;
 }
 
 export type UpdateCorporatePlanBody = Partial<CreateCorporatePlanBody>;
+
+export interface AdminOrganizationSummary {
+  id: string;
+  name: string;
+  sizeBand: string;
+  createdAt: string;
+  memberCount: number;
+  billingApprovedAt: string | null;
+  pricePerSeatCents: number | null;
+  pricePerSeatInrPaise: number | null;
+}
+
+export interface SetOrganizationPricingBody {
+  pricePerSeatCents?: number | null;
+  pricePerSeatInrPaise?: number | null;
+}
+
+export type SetOrganizationCouponBody =
+  | { type: "percent"; value: number }
+  | { type: "flat"; value: number };
 
 export interface AdminUsersFilters {
   search?: string;
@@ -192,6 +208,27 @@ export const adminApi = {
 
   updateCorporatePlan: (id: string, body: UpdateCorporatePlanBody) =>
     apiRequest<AdminCorporatePlan>(API_ENDPOINTS.ADMIN.UPDATE_CORPORATE_PLAN(id), {
+      method: "PATCH",
+      data: body,
+    }),
+
+  listOrganizations: () =>
+    apiRequest<AdminOrganizationSummary[]>(API_ENDPOINTS.ADMIN.ORGANIZATIONS),
+
+  setOrganizationBillingApproval: (id: string, approved: boolean) =>
+    apiRequest<{ success: true }>(API_ENDPOINTS.ADMIN.SET_ORGANIZATION_BILLING_APPROVAL(id), {
+      method: "PATCH",
+      data: { approved },
+    }),
+
+  setOrganizationPricing: (id: string, body: SetOrganizationPricingBody) =>
+    apiRequest<{ success: true }>(API_ENDPOINTS.ADMIN.SET_ORGANIZATION_PRICING(id), {
+      method: "PATCH",
+      data: body,
+    }),
+
+  setOrganizationCoupon: (id: string, body: SetOrganizationCouponBody) =>
+    apiRequest<{ code: string }>(API_ENDPOINTS.ADMIN.SET_ORGANIZATION_COUPON(id), {
       method: "PATCH",
       data: body,
     }),

@@ -428,12 +428,12 @@ export class OrganizationsController {
     if (!result.ok) {
       const messages: Record<typeof result.error, string> = {
         corporate_plan_not_found: "Corporate plan not found",
-        no_matching_seat_tier: "No pricing tier matches this seat count",
-        pricing_not_configured: "Corporate plan pricing not configured",
+        billing_not_approved: "This organization's billing hasn't been approved yet",
+        pricing_not_configured: "This organization's per-seat pricing hasn't been set yet",
       };
       const { statusCode, payload } = errorResponse({
         message: messages[result.error],
-        statusCode: result.error === "corporate_plan_not_found" ? 404 : 400,
+        statusCode: result.error === "corporate_plan_not_found" ? 404 : 403,
       });
       return reply.status(statusCode).send(payload);
     }

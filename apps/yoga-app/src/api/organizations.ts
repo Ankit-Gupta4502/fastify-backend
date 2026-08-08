@@ -14,6 +14,7 @@ export interface MyOrganizationSummary {
   name: string;
   sizeBand: string;
   role: "admin" | "member";
+  billingApproved: boolean;
 }
 
 export interface OrganizationMember {
@@ -59,8 +60,6 @@ export interface CorporatePlan {
   id: string;
   name: string;
   linkedPlanId: string;
-  basePricePerSeatCents: number | null;
-  basePricePerSeatInrPaise: number | null;
   billingInterval: string;
   createdAt: string;
 }

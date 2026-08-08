@@ -15,15 +15,8 @@ const COLUMNS: DataTableColumn[] = [
   { key: "name", header: "Name" },
   { key: "linkedPlan", header: "Linked plan" },
   { key: "billing", header: "Billing" },
-  { key: "priceUsd", header: "Per-seat (USD)" },
-  { key: "priceInr", header: "Per-seat (INR)" },
   { key: "actions", header: "Actions", align: "right" },
 ];
-
-function formatMoney(cents: number | null, symbol: string): string {
-  if (cents == null) return "—";
-  return `${symbol}${(cents / 100).toFixed(2)}`;
-}
 
 export function CorporatePlansTable({ corporatePlans, isLoading, error, onEdit }: CorporatePlansTableProps) {
   return (
@@ -41,12 +34,6 @@ export function CorporatePlansTable({ corporatePlans, isLoading, error, onEdit }
           <TableCell className="font-medium">{corporatePlan.name}</TableCell>
           <TableCell className="text-muted-foreground">{corporatePlan.linkedPlanName}</TableCell>
           <TableCell className="text-muted-foreground capitalize">{corporatePlan.billingInterval}</TableCell>
-          <TableCell className="text-muted-foreground text-xs">
-            {formatMoney(corporatePlan.basePricePerSeatCents, "$")}
-          </TableCell>
-          <TableCell className="text-muted-foreground text-xs">
-            {formatMoney(corporatePlan.basePricePerSeatInrPaise, "₹")}
-          </TableCell>
           <TableCell>
             <div className="flex items-center justify-end">
               <Button
