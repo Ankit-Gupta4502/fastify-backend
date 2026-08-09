@@ -5,7 +5,12 @@ import type { AdminRoom } from "@yoga-app/shared";
 import { ApiRequestError } from "@/lib/http";
 import { useCreateGroupRoom, useUpdateGroupRoom } from "@/features/admin/hooks/use-admin";
 import { utcIsoToZonedFields } from "./create-room-dialog-config";
-import { roomFormOptions, DEFAULT_ROOM_FORM, type RoomFormValues } from "./room-form-schema";
+import {
+  roomFormOptions,
+  DEFAULT_ROOM_FORM,
+  PUBLIC_ORGANIZATION_VALUE,
+  type RoomFormValues,
+} from "./room-form-schema";
 
 function formFromRoom(room: AdminRoom, tz: string): RoomFormValues {
   const { date, time: startTime } = utcIsoToZonedFields(room.scheduledStart, tz);
@@ -20,6 +25,7 @@ function formFromRoom(room: AdminRoom, tz: string): RoomFormValues {
     endTime,
     capacity: room.capacity,
     meetLink: room.meetLink ?? "",
+    organizationId: room.organizationId ?? PUBLIC_ORGANIZATION_VALUE,
   };
 }
 
@@ -32,6 +38,7 @@ const API_FIELD_MAP: Partial<Record<string, keyof RoomFormValues>> = {
   scheduledEndUtc: "endTime",
   capacity: "capacity",
   meetLink: "meetLink",
+  organizationId: "organizationId",
 };
 
 export function useRoomForm(open: boolean, room: AdminRoom | null, onClose: () => void) {
@@ -76,6 +83,7 @@ export function useRoomForm(open: boolean, room: AdminRoom | null, onClose: () =
       scheduledEndUtc: end.toISOString(),
       capacity: values.capacity,
       meetLink: values.meetLink.trim(),
+      organizationId: values.organizationId === PUBLIC_ORGANIZATION_VALUE ? null : values.organizationId,
     };
 
     const mutationOpts = {

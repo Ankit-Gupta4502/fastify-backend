@@ -11,6 +11,10 @@ function toUtc(date: string, time: string, tz: string): Date | null {
   }
 }
 
+// Sentinel for "no organization restriction" — a native <select> can't carry
+// a real null value, and Radix Select disallows empty-string item values.
+export const PUBLIC_ORGANIZATION_VALUE = "public";
+
 export const roomFormSchema = z
   .object({
     instructorId: z.string().min(1, "Please select an instructor."),
@@ -25,6 +29,9 @@ export const roomFormSchema = z
     meetLink: z.string().refine((v) => v.trim().startsWith("https://"), {
       message: "A Google Meet link is required.",
     }),
+    // PUBLIC_ORGANIZATION_VALUE = visible/joinable by everyone. Otherwise an
+    // organization id — restricted to that org's joined members.
+    organizationId: z.string().min(1),
   })
   .refine((v) => toUtc(v.date, v.startTime, v.tz) !== null, {
     message: "Enter a valid start date and time.",
@@ -55,6 +62,7 @@ export const DEFAULT_ROOM_FORM: RoomFormValues = {
   endTime: "08:00",
   capacity: 20,
   meetLink: "",
+  organizationId: PUBLIC_ORGANIZATION_VALUE,
 };
 
 export const roomFormOptions = {

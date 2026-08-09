@@ -3,6 +3,7 @@ import type { AdminOrganizationSummary } from "@/api/admin";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DataTable, type DataTableColumn } from "@/shared/components/tables";
 import { useSetOrganizationBillingApproval } from "@/features/admin/hooks/use-admin";
 
@@ -67,46 +68,63 @@ export function OrganizationsTable({
             </TableCell>
             <TableCell>
               <div className="flex items-center justify-end gap-1">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className="rounded-lg"
-                  title="Set per-seat price"
-                  onClick={() => onSetPricing(organization)}
-                >
-                  <Tag className="size-3.5" />
-                  <span className="sr-only">Set per-seat price</span>
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className="rounded-lg"
-                  title="Set self-pay coupon"
-                  onClick={() => onSetCoupon(organization)}
-                >
-                  <Ticket className="size-3.5" />
-                  <span className="sr-only">Set self-pay coupon</span>
-                </Button>
-                <Button
-                  type="button"
-                  variant={isApproved ? "outline" : "default"}
-                  size="sm"
-                  className="rounded-full text-xs"
-                  disabled={isToggling}
-                  onClick={() =>
-                    setBillingApproval.mutate({ id: organization.id, approved: !isApproved })
-                  }
-                >
-                  {isToggling ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : isApproved ? (
-                    "Revoke"
-                  ) : (
-                    "Approve"
-                  )}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="rounded-lg"
+                      onClick={() => onSetPricing(organization)}
+                    >
+                      <Tag className="size-3.5" />
+                      <span className="sr-only">Set per-seat price</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Set per-seat price</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="rounded-lg"
+                      onClick={() => onSetCoupon(organization)}
+                    >
+                      <Ticket className="size-3.5" />
+                      <span className="sr-only">Set self-pay coupon</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Set self-pay discount coupon</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant={isApproved ? "outline" : "default"}
+                      size="sm"
+                      className="rounded-full text-xs"
+                      disabled={isToggling}
+                      onClick={() =>
+                        setBillingApproval.mutate({ id: organization.id, approved: !isApproved })
+                      }
+                    >
+                      {isToggling ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : isApproved ? (
+                        "Revoke"
+                      ) : (
+                        "Approve"
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isApproved
+                      ? "Revoke this org's billing access"
+                      : "Approve billing so this org can buy seats"}
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </TableCell>
           </>

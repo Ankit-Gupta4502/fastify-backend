@@ -68,6 +68,8 @@ export interface AdminRoom {
   currentOccupancy: number;
   status: string;
   meetLink: string | null;
+  // null = public. Set = restricted to that organization's joined members.
+  organizationId: string | null;
 }
 
 export interface CreateGroupRoomBody {
@@ -78,6 +80,7 @@ export interface CreateGroupRoomBody {
   capacity: number;
   // Required — group classes join via Google Meet only, no 100ms fallback room.
   meetLink: string;
+  organizationId?: string | null;
 }
 
 export interface CreateGroupRoomResult {
@@ -91,6 +94,7 @@ export interface UpdateGroupRoomBody {
   scheduledEndUtc?: string;
   capacity?: number;
   meetLink?: string;
+  organizationId?: string | null;
 }
 
 export type PrivateSessionRequestStatus = "pending" | "approved" | "rejected";

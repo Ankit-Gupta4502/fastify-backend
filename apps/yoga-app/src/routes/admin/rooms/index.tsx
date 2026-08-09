@@ -3,7 +3,11 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import type { AdminRoom } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
-import { useAdminGroupRooms, useAdminInstructors } from "@/features/admin/hooks/use-admin";
+import {
+  useAdminGroupRooms,
+  useAdminInstructors,
+  useAdminOrganizations,
+} from "@/features/admin/hooks/use-admin";
 import { RoomsTable } from "@/features/admin/components/rooms-table";
 import { RoomFormDialog } from "@/features/admin/components/room-form-dialog";
 import { CancelRoomDialog } from "@/features/admin/components/cancel-room-dialog";
@@ -19,8 +23,10 @@ function AdminRoomsPage() {
   const [cancellingRoom, setCancellingRoom] = useState<AdminRoom | null>(null);
   const { data: roomsData, isLoading, error } = useAdminGroupRooms();
   const { data: instructorsData } = useAdminInstructors();
+  const { data: organizationsData } = useAdminOrganizations();
   const rooms = roomsData?.data ?? [];
   const instructors = instructorsData?.data ?? [];
+  const organizations = organizationsData?.data ?? [];
 
   const handleFormOpenChange = (open: boolean) => {
     setFormOpen(open);
@@ -49,6 +55,7 @@ function AdminRoomsPage() {
 
       <RoomsTable
         rooms={rooms}
+        organizations={organizations}
         isLoading={isLoading}
         error={error}
         onEdit={(room) => {
@@ -62,6 +69,7 @@ function AdminRoomsPage() {
         open={formOpen}
         onOpenChange={handleFormOpenChange}
         instructors={instructors}
+        organizations={organizations}
         room={editingRoom}
       />
 
