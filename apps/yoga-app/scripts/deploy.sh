@@ -33,6 +33,21 @@ IMAGE_NAME="${IMAGE_NAME:-yoga-app-frontend}"
 CONTAINER_NAME="${CONTAINER_NAME:-yoga-app-frontend}"
 HOST_PORT="${HOST_PORT:-3000}"
 CONTAINER_PORT="${CONTAINER_PORT:-3000}"
+DOCKER_LOG_MAX_SIZE="${DOCKER_LOG_MAX_SIZE:-10m}"
+DOCKER_LOG_MAX_FILES="${DOCKER_LOG_MAX_FILES:-3}"
+
+cleanup_old_images() {
+  local image_name="$1"
+  local current_id
+  current_id="$(docker image inspect --format '{{.Id}}' "$image_name" 2>/dev/null || true)"
+  current_id="${current_id#sha256:}"
+
+  docker image ls "$image_name" --format '{{.Repository}}:{{.Tag}} {{.ID}}' \
+    | while read -r image_ref image_id; do
+        [[ -z "$image_ref" || "$image_id" == "$current_id" ]] && continue
+        docker rmi "$image_ref" 2>/dev/null || true
+      done
+}
 
 echo "==> Stopping existing container (if any)..."
 docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
@@ -59,12 +74,16 @@ docker run -d \
   -e PORT="$CONTAINER_PORT" \
   -e NODE_ENV=production \
   -p "${HOST_PORT}:${CONTAINER_PORT}" \
+  --log-driver json-file \
+  --log-opt "max-size=${DOCKER_LOG_MAX_SIZE}" \
+  --log-opt "max-file=${DOCKER_LOG_MAX_FILES}" \
   --restart unless-stopped \
   "$IMAGE_NAME"
 
 echo "==> Final cleanup..."
+cleanup_old_images "$IMAGE_NAME"
 docker image prune -f >/dev/null 2>&1 || true
-docker builder prune -f >/dev/null 2>&1 || true
+docker builder prune -af --filter "until=${DOCKER_CACHE_MAX_AGE:-168h}" >/dev/null 2>&1 || true
 
 echo "==> Container status"
 docker ps --filter "name=^${CONTAINER_NAME}$"

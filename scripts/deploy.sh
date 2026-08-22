@@ -37,11 +37,11 @@ ok()      { echo -e "${GREEN}✓ $1${NC}"; }
 
 stop_container() {
   local name="$1"
-  if docker ps -q --filter "name=^${name}$" | grep -q .; then
-    docker stop "$name" && docker rm "$name"
-    ok "$name stopped."
+  if docker ps -aq --filter "name=^${name}$" | grep -q .; then
+    docker rm -f "$name"
+    ok "$name stopped and removed."
   else
-    echo -e "${YELLOW}$name is not running.${NC}"
+    echo -e "${YELLOW}$name is not present.${NC}"
   fi
 }
 

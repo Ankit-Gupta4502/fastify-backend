@@ -1,5 +1,10 @@
 node_modules
+.pnpm-store
+.turbo
 dist
+.output
+.vinxi
+.nitro
 .env
 .env.*
 .git
@@ -7,4 +12,5 @@ dist
 Dockerfile*
 docker-compose*.yml
 coverage
+*.log
 .qwen
