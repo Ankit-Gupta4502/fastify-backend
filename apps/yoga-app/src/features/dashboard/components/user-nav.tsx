@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, CalendarDays, Wallet, LogOut, User, UserRound } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Wallet, LogOut, User, UserRound, Gift } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/hooks/use-auth";
@@ -9,6 +9,7 @@ const navItems = [
   { label: "Group Sessions",   to: "/rooms",             icon: CalendarDays },
   { label: "Private Sessions", to: "/private-sessions",  icon: UserRound },
   { label: "Billing",          to: "/billing",           icon: Wallet },
+  { label: "Referrals",        to: "/referrals",         icon: Gift },
 ] as const;
 
 export function UserNav() {

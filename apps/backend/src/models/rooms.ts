@@ -15,6 +15,7 @@ import {
   ROOM_TYPE_VALUES,
 } from "../constants/sessions";
 import { user } from "./auth.schema";
+import { organizations } from "./organizations";
 
 export const roomTypeEnum = pgEnum("room_type", ROOM_TYPE_VALUES as [
   string,
@@ -48,6 +49,12 @@ export const rooms = pgTable(
     meetLink: text("meet_link"),
     hmsRoomId: text("hms_room_id").unique(),
     hmsRoomCode: text("hms_room_code"),
+    // null = public room, visible/joinable by everyone. Set = restricted to
+    // that organization's members only (still doesn't block them from
+    // joining public rooms too).
+    organizationId: uuid("organization_id").references(() => organizations.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -69,5 +76,9 @@ export const roomsRelations = relations(rooms, ({ one, many }) => ({
     relationName: "roomOriginalInstructor",
     fields: [rooms.originalInstructorId],
     references: [user.id],
+  }),
+  organization: one(organizations, {
+    fields: [rooms.organizationId],
+    references: [organizations.id],
   }),
 }));

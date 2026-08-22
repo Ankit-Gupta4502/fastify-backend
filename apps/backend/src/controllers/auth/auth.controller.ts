@@ -23,12 +23,27 @@ import {
   verifyEmailSchema,
 } from "../../validation/auth.validation.schema";
 import { USER_ROLES } from "../../constants/roles";
+import { REFERRAL_COOKIE_NAME, REFERRAL_COOKIE_MAX_AGE_SECONDS } from "../../constants/referral";
+import {
+  PENDING_ORG_COOKIE_NAME,
+  PENDING_ORG_COOKIE_MAX_AGE_SECONDS,
+  PENDING_ORG_INVITE_COOKIE_NAME,
+  PENDING_ORG_INVITE_COOKIE_MAX_AGE_SECONDS,
+} from "../../constants/organization";
 import {
   errorResponse,
   successResponse,
   validateWithZod,
 } from "../../utils";
 import { logger } from "better-auth";
+import {
+  ensureReferralCode,
+  resolveReferrerByCode,
+} from "../../services/referral.service";
+import {
+  acceptOrgInvite,
+  createOrganizationForUser,
+} from "../../services/organization.service";
 
 export class AuthController {
   constructor(private readonly app: FastifyInstance) {
@@ -101,14 +116,48 @@ export class AuthController {
 
     const body = request.body as z.infer<typeof registerBodySchema>;
 
+    let referredByUserId: string | undefined;
+    if (body.referralCode) {
+      const referrer = await resolveReferrerByCode(body.referralCode);
+      if (referrer) {
+        referredByUserId = referrer.id;
+      } else {
+        request.log.warn(
+          { referralCode: body.referralCode },
+          "register: referral code did not match any user — continuing without referral",
+        );
+      }
+    }
+
     try {
       const { headers, response: data } = await auth.api.signUpEmail({
-        body: { ...body, role: USER_ROLES.USER },
+        body: { ...body, role: USER_ROLES.USER, referredByUserId },
         headers: fromNodeHeaders(request.headers),
         returnHeaders: true,
       });
 
       applyAuthResponseHeaders(reply, headers);
+
+      const newUser = await drizzle.query.user.findFirst({
+        where: eq(user.email, body.email),
+      });
+      if (newUser) {
+        await ensureReferralCode(newUser.id);
+
+        if (body.organization) {
+          await createOrganizationForUser({
+            createdByUserId: newUser.id,
+            createdByEmail: newUser.email,
+            name: body.organization.name,
+            sizeBand: body.organization.sizeBand,
+          });
+        } else if (body.orgInviteToken) {
+          await acceptOrgInvite(body.orgInviteToken, {
+            id: newUser.id,
+            email: newUser.email,
+          });
+        }
+      }
 
       const { statusCode, payload } = successResponse({
         message: "Registration successful",
@@ -248,6 +297,50 @@ export class AuthController {
 
     const query = request.query as z.infer<typeof socialCallbackQuerySchema>;
     const callbackURL = query.callbackURL ?? config.frontend.url;
+
+    // Fetch Metadata: a same-origin/same-site request either omits this header
+    // (older browsers) or sends same-origin/same-site/none. "cross-site" means
+    // the request was triggered by a third-party page (e.g. an <img> pixel) —
+    // refuse to plant the referral cookie in that case, since Set-Cookie is
+    // honored regardless of CORS and SameSite=Lax doesn't block being *set*.
+    const isCrossSite = request.headers["sec-fetch-site"] === "cross-site";
+
+    if (query.ref && !isCrossSite) {
+      // Read back in the `user.create` databaseHook (lib/auth.ts) once Google
+      // redirects back here and the new account is about to be inserted —
+      // the referral code can't otherwise survive that redirect round trip.
+      reply.setCookie(REFERRAL_COOKIE_NAME, query.ref, {
+        path: "/",
+        maxAge: REFERRAL_COOKIE_MAX_AGE_SECONDS,
+        httpOnly: true,
+        sameSite: "lax",
+      });
+    }
+
+    if (query.orgName && query.orgSizeBand && !isCrossSite) {
+      // Same round-trip problem as the referral cookie above — "sign up as a
+      // company" details are read back in the `user.create.after` databaseHook
+      // (lib/auth.ts) once the new user row actually exists.
+      reply.setCookie(
+        PENDING_ORG_COOKIE_NAME,
+        JSON.stringify({ name: query.orgName, sizeBand: query.orgSizeBand }),
+        {
+          path: "/",
+          maxAge: PENDING_ORG_COOKIE_MAX_AGE_SECONDS,
+          httpOnly: true,
+          sameSite: "lax",
+        },
+      );
+    } else if (query.orgInviteToken && !isCrossSite) {
+      // Same mechanism, for a NEW user accepting an org invite instead of
+      // creating an org — mutually exclusive with the branch above.
+      reply.setCookie(PENDING_ORG_INVITE_COOKIE_NAME, query.orgInviteToken, {
+        path: "/",
+        maxAge: PENDING_ORG_INVITE_COOKIE_MAX_AGE_SECONDS,
+        httpOnly: true,
+        sameSite: "lax",
+      });
+    }
 
     try {
       const { response, headers } = await auth.api.signInSocial({

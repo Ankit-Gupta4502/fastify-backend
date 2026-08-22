@@ -13,7 +13,7 @@ export function useCancelSubscription() {
 import {
   openRazorpayCheckout,
   type RazorpayCheckoutResponse,
-} from "@/features/payments/services/razorpay.service";
+} from "@/shared/lib/razorpay";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 

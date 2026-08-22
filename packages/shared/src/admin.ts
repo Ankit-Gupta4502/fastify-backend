@@ -1,3 +1,6 @@
+import type { AvailabilityWindow, WalletBalance } from "./instructors";
+import type { PaginatedResult } from "./api";
+
 export interface AdminUserPreferences {
   gender: string;
   phone: string | null;
@@ -39,6 +42,8 @@ export interface AdminInstructor {
   sortOrder: number;
   rating: number;
   studentsGuided: number;
+  availability: AvailabilityWindow[];
+  availabilityUpdatedAt: string | null;
 }
 
 export interface UpdateInstructorStatsBody {
@@ -63,6 +68,8 @@ export interface AdminRoom {
   currentOccupancy: number;
   status: string;
   meetLink: string | null;
+  // null = public. Set = restricted to that organization's joined members.
+  organizationId: string | null;
 }
 
 export interface CreateGroupRoomBody {
@@ -73,6 +80,7 @@ export interface CreateGroupRoomBody {
   capacity: number;
   // Required — group classes join via Google Meet only, no 100ms fallback room.
   meetLink: string;
+  organizationId?: string | null;
 }
 
 export interface CreateGroupRoomResult {
@@ -86,6 +94,7 @@ export interface UpdateGroupRoomBody {
   scheduledEndUtc?: string;
   capacity?: number;
   meetLink?: string;
+  organizationId?: string | null;
 }
 
 export type PrivateSessionRequestStatus = "pending" | "approved" | "rejected";
@@ -148,4 +157,50 @@ export interface AdminUserPrivateRequest {
 export interface AdminUserDetail extends AdminUser {
   rooms: AdminUserRoom[];
   privateRequests: AdminUserPrivateRequest[];
+}
+
+export interface AdminInstructorSession {
+  id: string;
+  type: string;
+  status: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+  capacity: number;
+  currentOccupancy: number;
+  meetLink: string | null;
+  participantCount: number;
+}
+
+export interface AdminInstructorSessionsFilters {
+  page?: number;
+  pageSize?: number;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface AdminInstructorDetail extends AdminInstructor {
+  wallet: WalletBalance;
+  sessions: PaginatedResult<AdminInstructorSession>;
+}
+
+export interface AdminSessionParticipant {
+  userId: string;
+  name: string;
+  email: string;
+  joinedAt: string;
+  leftAt: string | null;
+  status: string;
+}
+
+export interface AdminInstructorSessionDetail {
+  room: {
+    id: string;
+    type: string;
+    status: string;
+    scheduledStart: string;
+    scheduledEnd: string;
+    meetLink: string | null;
+  };
+  instructor: { joinedAt: string; leftAt: string | null } | null;
+  participants: AdminSessionParticipant[];
 }

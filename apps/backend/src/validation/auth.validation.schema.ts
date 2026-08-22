@@ -1,3 +1,5 @@
+import { ORGANIZATION_SIZE_BANDS } from "@yoga-app/shared";
+
 export {
   loginBodySchema,
   registerBodySchema,
@@ -19,6 +21,20 @@ export const authSwaggerSchemas = {
         name: { type: "string" as const },
         email: { type: "string" as const, format: "email" },
         password: { type: "string" as const, minLength: 8 },
+        referralCode: { type: "string" as const },
+        organization: {
+          type: "object" as const,
+          description: "Present when signing up as a company",
+          required: ["name", "sizeBand"],
+          properties: {
+            name: { type: "string" as const },
+            sizeBand: { type: "string" as const, enum: ORGANIZATION_SIZE_BANDS as unknown as string[] },
+          },
+        },
+        orgInviteToken: {
+          type: "string" as const,
+          description: "Present when signing up via an organization invite link",
+        },
       },
     },
   },
@@ -54,6 +70,23 @@ export const authSwaggerSchemas = {
         callbackURL: {
           type: "string" as const,
           description: "Frontend URL to return to after sign-in",
+        },
+        ref: {
+          type: "string" as const,
+          description: "Referral code to attach if this sign-in creates a new account",
+        },
+        orgName: {
+          type: "string" as const,
+          description: "Organization name, if signing up as a company",
+        },
+        orgSizeBand: {
+          type: "string" as const,
+          enum: ORGANIZATION_SIZE_BANDS as unknown as string[],
+          description: "Organization size band, if signing up as a company",
+        },
+        orgInviteToken: {
+          type: "string" as const,
+          description: "Present when accepting an organization invite link",
         },
       },
     },

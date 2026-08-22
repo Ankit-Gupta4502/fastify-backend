@@ -1,5 +1,11 @@
 export type InstructorStatus = "available" | "busy" | "offline";
 
+export interface AvailabilityWindow {
+  dow: number; // 0 = Sunday ... 6 = Saturday; a day can have multiple windows
+  start: string; // "HH:mm"
+  end: string; // "HH:mm"
+}
+
 export interface InstructorListItem {
   id: string;
   name: string;
@@ -27,6 +33,8 @@ export interface InstructorProfile {
   introVideoKey: string | null;
   tags: string[];
   yearsOfExperience: number | null;
+  availability: AvailabilityWindow[];
+  availabilityUpdatedAt: string | null;
 }
 
 export interface PublicInstructorProfile {
@@ -57,6 +65,10 @@ export interface UpdateProfileBody {
   introVideoKey?: string | null;
   tags?: string[];
   yearsOfExperience?: number | null;
+}
+
+export interface UpdateAvailabilityBody {
+  availability: AvailabilityWindow[];
 }
 
 export interface WalletTransaction {

@@ -225,6 +225,69 @@
       "when": 1783771816542,
       "tag": "0031_living_namor",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1783878643455,
+      "tag": "0032_uneven_weapon_omega",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1784008570126,
+      "tag": "0033_known_falcon",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1784055824970,
+      "tag": "0034_normal_freak",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1785128281818,
+      "tag": "0035_fair_nightcrawler",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1785602667166,
+      "tag": "0036_add_corporate_organizations",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1785603678165,
+      "tag": "0037_corporate_plans_add_linked_plan",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1785603698675,
+      "tag": "0038_corporate_plans_drop_redundant_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1785683395111,
+      "tag": "0039_add_user_onboarding_completed_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1786192248504,
+      "tag": "0040_org_billing_approval_and_per_org_pricing",
+      "breakpoints": true
     }
   ]
 }

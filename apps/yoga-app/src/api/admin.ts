@@ -3,6 +3,9 @@ import type {
   AdminUser,
   AdminUserDetail,
   AdminInstructor,
+  AdminInstructorDetail,
+  AdminInstructorSessionDetail,
+  AdminInstructorSessionsFilters,
   AdminRoom,
   AssignPrivateSessionBody,
   CreateGroupRoomBody,
@@ -14,6 +17,77 @@ import type {
 } from "@yoga-app/shared";
 import { API_ENDPOINTS } from "@yoga-app/shared";
 import { apiRequest } from "../lib/http";
+
+export interface AdminPlan {
+  id: string;
+  name: string;
+  category: string;
+  billingInterval: string;
+  sessionsPerWeek: number | null;
+  sessionsPerMonth: number | null;
+  allowsPrivate: boolean;
+  allowsTimeFlexibility: boolean;
+  maxRoomCapacity: number | null;
+  priceCents: number | null;
+  priceInrPaise: number | null;
+  pricePerSessionCents: number | null;
+  pricePerSessionInrPaise: number | null;
+  createdAt: string;
+}
+
+export interface CreatePlanBody {
+  name: string;
+  category?: string;
+  billingInterval?: "week" | "month";
+  sessionsPerWeek?: number | null;
+  sessionsPerMonth?: number | null;
+  allowsPrivate?: boolean;
+  allowsTimeFlexibility?: boolean;
+  maxRoomCapacity?: number | null;
+  priceCents?: number | null;
+  priceInrPaise?: number | null;
+  pricePerSessionCents?: number | null;
+  pricePerSessionInrPaise?: number | null;
+}
+
+export type UpdatePlanBody = Partial<CreatePlanBody>;
+
+export interface AdminCorporatePlan {
+  id: string;
+  name: string;
+  linkedPlanId: string;
+  linkedPlanName: string;
+  billingInterval: string;
+  createdAt: string;
+}
+
+export interface CreateCorporatePlanBody {
+  name: string;
+  linkedPlanId: string;
+  billingInterval?: "week" | "month";
+}
+
+export type UpdateCorporatePlanBody = Partial<CreateCorporatePlanBody>;
+
+export interface AdminOrganizationSummary {
+  id: string;
+  name: string;
+  sizeBand: string;
+  createdAt: string;
+  memberCount: number;
+  billingApprovedAt: string | null;
+  pricePerSeatCents: number | null;
+  pricePerSeatInrPaise: number | null;
+}
+
+export interface SetOrganizationPricingBody {
+  pricePerSeatCents?: number | null;
+  pricePerSeatInrPaise?: number | null;
+}
+
+export type SetOrganizationCouponBody =
+  | { type: "percent"; value: number }
+  | { type: "flat"; value: number };
 
 export interface AdminUsersFilters {
   search?: string;
@@ -43,6 +117,22 @@ export const adminApi = {
 
   listInstructors: () =>
     apiRequest<AdminInstructor[]>(API_ENDPOINTS.ADMIN.INSTRUCTORS),
+
+  getInstructorDetail: (id: string, filters?: AdminInstructorSessionsFilters) => {
+    const params: Record<string, string> = {};
+    if (filters?.page) params.page = String(filters.page);
+    if (filters?.pageSize) params.pageSize = String(filters.pageSize);
+    if (filters?.dateFrom) params.dateFrom = filters.dateFrom;
+    if (filters?.dateTo) params.dateTo = filters.dateTo;
+    return apiRequest<AdminInstructorDetail>(API_ENDPOINTS.ADMIN.INSTRUCTOR_DETAIL(id), {
+      params: Object.keys(params).length ? params : undefined,
+    });
+  },
+
+  getInstructorSessionDetail: (instructorId: string, roomId: string) =>
+    apiRequest<AdminInstructorSessionDetail>(
+      API_ENDPOINTS.ADMIN.INSTRUCTOR_SESSION_DETAIL(instructorId, roomId),
+    ),
 
   createInstructor: (body: CreateInstructorBody) =>
     apiRequest<{ id: string; name: string; email: string }>(API_ENDPOINTS.ADMIN.INSTRUCTORS, {
@@ -101,5 +191,45 @@ export const adminApi = {
     apiRequest<null>(API_ENDPOINTS.ADMIN.REJECT_PRIVATE_REQUEST(id), {
       method: "PATCH",
       data: { adminNote: adminNote ?? null },
+    }),
+
+  listPlans: () => apiRequest<AdminPlan[]>(API_ENDPOINTS.ADMIN.PLANS),
+
+  createPlan: (body: CreatePlanBody) =>
+    apiRequest<AdminPlan>(API_ENDPOINTS.ADMIN.PLANS, { method: "POST", data: body }),
+
+  updatePlan: (id: string, body: UpdatePlanBody) =>
+    apiRequest<AdminPlan>(API_ENDPOINTS.ADMIN.UPDATE_PLAN(id), { method: "PATCH", data: body }),
+
+  listCorporatePlans: () => apiRequest<AdminCorporatePlan[]>(API_ENDPOINTS.ADMIN.CORPORATE_PLANS),
+
+  createCorporatePlan: (body: CreateCorporatePlanBody) =>
+    apiRequest<AdminCorporatePlan>(API_ENDPOINTS.ADMIN.CORPORATE_PLANS, { method: "POST", data: body }),
+
+  updateCorporatePlan: (id: string, body: UpdateCorporatePlanBody) =>
+    apiRequest<AdminCorporatePlan>(API_ENDPOINTS.ADMIN.UPDATE_CORPORATE_PLAN(id), {
+      method: "PATCH",
+      data: body,
+    }),
+
+  listOrganizations: () =>
+    apiRequest<AdminOrganizationSummary[]>(API_ENDPOINTS.ADMIN.ORGANIZATIONS),
+
+  setOrganizationBillingApproval: (id: string, approved: boolean) =>
+    apiRequest<{ success: true }>(API_ENDPOINTS.ADMIN.SET_ORGANIZATION_BILLING_APPROVAL(id), {
+      method: "PATCH",
+      data: { approved },
+    }),
+
+  setOrganizationPricing: (id: string, body: SetOrganizationPricingBody) =>
+    apiRequest<{ success: true }>(API_ENDPOINTS.ADMIN.SET_ORGANIZATION_PRICING(id), {
+      method: "PATCH",
+      data: body,
+    }),
+
+  setOrganizationCoupon: (id: string, body: SetOrganizationCouponBody) =>
+    apiRequest<{ code: string }>(API_ENDPOINTS.ADMIN.SET_ORGANIZATION_COUPON(id), {
+      method: "PATCH",
+      data: body,
     }),
 };

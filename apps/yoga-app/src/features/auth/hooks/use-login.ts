@@ -7,19 +7,25 @@ import { loginFormOptions, registerFormOptions, forgotPasswordFormOptions } from
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ApiRequestError } from "@/lib/http";
 import { authApi } from "@/api";
-import { getStoredUtm, clearUtm } from "@/shared/lib/utm";
+import { getStoredUtm, hasSavedAcquisition, markAcquisitionSaved } from "@/shared/lib/utm";
 import { userPreferencesApi } from "@/api/user-preferences";
 
 function fireAcquisition() {
+  if (hasSavedAcquisition()) return;
   const utm = getStoredUtm();
   if (!utm) return;
-  userPreferencesApi.saveAcquisition(utm).then(() => clearUtm()).catch(() => {});
+  userPreferencesApi.saveAcquisition(utm).then(() => markAcquisitionSaved()).catch(() => {});
 }
 
 export type LoginMode = "login" | "register" | "forgot";
 
-export function useLogin() {
-  const [mode, setMode] = useState<LoginMode>("login");
+// Whether someone is signing up as an individual or a company is asked
+// post-signup in /onboarding — not here — so it applies uniformly to every
+// signup path (email/password AND Google, including auto-registration on a
+// first-time Google sign-in from the Login tab, which can't collect it
+// before the account is created).
+export function useLogin(redirectTo?: string, referralCode?: string, orgInviteToken?: string) {
+  const [mode, setMode] = useState<LoginMode>(referralCode || orgInviteToken ? "register" : "login");
   const [feedback, setFeedback] = useState<string | null>(null);
   const { login, register: registerUserMutation, getGoogleUrl } = useAuth();
   const navigate = useNavigate();
@@ -34,7 +40,8 @@ export function useLogin() {
     setFeedback(null);
     try {
       await login.mutateAsync(values);
-      navigate({ to: "/", replace: true });
+      fireAcquisition();
+      navigate({ href: redirectTo || "/", replace: true });
     } catch (error) {
       if (error instanceof ApiRequestError && error.payload?.error === "EMAIL_NOT_VERIFIED") {
         navigate({ to: "/verify-email" });
@@ -47,10 +54,17 @@ export function useLogin() {
   async function onRegisterSubmit(values: RegisterBody) {
     setFeedback(null);
     try {
-      await registerUserMutation.mutateAsync(values);
+      await registerUserMutation.mutateAsync({
+        ...values,
+        ...(referralCode && { referralCode }),
+        ...(orgInviteToken && { orgInviteToken }),
+      });
       fireAcquisition();
-      setFeedback("Account created! Redirecting…");
-      setTimeout(() => navigate({ to: "/verify-email", replace: true }), 1500);
+      // Always through /onboarding first (it decides individual-vs-company,
+      // then routes to /verify-email itself only if the email isn't already
+      // verified) — matches what the root guard would enforce anyway, so
+      // this avoids a flash of the wrong page while that guard catches up.
+      navigate({ to: "/onboarding", replace: true });
     } catch (error) {
       setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Registration failed");
     }
@@ -70,10 +84,13 @@ export function useLogin() {
   }
 
   async function handleGoogleSignIn() {
+    setFeedback(null);
     setIsGooglePending(true);
-    const callbackURL = window.location.origin;
+    const callbackURL = redirectTo
+      ? new URL(redirectTo, window.location.origin).toString()
+      : window.location.origin;
     try {
-      const response = await getGoogleUrl(callbackURL);
+      const response = await getGoogleUrl(callbackURL, { ref: referralCode, orgInviteToken });
       if (response.data?.url) window.location.assign(response.data.url);
     } catch (error) {
       setFeedback(error instanceof ApiRequestError || error instanceof Error ? error.message : "Google sign-in failed");

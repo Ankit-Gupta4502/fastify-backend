@@ -1,18 +1,27 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
+import { z } from "zod";
 
 import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/shared/components/misc/doodles";
 import { useLogin } from "@/features/auth/hooks/use-login";
 import { LoginCard } from "@/features/auth/components/login/login-card";
 
+const searchSchema = z.object({
+  redirect: z.string().optional(),
+  ref: z.string().optional(),
+  orgInvite: z.string().optional(),
+});
+
 export const Route = createFileRoute("/login/")({
-  beforeLoad: ({ context }) => {
-    if (context.user) throw redirect({ to: "/" });
+  validateSearch: searchSchema,
+  beforeLoad: ({ context, search }) => {
+    if (context.user) throw redirect({ href: search.redirect || "/" });
   },
   component: LoginPage,
 });
 
 function LoginPage() {
+  const { redirect: redirectTo, ref: referralCode, orgInvite: orgInviteToken } = Route.useSearch();
   const {
     mode,
     feedback,
@@ -27,7 +36,7 @@ function LoginPage() {
     onForgotSubmit,
     handleGoogleSignIn,
     switchMode,
-  } = useLogin();
+  } = useLogin(redirectTo, referralCode, orgInviteToken);
 
   return (
     <div className="relative flex min-h-[88vh] items-center justify-center px-4 py-10 overflow-hidden">
@@ -94,6 +103,7 @@ function LoginPage() {
           isSubmitting={isSubmitting}
           isForgotPending={isForgotPending}
           isGooglePending={isGooglePending}
+          orgInviteToken={orgInviteToken}
           onLoginSubmit={onLoginSubmit}
           onRegisterSubmit={onRegisterSubmit}
           onForgotSubmit={onForgotSubmit}

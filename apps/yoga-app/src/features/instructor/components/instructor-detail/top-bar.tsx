@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft,Verified } from "lucide-react";
 
 export function TopBar() {
   return (
@@ -13,7 +13,7 @@ export function TopBar() {
       </Link>
 
       <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-        <span className="size-1.5 rounded-full bg-primary" />
+        <Verified className=" text-green-600" />
         Verified Instructor
       </div>
     </div>

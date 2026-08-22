@@ -1,12 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Sparkles } from "lucide-react";
 import { z } from "zod";
 
 import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/shared/components/misc/doodles";
-import { authApi } from "@/api";
+import { authApi, userApi } from "@/api";
 import { ApiRequestError } from "@/lib/http";
 import { useAuthStore } from "@/features/auth/store/auth.store";
+import { queryKeys } from "@/lib/react-query/query-keys";
 import { VerifyEmailCard } from "@/features/auth/components/verify-email-card";
 
 const searchSchema = z.object({ token: z.string().optional() });
@@ -22,6 +24,7 @@ function VerifyEmailPage() {
   const { token } = Route.useSearch();
   const navigate = useNavigate();
   const { user, setUser } = useAuthStore();
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState<Status>(token ? "verifying" : "idle");
   const [error, setError] = useState<string | null>(null);
   const ranRef = useRef(false);
@@ -32,16 +35,23 @@ function VerifyEmailPage() {
 
     (async () => {
       try {
-        const response = await authApi.verifyEmail(token);
-        if (response.data?.user) setUser(response.data.user);
+        await authApi.verifyEmail(token);
+        // The verify response's `user` is incomplete (missing custom fields
+        // like onboardingCompletedAt, and emailVerified isn't reliably fresh
+        // either) — refetch the authoritative detail endpoint instead so the
+        // store/route guards see the real post-verification state without
+        // needing a full page refresh.
+        const detail = await userApi.fetchDetail();
+        if (detail.data) setUser(detail.data);
+        void queryClient.invalidateQueries({ queryKey: queryKeys.auth.all });
         setStatus("success");
-        setTimeout(() => navigate({ to: "/", replace: true }), 2000);
+        setTimeout(() => navigate({ to: "/", replace: true }), 1000);
       } catch (err) {
         setError(err instanceof ApiRequestError || err instanceof Error ? err.message : "Verification failed. The link may have expired.");
         setStatus("error");
       }
     })();
-  }, [token, navigate, setUser]);
+  }, [token, navigate, setUser, queryClient]);
 
   return (
     <div className="relative flex min-h-[88vh] items-center justify-center px-4 py-10 overflow-hidden">

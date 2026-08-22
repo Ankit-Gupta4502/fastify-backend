@@ -1,6 +1,6 @@
-import { and, asc, desc, eq, gt, ilike, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, ilike, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import type { AppDatabase } from "../types/database.types";
-import { user, plans, rooms, roomUsers, instructorDetails, userSubscriptions, userPreferences, userAcquisition, privateSessionRequests } from "../schema/schema";
+import { user, plans, rooms, roomUsers, instructorDetails, instructorWallet, walletTransaction, userSubscriptions, userPreferences, userAcquisition, privateSessionRequests } from "../schema/schema";
 import type { subscriptionStatusEnum } from "../models/user-subscription";
 import { auth } from "../lib/auth";
 import { USER_ROLES } from "../constants/roles";
@@ -184,6 +184,8 @@ export async function listInstructors(db: AppDatabase) {
       sortOrder: instructorDetails.sortOrder,
       rating: instructorDetails.rating,
       studentsGuided: instructorDetails.studentsGuided,
+      availability: instructorDetails.availabilityJson,
+      availabilityUpdatedAt: instructorDetails.availabilityUpdatedAt,
     })
     .from(instructorDetails)
     .innerJoin(user, eq(instructorDetails.userId, user.id))
@@ -194,6 +196,8 @@ export async function listInstructors(db: AppDatabase) {
     specialty: r.specialty ?? [],
     maxConcurrentSessions: r.maxConcurrentSessions ?? 1,
     sortOrder: r.sortOrder ?? 0,
+    availability: r.availability ?? [],
+    availabilityUpdatedAt: r.availabilityUpdatedAt?.toISOString() ?? null,
   }));
 }
 
@@ -272,6 +276,7 @@ export async function listGroupRooms(db: AppDatabase) {
       currentOccupancy: rooms.currentOccupancy,
       status: rooms.status,
       meetLink: rooms.meetLink,
+      organizationId: rooms.organizationId,
     })
     .from(rooms)
     .innerJoin(user, eq(rooms.instructorId, user.id))
@@ -294,6 +299,9 @@ export async function createGroupRoom(
     scheduledEndUtc: Date;
     capacity: number;
     meetLink: string;
+    // null/omitted = public. Set = restricted to that organization's joined
+    // members only (they can still join public classes too).
+    organizationId?: string | null;
   },
 ) {
   const [instructor] = await db
@@ -333,6 +341,7 @@ export async function createGroupRoom(
       scheduledStart: params.scheduledStartUtc,
       scheduledEnd: params.scheduledEndUtc,
       meetLink: params.meetLink,
+      organizationId: params.organizationId ?? null,
     })
     .returning();
 
@@ -357,6 +366,8 @@ export async function updateGroupRoom(
     scheduledEndUtc?: Date;
     capacity?: number;
     meetLink?: string;
+    // undefined = leave unchanged. null = make public. Set = restrict to org.
+    organizationId?: string | null;
   },
 ) {
   const [existing] = await db
@@ -419,6 +430,10 @@ export async function updateGroupRoom(
       scheduledEnd,
       capacity,
       meetLink: params.meetLink !== undefined ? params.meetLink : existing.meetLink,
+      organizationId:
+        params.organizationId !== undefined
+          ? params.organizationId
+          : existing.organizationId,
     })
     .where(eq(rooms.id, roomId));
 
@@ -585,6 +600,209 @@ export async function getUserDetail(db: AppDatabase, userId: string) {
       instructorName: r.instructorId ? (reqInstrMap.get(r.instructorId) ?? null) : null,
       adminNote: r.adminNote ?? null,
       createdAt: r.createdAt.toISOString(),
+    })),
+  };
+}
+
+// ─── Admin: get single instructor detail ─────────────────────────────────────
+
+export async function getInstructorDetail(
+  db: AppDatabase,
+  instructorId: string,
+  sessionsFilter?: { page?: number; pageSize?: number; dateFrom?: string; dateTo?: string },
+) {
+  const [i] = await db
+    .select({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      status: instructorDetails.status,
+      specialty: instructorDetails.specialty,
+      maxConcurrentSessions: instructorDetails.maxConcurrentSessions,
+      isApproved: instructorDetails.isApproved,
+      sortOrder: instructorDetails.sortOrder,
+      rating: instructorDetails.rating,
+      studentsGuided: instructorDetails.studentsGuided,
+      availability: instructorDetails.availabilityJson,
+      availabilityUpdatedAt: instructorDetails.availabilityUpdatedAt,
+    })
+    .from(instructorDetails)
+    .innerJoin(user, eq(instructorDetails.userId, user.id))
+    .where(eq(user.id, instructorId))
+    .limit(1);
+
+  if (!i) return null;
+
+  const [wallet] = await db
+    .select({ id: instructorWallet.id, balancePaise: instructorWallet.balancePaise })
+    .from(instructorWallet)
+    .where(eq(instructorWallet.instructorId, instructorId));
+
+  const transactions = wallet
+    ? await db
+        .select({
+          id: walletTransaction.id,
+          amountPaise: walletTransaction.amountPaise,
+          type: walletTransaction.type,
+          description: walletTransaction.description,
+          roomId: walletTransaction.roomId,
+          createdAt: walletTransaction.createdAt,
+        })
+        .from(walletTransaction)
+        .where(eq(walletTransaction.walletId, wallet.id))
+        .orderBy(desc(walletTransaction.createdAt))
+        .limit(50)
+    : [];
+
+  const balancePaise = wallet?.balancePaise ?? 0;
+
+  const page = sessionsFilter?.page ?? 1;
+  const pageSize = sessionsFilter?.pageSize ?? 10;
+
+  const sessionsWhere = and(
+    eq(rooms.instructorId, instructorId),
+    sessionsFilter?.dateFrom ? gt(rooms.scheduledStart, new Date(sessionsFilter.dateFrom)) : undefined,
+    sessionsFilter?.dateTo ? sql`${rooms.scheduledStart} <= ${new Date(sessionsFilter.dateTo)}` : undefined,
+  );
+
+  const [{ count: sessionsTotal }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(rooms)
+    .where(sessionsWhere);
+
+  const sessionRows = await db
+    .select({
+      id: rooms.id,
+      type: rooms.type,
+      status: rooms.status,
+      scheduledStart: rooms.scheduledStart,
+      scheduledEnd: rooms.scheduledEnd,
+      capacity: rooms.capacity,
+      currentOccupancy: rooms.currentOccupancy,
+      meetLink: rooms.meetLink,
+    })
+    .from(rooms)
+    .where(sessionsWhere)
+    .orderBy(desc(rooms.scheduledStart))
+    .limit(pageSize)
+    .offset((page - 1) * pageSize);
+
+  const roomIds = sessionRows.map((r) => r.id);
+  const participantCounts = roomIds.length
+    ? await db
+        .select({ roomId: roomUsers.roomId, count: sql<number>`count(*)::int` })
+        .from(roomUsers)
+        .where(and(inArray(roomUsers.roomId, roomIds), ne(roomUsers.userId, instructorId)))
+        .groupBy(roomUsers.roomId)
+    : [];
+
+  return {
+    id: i.id,
+    name: i.name,
+    email: i.email,
+    status: i.status,
+    specialty: i.specialty ?? [],
+    maxConcurrentSessions: i.maxConcurrentSessions ?? 1,
+    isApproved: i.isApproved,
+    sortOrder: i.sortOrder ?? 0,
+    rating: i.rating,
+    studentsGuided: i.studentsGuided,
+    availability: i.availability ?? [],
+    availabilityUpdatedAt: i.availabilityUpdatedAt?.toISOString() ?? null,
+    wallet: {
+      balancePaise,
+      balanceInr: balancePaise / 100,
+      transactions: transactions.map((t) => ({
+        id: t.id,
+        amountPaise: t.amountPaise,
+        type: t.type,
+        description: t.description,
+        roomId: t.roomId,
+        createdAt: t.createdAt.toISOString(),
+      })),
+    },
+    sessions: {
+      items: sessionRows.map((r) => ({
+        id: r.id,
+        type: r.type,
+        status: r.status,
+        scheduledStart: r.scheduledStart.toISOString(),
+        scheduledEnd: r.scheduledEnd.toISOString(),
+        capacity: r.capacity,
+        currentOccupancy: r.currentOccupancy,
+        meetLink: r.meetLink,
+        participantCount: participantCounts.find((p) => p.roomId === r.id)?.count ?? 0,
+      })),
+      total: sessionsTotal,
+      page,
+      pageSize,
+      totalPages: Math.max(1, Math.ceil(sessionsTotal / pageSize)),
+    },
+  };
+}
+
+// ─── Admin: get single instructor-session attendance detail ──────────────────
+
+export async function getInstructorSessionDetail(
+  db: AppDatabase,
+  instructorId: string,
+  roomId: string,
+) {
+  const [room] = await db
+    .select({
+      id: rooms.id,
+      type: rooms.type,
+      status: rooms.status,
+      scheduledStart: rooms.scheduledStart,
+      scheduledEnd: rooms.scheduledEnd,
+      meetLink: rooms.meetLink,
+      instructorId: rooms.instructorId,
+    })
+    .from(rooms)
+    .where(eq(rooms.id, roomId))
+    .limit(1);
+
+  if (!room || room.instructorId !== instructorId) return null;
+
+  const rows = await db
+    .select({
+      userId: roomUsers.userId,
+      name: user.name,
+      email: user.email,
+      joinedAt: roomUsers.joinedAt,
+      leftAt: roomUsers.leftAt,
+      status: roomUsers.status,
+    })
+    .from(roomUsers)
+    .innerJoin(user, eq(roomUsers.userId, user.id))
+    .where(eq(roomUsers.roomId, roomId))
+    .orderBy(asc(roomUsers.joinedAt));
+
+  const instructorRow = rows.find((r) => r.userId === instructorId) ?? null;
+  const participants = rows.filter((r) => r.userId !== instructorId);
+
+  return {
+    room: {
+      id: room.id,
+      type: room.type,
+      status: room.status,
+      scheduledStart: room.scheduledStart.toISOString(),
+      scheduledEnd: room.scheduledEnd.toISOString(),
+      meetLink: room.meetLink,
+    },
+    instructor: instructorRow
+      ? {
+          joinedAt: instructorRow.joinedAt.toISOString(),
+          leftAt: instructorRow.leftAt?.toISOString() ?? null,
+        }
+      : null,
+    participants: participants.map((p) => ({
+      userId: p.userId,
+      name: p.name,
+      email: p.email,
+      joinedAt: p.joinedAt.toISOString(),
+      leftAt: p.leftAt?.toISOString() ?? null,
+      status: p.status,
     })),
   };
 }

@@ -9,6 +9,8 @@ import {
   listUsers,
   getUserDetail,
   listInstructors,
+  getInstructorDetail,
+  getInstructorSessionDetail,
   listGroupRooms,
   createGroupRoom,
   updateGroupRoom,
@@ -30,6 +32,8 @@ import {
   updateInstructorStatsBodySchema,
   createInstructorBodySchema,
   instructorIdParamsSchema,
+  instructorSessionParamsSchema,
+  instructorDetailQuerySchema,
   listUsersQuerySchema,
   userIdParamsSchema,
   createGroupRoomBodySchema,
@@ -60,6 +64,12 @@ export class AdminController {
         router.get("/users", { preHandler }, this.getUsers);
         router.get("/users/:id", { preHandler }, this.getUserDetail);
         router.get("/instructors", { preHandler }, this.getInstructors);
+        router.get("/instructors/:id", { preHandler }, this.getInstructorDetail);
+        router.get(
+          "/instructors/:instructorId/sessions/:roomId",
+          { preHandler },
+          this.getInstructorSessionDetail,
+        );
         router.post("/instructors", { preHandler }, this.createInstructor);
         router.patch("/instructors/:id/approve", { preHandler }, this.approveInstructor);
         router.patch("/instructors/:id/priority", { preHandler }, this.updatePriority);
@@ -113,6 +123,40 @@ export class AdminController {
   private getInstructors = async (_req: FastifyRequest, reply: FastifyReply) => {
     const data = await listInstructors(drizzle);
     const { statusCode, payload } = successResponse({ message: "Instructors", data });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private getInstructorDetail = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalidParams = validateWithZod(request, reply, { params: instructorIdParamsSchema });
+    if (invalidParams) return invalidParams;
+
+    const invalidQuery = validateWithZod(request, reply, { query: instructorDetailQuerySchema });
+    if (invalidQuery) return invalidQuery;
+
+    const { id } = request.params as z.infer<typeof instructorIdParamsSchema>;
+    const { page, pageSize, dateFrom, dateTo } = request.query as z.infer<
+      typeof instructorDetailQuerySchema
+    >;
+    const data = await getInstructorDetail(drizzle, id, { page, pageSize, dateFrom, dateTo });
+    if (!data) {
+      const { statusCode, payload } = errorResponse({ message: "Instructor not found", statusCode: 404 });
+      return reply.status(statusCode).send(payload);
+    }
+    const { statusCode, payload } = successResponse({ message: "Instructor detail", data });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private getInstructorSessionDetail = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { params: instructorSessionParamsSchema });
+    if (invalid) return invalid;
+
+    const { instructorId, roomId } = request.params as z.infer<typeof instructorSessionParamsSchema>;
+    const data = await getInstructorSessionDetail(drizzle, instructorId, roomId);
+    if (!data) {
+      const { statusCode, payload } = errorResponse({ message: "Session not found", statusCode: 404 });
+      return reply.status(statusCode).send(payload);
+    }
+    const { statusCode, payload } = successResponse({ message: "Instructor session detail", data });
     return reply.status(statusCode).send(payload);
   };
 
@@ -295,6 +339,7 @@ export class AdminController {
         scheduledEndUtc: new Date(body.scheduledEndUtc),
         capacity: body.capacity,
         meetLink: body.meetLink,
+        organizationId: body.organizationId ?? null,
       });
 
       const { statusCode, payload } = successResponse({
@@ -342,6 +387,7 @@ export class AdminController {
         scheduledEndUtc: body.scheduledEndUtc ? new Date(body.scheduledEndUtc) : undefined,
         capacity: body.capacity,
         meetLink: body.meetLink,
+        organizationId: body.organizationId,
       });
 
       const { statusCode, payload } = successResponse({ message: "Group room updated", data });

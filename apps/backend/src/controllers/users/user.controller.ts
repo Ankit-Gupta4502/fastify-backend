@@ -1,6 +1,7 @@
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import {
+  completeOnboardingBodySchema,
   saveAcquisitionSchema,
   savePreferencesSchema,
   userSwaggerSchemas,
@@ -8,8 +9,9 @@ import {
 import { successResponse, errorResponse, validateWithZod } from "../../utils";
 import { z } from "zod";
 import { drizzle } from "../../db";
-import { userPreferences, userAcquisition } from "../../schema/schema";
+import { user as userTable, userPreferences, userAcquisition } from "../../schema/schema";
 import { eq } from "drizzle-orm";
+import { createOrganizationForUser } from "../../services/organization.service";
 
 export class UserController {
   constructor(
@@ -48,6 +50,12 @@ export class UserController {
           { preHandler: this.authMiddleware.handle },
           this.saveAcquisition
         );
+
+        router.post(
+          "/onboarding",
+          { preHandler: this.authMiddleware.handle },
+          this.completeOnboarding
+        );
       },
 
       { prefix: "/user" }
@@ -58,14 +66,28 @@ export class UserController {
     request: FastifyRequest,
     reply: FastifyReply
   ) => {
-    const user = request.user;
-    if (!user) {
+    const sessionUser = request.user;
+    if (!sessionUser) {
       const { statusCode, payload: body } = errorResponse({
         message: "User not found",
         statusCode: 404,
       });
       return reply.status(statusCode).send(body);
     }
+
+    // better-auth's getSession() only includes additionalFields marked
+    // `required: true` in its session payload — required:false fields
+    // (onboardingCompletedAt, referredByUserId, referralCode) are silently
+    // omitted even though they're set in the DB, so read this one fresh.
+    const [row] = await drizzle
+      .select({ onboardingCompletedAt: userTable.onboardingCompletedAt })
+      .from(userTable)
+      .where(eq(userTable.id, sessionUser.id));
+
+    const user = {
+      ...sessionUser,
+      onboardingCompletedAt: row?.onboardingCompletedAt ?? null,
+    };
 
     const { statusCode, payload: body } = successResponse({
       message: "User details fetched successfully",
@@ -163,6 +185,51 @@ export class UserController {
       });
 
     const { statusCode, payload } = successResponse({ message: "Preferences saved", data: null });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private completeOnboarding = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: completeOnboardingBodySchema });
+    if (invalid) return invalid;
+
+    const userId = request.user?.id;
+    const userEmail = request.user?.email;
+    if (!userId || !userEmail) {
+      const { statusCode, payload } = errorResponse({ message: "Unauthorized", statusCode: 401 });
+      return reply.status(statusCode).send(payload);
+    }
+
+    const body = request.body as z.infer<typeof completeOnboardingBodySchema>;
+
+    if (body.accountType === "company") {
+      const { organizationId } = await createOrganizationForUser({
+        createdByUserId: userId,
+        createdByEmail: userEmail,
+        name: body.organization.name,
+        sizeBand: body.organization.sizeBand,
+      });
+
+      await drizzle
+        .update(userTable)
+        .set({ onboardingCompletedAt: new Date() })
+        .where(eq(userTable.id, userId));
+
+      const { statusCode, payload } = successResponse({
+        message: "Organization created",
+        data: { organizationId },
+      });
+      return reply.status(statusCode).send(payload);
+    }
+
+    await drizzle
+      .update(userTable)
+      .set({ onboardingCompletedAt: new Date() })
+      .where(eq(userTable.id, userId));
+
+    const { statusCode, payload } = successResponse({
+      message: "Onboarding completed",
+      data: { organizationId: null },
+    });
     return reply.status(statusCode).send(payload);
   };
 }

@@ -6,7 +6,7 @@ import { type LoginBody } from "@yoga-app/shared";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/shared/lib/utils";
-import { Field, SubmitButton } from "@/features/auth/components/login/form-ui";
+import { Field, SubmitButton } from "@/shared/components/forms/form-ui";
 import { type LoginMode } from "@/features/auth/hooks/use-login";
 
 interface LoginFormProps {

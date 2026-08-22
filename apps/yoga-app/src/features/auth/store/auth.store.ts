@@ -8,6 +8,7 @@ export interface AuthUser {
   role: UserRole;
   image?: string | null;
   emailVerified: boolean;
+  onboardingCompletedAt?: string | null;
 }
 
 type AuthStore = {

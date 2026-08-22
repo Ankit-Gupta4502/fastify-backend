@@ -1,6 +1,16 @@
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { UpdateGroupRoomBody, UpdateInstructorStatsBody } from "@yoga-app/shared";
-import type { AdminUsersFilters } from "@/api/admin";
+import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+  AdminInstructorSessionsFilters,
+  UpdateGroupRoomBody,
+  UpdateInstructorStatsBody,
+} from "@yoga-app/shared";
+import type {
+  AdminUsersFilters,
+  SetOrganizationCouponBody,
+  SetOrganizationPricingBody,
+  UpdateCorporatePlanBody,
+  UpdatePlanBody,
+} from "@/api/admin";
 import { adminApi } from "@/api/admin";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
@@ -23,6 +33,24 @@ export const adminQueryOptions = {
       queryFn: adminApi.listGroupRooms,
       staleTime: 30_000,
     }),
+  plans: () =>
+    queryOptions({
+      queryKey: queryKeys.admin.plans(),
+      queryFn: adminApi.listPlans,
+      staleTime: 30_000,
+    }),
+  corporatePlans: () =>
+    queryOptions({
+      queryKey: queryKeys.admin.corporatePlans(),
+      queryFn: adminApi.listCorporatePlans,
+      staleTime: 30_000,
+    }),
+  organizations: () =>
+    queryOptions({
+      queryKey: queryKeys.admin.organizations(),
+      queryFn: adminApi.listOrganizations,
+      staleTime: 30_000,
+    }),
 };
 
 export function useAdminUsers(filters?: AdminUsersFilters) {
@@ -39,6 +67,26 @@ export function useAdminUserDetail(id: string) {
 
 export function useAdminInstructors() {
   return useQuery(adminQueryOptions.instructors());
+}
+
+export function useAdminInstructorDetail(id: string, filters?: AdminInstructorSessionsFilters) {
+  return useQuery({
+    queryKey: queryKeys.admin.instructorDetail(id, filters),
+    queryFn: () => adminApi.getInstructorDetail(id, filters),
+    staleTime: 30_000,
+    // Sessions pagination/date filters change the query key, but the profile
+    // and wallet sections shouldn't flash back to a loading state for that —
+    // keep the previous page's data on screen while the next page loads.
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useAdminInstructorSessionDetail(instructorId: string, roomId: string) {
+  return useQuery({
+    queryKey: queryKeys.admin.instructorSessionDetail(instructorId, roomId),
+    queryFn: () => adminApi.getInstructorSessionDetail(instructorId, roomId),
+    staleTime: 30_000,
+  });
 }
 
 export function useAdminGroupRooms() {
@@ -149,6 +197,92 @@ export function useRejectPrivateRequest() {
     onSuccess: () => {
       // Invalidate all status tabs so counts stay fresh after a status change
       void qc.invalidateQueries({ queryKey: queryKeys.admin.privateRequests() });
+    },
+  });
+}
+
+export function useAdminPlans() {
+  return useQuery(adminQueryOptions.plans());
+}
+
+export function useCreatePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: adminApi.createPlan,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.plans() });
+    },
+  });
+}
+
+export function useUpdatePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdatePlanBody }) => adminApi.updatePlan(id, body),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.plans() });
+    },
+  });
+}
+
+export function useAdminCorporatePlans() {
+  return useQuery(adminQueryOptions.corporatePlans());
+}
+
+export function useCreateCorporatePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: adminApi.createCorporatePlan,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.corporatePlans() });
+    },
+  });
+}
+
+export function useUpdateCorporatePlan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateCorporatePlanBody }) =>
+      adminApi.updateCorporatePlan(id, body),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.corporatePlans() });
+    },
+  });
+}
+
+export function useAdminOrganizations() {
+  return useQuery(adminQueryOptions.organizations());
+}
+
+export function useSetOrganizationBillingApproval() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, approved }: { id: string; approved: boolean }) =>
+      adminApi.setOrganizationBillingApproval(id, approved),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.organizations() });
+    },
+  });
+}
+
+export function useSetOrganizationPricing() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: SetOrganizationPricingBody }) =>
+      adminApi.setOrganizationPricing(id, body),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.organizations() });
+    },
+  });
+}
+
+export function useSetOrganizationCoupon() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: SetOrganizationCouponBody }) =>
+      adminApi.setOrganizationCoupon(id, body),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.organizations() });
     },
   });
 }

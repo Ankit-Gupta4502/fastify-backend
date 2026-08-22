@@ -1,4 +1,13 @@
+import { organizationSignupSchema } from "@yoga-app/shared";
 import { z } from "zod";
+
+// Post-signup "individual or organization" prompt — catches users who never
+// answered at signup time (e.g. auto-registered via the Login tab's Google
+// button, which can't collect org details before the account is created).
+export const completeOnboardingBodySchema = z.discriminatedUnion("accountType", [
+  z.object({ accountType: z.literal("individual") }),
+  z.object({ accountType: z.literal("company"), organization: organizationSignupSchema }),
+]);
 
 export const saveAcquisitionSchema = z.object({
   utmSource: z.string().optional().nullable(),
@@ -21,6 +30,7 @@ export const savePreferencesSchema = z.object({
 
 export type SaveAcquisitionBody = z.infer<typeof saveAcquisitionSchema>;
 export type SavePreferencesBody = z.infer<typeof savePreferencesSchema>;
+export type CompleteOnboardingBody = z.infer<typeof completeOnboardingBodySchema>;
 
 export const userSwaggerSchemas = {
   getUserDetail: {
@@ -48,6 +58,7 @@ export const userSwaggerSchemas = {
               image: { type: "string" as const, nullable: true },
               createdAt: { type: "string" as const },
               updatedAt: { type: "string" as const },
+              onboardingCompletedAt: { type: "string" as const, nullable: true },
             },
           },
           error: { type: "string" as const, nullable: true },

@@ -110,6 +110,7 @@ export const ROOT_GLOBAL_META = [
 
 // Builder for dynamic expert profile pages.
 export function buildExpertHead(instructor: {
+  id: string;
   name: string;
   tagline?: string | null;
   specialty?: string[] | null;
@@ -124,7 +125,24 @@ export function buildExpertHead(instructor: {
     title,
     description,
     keywords: `${instructor.name}, yoga instructor, ${instructor.specialty?.join(", ")}, book yoga class, online yoga`,
-    canonical: `${SITE.url}/experts/`,
+    canonical: `${SITE.url}/experts/${instructor.id}`,
     ogImage: instructor.profileImageUrl ?? undefined,
+  });
+}
+
+// Builder for dynamic workshop landing pages.
+export function buildWorkshopHead(workshop: {
+  id: string;
+  name: string;
+  description: string;
+  image?: string | null;
+} | null | undefined) {
+  if (!workshop) return {};
+  return buildPageHead({
+    title: `${workshop.name} | ${SITE.name}`,
+    description: workshop.description,
+    keywords: `${workshop.name}, online yoga workshop, book yoga workshop, live yoga workshop`,
+    canonical: `${SITE.url}/workshops/${workshop.id}`,
+    ogImage: workshop.image ?? undefined,
   });
 }

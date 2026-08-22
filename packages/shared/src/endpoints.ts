@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
     DETAIL: "/user/detail",
     PREFERENCES: "/user/preferences",
     ACQUISITION: "/user/acquisition",
+    ONBOARDING: "/user/onboarding",
   },
   ROOMS: {
     PUBLIC_PREVIEW: "/rooms/public/preview",
@@ -33,6 +34,7 @@ export const API_ENDPOINTS = {
     EXPERT_PROFILE: (id: string) => `/instructor/${id}/profile`,
     MY_SCHEDULE: "/instructor/schedule",
     MY_PROFILE: "/instructor/profile",
+    MY_AVAILABILITY: "/instructor/availability",
     MY_WALLET: "/instructor/wallet",
   },
   UPLOADS: {
@@ -54,6 +56,9 @@ export const API_ENDPOINTS = {
     USERS: "/admin/users",
     USER_DETAIL: (id: string) => `/admin/users/${id}`,
     INSTRUCTORS: "/admin/instructors",
+    INSTRUCTOR_DETAIL: (id: string) => `/admin/instructors/${id}`,
+    INSTRUCTOR_SESSION_DETAIL: (instructorId: string, roomId: string) =>
+      `/admin/instructors/${instructorId}/sessions/${roomId}`,
     APPROVE_INSTRUCTOR: (id: string) => `/admin/instructors/${id}/approve`,
     UPDATE_INSTRUCTOR_PRIORITY: (id: string) => `/admin/instructors/${id}/priority`,
     UPDATE_INSTRUCTOR_STATS: (id: string) => `/admin/instructors/${id}/stats`,
@@ -66,6 +71,14 @@ export const API_ENDPOINTS = {
     REJECT_PRIVATE_REQUEST: (id: string) => `/admin/rooms/private-requests/${id}/reject`,
     REVIEWS: "/admin/reviews",
     REVIEW: (id: string) => `/admin/reviews/${id}`,
+    PLANS: "/admin/plans",
+    UPDATE_PLAN: (id: string) => `/admin/plans/${id}`,
+    CORPORATE_PLANS: "/admin/corporate-plans",
+    UPDATE_CORPORATE_PLAN: (id: string) => `/admin/corporate-plans/${id}`,
+    ORGANIZATIONS: "/admin/organizations",
+    SET_ORGANIZATION_BILLING_APPROVAL: (id: string) => `/admin/organizations/${id}/billing-approval`,
+    SET_ORGANIZATION_PRICING: (id: string) => `/admin/organizations/${id}/pricing`,
+    SET_ORGANIZATION_COUPON: (id: string) => `/admin/organizations/${id}/coupon`,
   },
   WORKSHOPS: {
     LIST: "/workshops",
@@ -98,5 +111,24 @@ export const API_ENDPOINTS = {
   },
   SYSTEM: {
     HEALTH: "/health",
+  },
+  REFERRALS: {
+    ME: "/referrals/me",
+  },
+  ORGANIZATIONS: {
+    MY_ORGANIZATIONS: "/organizations/me",
+    INVITE_PREVIEW: (token: string) => `/organizations/invites/${token}`,
+    ACCEPT_INVITE: (token: string) => `/organizations/invites/${token}/accept`,
+    MEMBERS: (organizationId: string) => `/organizations/${organizationId}/members`,
+    PROMOTE_MEMBER: (organizationId: string, memberId: string) =>
+      `/organizations/${organizationId}/members/${memberId}/promote`,
+    REMOVE_MEMBER: (organizationId: string, memberId: string) =>
+      `/organizations/${organizationId}/members/${memberId}`,
+    CLASSES: (organizationId: string) => `/organizations/${organizationId}/classes`,
+    INVITE_MEMBERS: (organizationId: string) => `/organizations/${organizationId}/invites`,
+    COUPON: (organizationId: string) => `/organizations/${organizationId}/coupon`,
+    CORPORATE_PLANS: "/organizations/corporate-plans",
+    SEAT_PURCHASE: (organizationId: string) => `/organizations/${organizationId}/subscriptions`,
+    SEAT_PURCHASE_VERIFY: (organizationId: string) => `/organizations/${organizationId}/subscriptions/verify`,
   },
 } as const;

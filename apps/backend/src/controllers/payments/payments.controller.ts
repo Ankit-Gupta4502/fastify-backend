@@ -21,6 +21,11 @@ import {
   getRazorpayKeyId,
   verifySubscriptionSignature,
 } from "../../services/razorpay.service";
+import { rewardReferrerIfEligible } from "../../services/referral.service";
+import {
+  applyCouponDiscount,
+  validateCouponForUser,
+} from "../../services/coupon.service";
 import { detectCountry, errorResponse, successResponse, validateWithZod } from "../../utils";
 
 export class PaymentsController {
@@ -104,7 +109,7 @@ export class PaymentsController {
       return reply.status(statusCode).send(payload);
     }
 
-    const { sessionCount, planName, country: clientCountry } = request.body as z.infer<typeof createCustomOrderBodySchema>;
+    const { sessionCount, planName, country: clientCountry, couponCode } = request.body as z.infer<typeof createCustomOrderBodySchema>;
     const country = detectCountry(request, clientCountry);
     const isIndia = country === "IN";
 
@@ -126,9 +131,27 @@ export class PaymentsController {
       const { statusCode, payload } = errorResponse({ message: "Plan pricing not configured", statusCode: 500 });
       return reply.status(statusCode).send(payload);
     }
-    const amount = useInrPricing
-      ? sessionCount * (inrRatePerSession as number) - PRICE_DISCOUNT_INR_PAISE
-      : sessionCount * (usdRatePerSession as number) - PRICE_DISCOUNT_CENTS;
+    const baseAmount = useInrPricing
+      ? sessionCount * (inrRatePerSession as number)
+      : sessionCount * (usdRatePerSession as number);
+
+    let amount: number;
+    if (couponCode) {
+      const validation = await validateCouponForUser(couponCode, me.id);
+      if (!validation.valid) {
+        const { statusCode, payload } = errorResponse({
+          message: `Coupon is ${validation.reason.replace(/_/g, " ")}`,
+          statusCode: 400,
+          error: "INVALID_COUPON",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      amount = applyCouponDiscount(baseAmount, validation.coupon);
+    } else {
+      amount = useInrPricing
+        ? baseAmount - PRICE_DISCOUNT_INR_PAISE
+        : baseAmount - PRICE_DISCOUNT_CENTS;
+    }
     const currency = useInrPricing ? "INR" : "USD";
     const period = plan.billingInterval === "week" ? "weekly" as const : "monthly" as const;
 
@@ -241,13 +264,27 @@ export class PaymentsController {
       return reply.status(statusCode).send(payload);
     }
 
-    const amount = isIndia && plan.priceInrPaise != null ? plan.priceInrPaise : plan.priceCents;
+    const baseAmount = isIndia && plan.priceInrPaise != null ? plan.priceInrPaise : plan.priceCents;
     const currency = isIndia && plan.priceInrPaise != null ? "INR" : "USD";
     const period = plan.billingInterval === "week" ? "weekly" as const : "monthly" as const;
 
-    if (amount == null) {
+    if (baseAmount == null) {
       const { statusCode, payload } = errorResponse({ message: "Plan price not configured", statusCode: 400 });
       return reply.status(statusCode).send(payload);
+    }
+
+    let amount = baseAmount;
+    if (body.couponCode) {
+      const validation = await validateCouponForUser(body.couponCode, me.id);
+      if (!validation.valid) {
+        const { statusCode, payload } = errorResponse({
+          message: `Coupon is ${validation.reason.replace(/_/g, " ")}`,
+          statusCode: 400,
+          error: "INVALID_COUPON",
+        });
+        return reply.status(statusCode).send(payload);
+      }
+      amount = applyCouponDiscount(baseAmount, validation.coupon);
     }
 
     // Idempotency: return an existing pending subscription rather than creating a duplicate
@@ -423,8 +460,11 @@ export class PaymentsController {
       if (sub.billingInterval === "week") {
         expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       } else {
+        // setUTCMonth, not setMonth — setMonth reads/writes the Node
+        // process's local timezone, which would land on the wrong calendar
+        // day near midnight UTC on any server not explicitly running TZ=UTC.
         expiresAt = new Date(now);
-        expiresAt.setMonth(expiresAt.getMonth() + 1);
+        expiresAt.setUTCMonth(expiresAt.getUTCMonth() + 1);
       }
 
       await drizzle
@@ -436,6 +476,8 @@ export class PaymentsController {
             eq(userSubscriptions.status, "pending_payment"),
           ),
         );
+
+      await rewardReferrerIfEligible(sub.userId, request.log);
     } catch (err) {
       request.log.error({ err }, "failed to activate subscription after verified payment");
       const { statusCode, payload } = errorResponse({

@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/shared/lib/utils";
 import { type LoginMode } from "@/features/auth/hooks/use-login";
 import { LoginForm } from "@/features/auth/components/login/login-form";
+import { OrgInviteBanner } from "@/features/auth/components/login/org-invite-banner";
 import { RegisterForm } from "@/features/auth/components/login/register-form";
 import { ForgotPasswordForm } from "@/features/auth/components/login/forgot-password-form";
 
@@ -19,6 +20,7 @@ interface LoginCardProps {
   isSubmitting: boolean;
   isForgotPending: boolean;
   isGooglePending: boolean;
+  orgInviteToken?: string;
   onLoginSubmit: (values: LoginBody) => Promise<void>;
   onRegisterSubmit: (values: RegisterBody) => Promise<void>;
   onForgotSubmit: (values: ForgotPasswordBody) => Promise<void>;
@@ -35,6 +37,7 @@ export function LoginCard({
   isSubmitting,
   isForgotPending,
   isGooglePending,
+  orgInviteToken,
   onLoginSubmit,
   onRegisterSubmit,
   onForgotSubmit,
@@ -83,6 +86,9 @@ export function LoginCard({
       )}
 
       <CardContent className="pt-4 pb-7 px-7">
+
+        {/* ── Register mode: invite banner (individual-vs-company is asked post-signup, in /onboarding) ── */}
+        {mode === "register" && orgInviteToken && <OrgInviteBanner token={orgInviteToken} />}
 
         {/* ── Active form ── */}
         {mode === "login" && (

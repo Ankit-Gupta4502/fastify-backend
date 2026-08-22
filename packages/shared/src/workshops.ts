@@ -2,6 +2,7 @@ export interface Workshop {
   id: string;
   name: string;
   description: string;
+  content: string | null;
   priceInr: number | null;
   priceUsd: number | null;
   utmPriceInr: number;
@@ -11,6 +12,10 @@ export interface Workshop {
   scheduledAt: string | null;
   maxAttendees: number;
   attendeeCount: number;
+  /** Resolved server-side from the visitor's detected country (IN vs rest-of-world). Only set on public list/detail responses. */
+  isIndia?: boolean;
+  /** Whether the signed-in visitor has already registered. Only computed on the detail response. */
+  isRegistered?: boolean;
 }
 
 export interface AdminWorkshop extends Workshop {
@@ -35,6 +40,7 @@ export interface WorkshopJoinBody {
 export interface CreateWorkshopBody {
   name: string;
   description: string;
+  content?: string | null;
   priceInr?: number | null;
   priceUsd?: number | null;
   utmPriceInr?: number;
@@ -49,6 +55,7 @@ export interface CreateWorkshopBody {
 export interface UpdateWorkshopBody {
   name?: string;
   description?: string;
+  content?: string | null;
   priceInr?: number | null;
   priceUsd?: number | null;
   utmPriceInr?: number;

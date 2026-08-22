@@ -30,6 +30,17 @@ export const user = pgTable("user", {
   weekResetAt: timestamp("week_reset_at", { withTimezone: true })
     .notNull()
     .default(sql`date_trunc('week', now())`),
+  // Own shareable code, generated lazily on first use (auth.controller / referral.service).
+  referralCode: text("referral_code").unique(),
+  // Set once at signup from the referral code in the register request; never changed after.
+  referredByUserId: uuid("referred_by_user_id").references(
+    (): AnyPgColumn => user.id,
+  ),
+  // Set once the user answers "individual or organization" post-signup — gates
+  // the /onboarding redirect. Null = hasn't answered yet.
+  onboardingCompletedAt: timestamp("onboarding_completed_at", {
+    withTimezone: true,
+  }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
@@ -90,6 +101,12 @@ export const userRelations = relations(user, ({ one, many }) => ({
     fields: [user.preferredInstructorId],
     references: [user.id],
   }),
+  referredBy: one(user, {
+    relationName: "referredBy",
+    fields: [user.referredByUserId],
+    references: [user.id],
+  }),
+  referredUsers: many(user, { relationName: "referredBy" }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

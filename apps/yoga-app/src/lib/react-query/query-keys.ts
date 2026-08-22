@@ -37,9 +37,18 @@ export const queryKeys = {
       [...queryKeys.admin.all, "users", filters ?? {}] as const,
     userDetail: (id: string) => [...queryKeys.admin.all, "users", id] as const,
     instructors: () => [...queryKeys.admin.all, "instructors"] as const,
+    instructorDetail: (
+      id: string,
+      filters?: { page?: number; pageSize?: number; dateFrom?: string; dateTo?: string },
+    ) => [...queryKeys.admin.all, "instructors", id, filters ?? {}] as const,
+    instructorSessionDetail: (instructorId: string, roomId: string) =>
+      [...queryKeys.admin.all, "instructors", instructorId, "sessions", roomId] as const,
     groupRooms: () => [...queryKeys.admin.all, "group-rooms"] as const,
     privateRequests: () => [...queryKeys.admin.all, "private-requests"] as const,
     workshops: () => [...queryKeys.admin.all, "workshops"] as const,
+    plans: () => [...queryKeys.admin.all, "plans"] as const,
+    corporatePlans: () => [...queryKeys.admin.all, "corporate-plans"] as const,
+    organizations: () => [...queryKeys.admin.all, "organizations"] as const,
   },
   workshops: {
     all: ["workshops"] as const,
@@ -60,5 +69,18 @@ export const queryKeys = {
   contact: {
     all: ["contact"] as const,
     adminList: () => [...queryKeys.contact.all, "admin-list"] as const,
+  },
+  referrals: {
+    all: ["referrals"] as const,
+    mine: () => [...queryKeys.referrals.all, "mine"] as const,
+  },
+  organizations: {
+    all: ["organizations"] as const,
+    mine: () => [...queryKeys.organizations.all, "mine"] as const,
+    members: (organizationId: string) => [...queryKeys.organizations.all, "members", organizationId] as const,
+    classes: (organizationId: string) => [...queryKeys.organizations.all, "classes", organizationId] as const,
+    coupon: (organizationId: string) => [...queryKeys.organizations.all, "coupon", organizationId] as const,
+    corporatePlans: () => [...queryKeys.organizations.all, "corporate-plans"] as const,
+    invitePreview: (token: string) => [...queryKeys.organizations.all, "invite-preview", token] as const,
   },
 } as const;

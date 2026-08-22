@@ -1,5 +1,6 @@
 import { integer, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
 import { workshops } from "./workshops";
+import { user } from "./auth.schema";
 
 export const registeredWorkshops = pgTable(
   "workshop_user",
@@ -9,6 +10,7 @@ export const registeredWorkshops = pgTable(
       .notNull()
       .references(() => workshops.id)
       .notNull(),
+    userId: uuid("user_id").references(() => user.id, { onDelete: "set null" }),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
     email: text("email").notNull(),

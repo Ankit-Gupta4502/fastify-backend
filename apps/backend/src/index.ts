@@ -25,6 +25,10 @@ import { WorkshopsController } from "./controllers/workshops/workshops.controlle
 import { ReviewsController } from "./controllers/reviews/reviews.controller";
 import { DemoController } from "./controllers/demo/demo.controller";
 import { ContactController } from "./controllers/contact/contact.controller";
+import { ReferralController } from "./controllers/referrals/referral.controller";
+import { OrganizationsController } from "./controllers/organizations/organizations.controller";
+import { PlansAdminController } from "./controllers/admin/plans-admin.controller";
+import { OrganizationsAdminController } from "./controllers/admin/organizations-admin.controller";
 import fastifyMultipart from "@fastify/multipart";
 import { errorResponse } from "./utils";
 import { FastifyError } from "fastify";
@@ -33,7 +37,6 @@ import { getDatabaseDriver } from "./config/database";
 import { backendEnvPath } from "./config/env";
 import { DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_URL } from "@yoga-app/shared";
 import { drizzle } from "./db";
-import { registerQuotaResetJob } from "./jobs/quota-reset.job";
 
 export const fastify = Fastify({
   logger: true,
@@ -172,14 +175,16 @@ const start = async () => {
     new ReviewsController(authMiddleware, fastify);
     new DemoController(authMiddleware, fastify);
     new ContactController(authMiddleware, fastify);
+    new ReferralController(authMiddleware, fastify);
+    new OrganizationsController(authMiddleware, fastify);
+    new PlansAdminController(authMiddleware, fastify);
+    new OrganizationsAdminController(authMiddleware, fastify);
 
 
     fastify.get("/health", async (request: FastifyRequest) => {
       return { status: "ok", timestamp: new Date().toISOString(), country: request.headers["cf-ipcountry"] };
     });
 
-
-    registerQuotaResetJob(drizzle, fastify.log);
 
     await fastify.ready();
     const port = Number(process.env.PORT) || DEFAULT_BACKEND_PORT;

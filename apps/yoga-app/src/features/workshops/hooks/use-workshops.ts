@@ -1,10 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { workshopsApi } from "@/api/workshops";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import type { Workshop, WorkshopJoinBody, CreateWorkshopBody, UpdateWorkshopBody } from "@yoga-app/shared";
-import { openRazorpayCheckout } from "@/features/payments/services/razorpay.service";
+import { openRazorpayCheckout } from "@/shared/lib/razorpay";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { getStoredUtm } from "@/shared/lib/utm";
+import { ApiRequestError } from "@/lib/http";
 
 export function useWorkshops() {
   return useQuery({
@@ -14,13 +15,18 @@ export function useWorkshops() {
   });
 }
 
+export const workshopQueryOptions = {
+  detail: (id: string) =>
+    queryOptions({
+      queryKey: queryKeys.workshops.detail(id),
+      queryFn: () => workshopsApi.detail(id),
+      staleTime: 60_000,
+      enabled: !!id,
+    }),
+};
+
 export function useWorkshop(id: string) {
-  return useQuery({
-    queryKey: queryKeys.workshops.detail(id),
-    queryFn: () => workshopsApi.detail(id),
-    staleTime: 60_000,
-    enabled: !!id,
-  });
+  return useQuery(workshopQueryOptions.detail(id));
 }
 
 export function useJoinWorkshop() {
@@ -82,6 +88,10 @@ export function useWorkshopCheckout(workshop: Workshop) {
           });
           return;
         } catch (err) {
+          // A 409 here means an earlier attempt in this same loop already succeeded (the
+          // response was just lost in transit) — this user IS registered and charged, so
+          // treat it as success rather than surfacing an error for a completed registration.
+          if (err instanceof ApiRequestError && err.status === 409) return;
           lastErr = err;
           if (attempt < 2) await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
         }

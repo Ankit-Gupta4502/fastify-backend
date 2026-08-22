@@ -18,6 +18,7 @@ export interface SessionPayload {
     role: UserRole;
     image?: string | null;
     emailVerified: boolean;
+    onboardingCompletedAt?: string | null;
   };
 }
 
@@ -43,9 +44,17 @@ export const authApi = {
       method: "POST",
     }),
     
-  getGoogleUrl: (callbackURL: string) =>
+  getGoogleUrl: (
+    callbackURL: string,
+    opts?: {
+      ref?: string;
+      orgName?: string;
+      orgSizeBand?: string;
+      orgInviteToken?: string;
+    },
+  ) =>
     apiRequest<{ url: string | null }>(ENDPOINTS.AUTH.GOOGLE, {
-      params: { callbackURL },
+      params: { callbackURL, ...opts },
     }),
 
   forgotPassword: (payload: ForgotPasswordBody) =>
@@ -73,10 +82,20 @@ export const authApi = {
     }),
 };
 
+export type CompleteOnboardingPayload =
+  | { accountType: "individual" }
+  | { accountType: "company"; organization: { name: string; sizeBand: string } };
+
 // User Fetchers
 export const userApi = {
-  fetchDetail: () => 
+  fetchDetail: () =>
     apiRequest<SessionPayload["user"]>(ENDPOINTS.USER.DETAIL),
+
+  completeOnboarding: (payload: CompleteOnboardingPayload) =>
+    apiRequest<{ organizationId: string | null }>(ENDPOINTS.USER.ONBOARDING, {
+      method: "POST",
+      data: payload,
+    }),
 };
 
 // System Fetchers
@@ -92,3 +111,20 @@ export { uploadsApi } from "./uploads";
 export { instructorsApi } from "./instructors";
 export { plansApi, type MyPlanResponse } from "./plans";
 export { paymentsApi } from "./payments";
+export {
+  referralsApi,
+  type ReferralDashboardResponse,
+  type ReferredUserSummary,
+  type ReferredUserStatus,
+} from "./referrals";
+export {
+  organizationsApi,
+  type OrganizationInvitePreview,
+  type MyOrganizationSummary,
+  type OrganizationMember,
+  type OrganizationClass,
+  type OrganizationClassAttendee,
+  type OrganizationCoupon,
+  type CorporatePlan,
+  type SeatPurchaseResult,
+} from "./organizations";

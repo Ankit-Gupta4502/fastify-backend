@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInstructorProfile } from "@/features/instructor/hooks/use-instructors";
 import { ProfileForm } from "@/features/instructor/components/profile-form";
+import { AvailabilityForm } from "@/features/instructor/components/availability-form";
 
 export const Route = createFileRoute("/instructor/profile/")({
   component: InstructorProfilePage,
@@ -35,7 +37,18 @@ function InstructorProfilePage() {
           Could not load profile. Please try again.
         </div>
       ) : profile ? (
-        <ProfileForm profile={profile} />
+        <Tabs defaultValue="profile">
+          <TabsList>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="availability">Availability</TabsTrigger>
+          </TabsList>
+          <TabsContent value="profile">
+            <ProfileForm profile={profile} />
+          </TabsContent>
+          <TabsContent value="availability">
+            <AvailabilityForm profile={profile} />
+          </TabsContent>
+        </Tabs>
       ) : null}
     </div>
   );

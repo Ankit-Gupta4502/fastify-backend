@@ -2,6 +2,7 @@ import { and, desc, eq, gt, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import type { AppDatabase } from "../types/database.types";
 import {
   instructorDetails,
+  organizationMembers,
   plans,
   roomUsers,
   rooms,
@@ -90,6 +91,22 @@ export async function listUpcomingGroupRooms(
   db: AppDatabase,
   audience: { role: string; timezone: string; userId?: string },
 ): Promise<UpcomingRoom[]> {
+  // Org-restricted rooms are invisible to everyone except that org's joined
+  // members — public rooms (organizationId null) are unaffected.
+  const memberOrgIds = audience.userId
+    ? (
+        await db
+          .select({ organizationId: organizationMembers.organizationId })
+          .from(organizationMembers)
+          .where(
+            and(
+              eq(organizationMembers.userId, audience.userId),
+              eq(organizationMembers.status, "joined"),
+            ),
+          )
+      ).map((r) => r.organizationId)
+    : [];
+
   const rows = await db
     .select({
       id: rooms.id,
@@ -99,6 +116,7 @@ export async function listUpcomingGroupRooms(
       scheduledStartUtc: rooms.scheduledStart,
       scheduledEndUtc: rooms.scheduledEnd,
       meetLink: rooms.meetLink,
+      organizationId: rooms.organizationId,
       instructorId: user.id,
       instructorName: user.name,
       specialty: instructorDetails.specialty,
@@ -132,6 +150,8 @@ export async function listUpcomingGroupRooms(
     // A cancelled class stops being offered to everyone else — only the
     // people already enrolled in it still see it (disabled) on their list.
     .filter((r) => r.status !== ROOM_STATUS.CANCELLED || r.enrolledUserId !== null)
+    // Org-restricted rooms only show up for that org's joined members.
+    .filter((r) => r.organizationId === null || memberOrgIds.includes(r.organizationId))
     .map((r) => {
       const canJoinFrom = r.scheduledStartUtc.getTime() - LIVE_JOIN_WINDOW_MS;
       const canJoinLive =
@@ -176,6 +196,34 @@ export async function enrollRoom(
   return db.transaction(async (trx) => {
     const isPrivilegedRole = params.userRole === "instructor" || params.userRole === "admin";
     let subBillingInterval = "week";
+
+    // 0. Org-restricted rooms can only be enrolled into by that org's joined
+    // members — mirrors the listing filter above, enforced again here since
+    // this is the actual access gate (a room ID could be hit directly).
+    const [roomOrg] = await trx
+      .select({ organizationId: rooms.organizationId })
+      .from(rooms)
+      .where(eq(rooms.id, params.roomId));
+
+    if (roomOrg?.organizationId) {
+      const [membership] = await trx
+        .select({ id: organizationMembers.id })
+        .from(organizationMembers)
+        .where(
+          and(
+            eq(organizationMembers.organizationId, roomOrg.organizationId),
+            eq(organizationMembers.userId, params.userId),
+            eq(organizationMembers.status, "joined"),
+          ),
+        );
+      if (!membership) {
+        throw new SessionPoolError(
+          "ROOM_RESTRICTED",
+          "This class is restricted to a specific organization",
+          403,
+        );
+      }
+    }
 
     // 1. Subscription + quota check — skipped for instructors/admins attending as observers.
     if (!isPrivilegedRole) {
@@ -333,40 +381,47 @@ export async function enterLiveRoom(
 
     const isRoomInstructor = room.instructorId === params.userId;
 
-    if (!isRoomInstructor) {
-      const [booking] = await trx
-        .select({ id: roomUsers.id, leftAt: roomUsers.leftAt })
-        .from(roomUsers)
-        .where(
-          and(
-            eq(roomUsers.roomId, params.roomId),
-            eq(roomUsers.userId, params.userId),
-          ),
-        )
-        .orderBy(sql`${roomUsers.leftAt} IS NULL DESC`)
-        .limit(1);
+    const [booking] = await trx
+      .select({ id: roomUsers.id, leftAt: roomUsers.leftAt })
+      .from(roomUsers)
+      .where(
+        and(
+          eq(roomUsers.roomId, params.roomId),
+          eq(roomUsers.userId, params.userId),
+        ),
+      )
+      .orderBy(sql`${roomUsers.leftAt} IS NULL DESC`)
+      .limit(1);
 
-      if (!booking) {
+    if (!booking) {
+      if (isRoomInstructor) {
+        // The instructor doesn't go through the enrolment/quota flow — give
+        // them a room_users row on first join so their attendance is tracked
+        // the same way a student's is.
+        await trx.insert(roomUsers).values({
+          roomId: params.roomId,
+          userId: params.userId,
+          status: BOOKING_STATUS.ACTIVE,
+        });
+      } else {
         throw new SessionPoolError(
           "NOT_ENROLLED",
           "You must enrol in this session before joining",
           403,
         );
       }
-
-      if (booking.leftAt !== null) {
-        if (now < room.scheduledStart.getTime()) {
-          throw new SessionPoolError(
-            "NOT_ENROLLED",
-            "You must enrol in this session before joining",
-            403,
-          );
-        }
-        await trx
-          .update(roomUsers)
-          .set({ leftAt: null, status: BOOKING_STATUS.ACTIVE })
-          .where(eq(roomUsers.id, booking.id));
+    } else if (booking.leftAt !== null) {
+      if (!isRoomInstructor && now < room.scheduledStart.getTime()) {
+        throw new SessionPoolError(
+          "NOT_ENROLLED",
+          "You must enrol in this session before joining",
+          403,
+        );
       }
+      await trx
+        .update(roomUsers)
+        .set({ leftAt: null, status: BOOKING_STATUS.ACTIVE })
+        .where(eq(roomUsers.id, booking.id));
     }
 
     if (room.status === ROOM_STATUS.IDLE) {

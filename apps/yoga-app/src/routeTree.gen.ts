@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OrgRouteRouteImport } from './routes/org/route'
 import { Route as InstructorRouteRouteImport } from './routes/instructor/route'
 import { Route as DemoRouteRouteImport } from './routes/demo/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
@@ -19,13 +20,18 @@ import { Route as TermsIndexRouteImport } from './routes/terms/index'
 import { Route as ResetPasswordIndexRouteImport } from './routes/reset-password/index'
 import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
 import { Route as PricingIndexRouteImport } from './routes/pricing/index'
+import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as ExpertsIndexRouteImport } from './routes/experts/index'
 import { Route as DemoIndexRouteImport } from './routes/demo/index'
 import { Route as ContactIndexRouteImport } from './routes/contact/index'
 import { Route as AdminLoginIndexRouteImport } from './routes/admin-login/index'
 import { Route as DemoSuccessRouteImport } from './routes/demo/success'
+import { Route as WorkshopsWorkshopIdIndexRouteImport } from './routes/workshops/$workshopId/index'
 import { Route as SessionRoomIdIndexRouteImport } from './routes/session.$roomId/index'
+import { Route as OrgMembersIndexRouteImport } from './routes/org/members/index'
+import { Route as OrgClassesIndexRouteImport } from './routes/org/classes/index'
+import { Route as OrgBillingIndexRouteImport } from './routes/org/billing/index'
 import { Route as InstructorProfileIndexRouteImport } from './routes/instructor/profile/index'
 import { Route as InstructorEarningsIndexRouteImport } from './routes/instructor/earnings/index'
 import { Route as InstructorDashboardIndexRouteImport } from './routes/instructor/dashboard/index'
@@ -36,17 +42,28 @@ import { Route as AdminSubscriptionsIndexRouteImport } from './routes/admin/subs
 import { Route as AdminRoomsIndexRouteImport } from './routes/admin/rooms/index'
 import { Route as AdminReviewsIndexRouteImport } from './routes/admin/reviews/index'
 import { Route as AdminPrivateSessionsIndexRouteImport } from './routes/admin/private-sessions/index'
+import { Route as AdminPlansIndexRouteImport } from './routes/admin/plans/index'
+import { Route as AdminOrganizationsIndexRouteImport } from './routes/admin/organizations/index'
 import { Route as AdminInstructorsIndexRouteImport } from './routes/admin/instructors/index'
 import { Route as AdminDemoRequestsIndexRouteImport } from './routes/admin/demo-requests/index'
 import { Route as AdminContactQueriesIndexRouteImport } from './routes/admin/contact-queries/index'
 import { Route as UserRoomsIndexRouteImport } from './routes/_user/rooms/index'
+import { Route as UserReferralsIndexRouteImport } from './routes/_user/referrals/index'
 import { Route as UserPrivateSessionsIndexRouteImport } from './routes/_user/private-sessions/index'
 import { Route as UserEditProfileIndexRouteImport } from './routes/_user/edit-profile/index'
 import { Route as UserDashboardIndexRouteImport } from './routes/_user/dashboard/index'
 import { Route as UserBillingIndexRouteImport } from './routes/_user/billing/index'
 import { Route as InstructorDashboardUpcomingRouteImport } from './routes/instructor/dashboard/upcoming'
 import { Route as AdminUsersUserIdRouteImport } from './routes/admin/users/$userId'
+import { Route as AdminInstructorsInstructorIdRouteImport } from './routes/admin/instructors/$instructorId'
+import { Route as AdminInstructorsInstructorIdIndexRouteImport } from './routes/admin/instructors/$instructorId.index'
+import { Route as AdminInstructorsInstructorIdSessionsRoomIdRouteImport } from './routes/admin/instructors/$instructorId.sessions.$roomId'
 
+const OrgRouteRoute = OrgRouteRouteImport.update({
+  id: '/org',
+  path: '/org',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InstructorRouteRoute = InstructorRouteRouteImport.update({
   id: '/instructor',
   path: '/instructor',
@@ -96,6 +113,11 @@ const PricingIndexRoute = PricingIndexRouteImport.update({
   path: '/pricing/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
+  id: '/onboarding/',
+  path: '/onboarding/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginIndexRoute = LoginIndexRouteImport.update({
   id: '/login/',
   path: '/login/',
@@ -126,10 +148,31 @@ const DemoSuccessRoute = DemoSuccessRouteImport.update({
   path: '/success',
   getParentRoute: () => DemoRouteRoute,
 } as any)
+const WorkshopsWorkshopIdIndexRoute =
+  WorkshopsWorkshopIdIndexRouteImport.update({
+    id: '/workshops/$workshopId/',
+    path: '/workshops/$workshopId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SessionRoomIdIndexRoute = SessionRoomIdIndexRouteImport.update({
   id: '/session/$roomId/',
   path: '/session/$roomId/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const OrgMembersIndexRoute = OrgMembersIndexRouteImport.update({
+  id: '/members/',
+  path: '/members/',
+  getParentRoute: () => OrgRouteRoute,
+} as any)
+const OrgClassesIndexRoute = OrgClassesIndexRouteImport.update({
+  id: '/classes/',
+  path: '/classes/',
+  getParentRoute: () => OrgRouteRoute,
+} as any)
+const OrgBillingIndexRoute = OrgBillingIndexRouteImport.update({
+  id: '/billing/',
+  path: '/billing/',
+  getParentRoute: () => OrgRouteRoute,
 } as any)
 const InstructorProfileIndexRoute = InstructorProfileIndexRouteImport.update({
   id: '/profile/',
@@ -183,6 +226,16 @@ const AdminPrivateSessionsIndexRoute =
     path: '/private-sessions/',
     getParentRoute: () => AdminRouteRoute,
   } as any)
+const AdminPlansIndexRoute = AdminPlansIndexRouteImport.update({
+  id: '/plans/',
+  path: '/plans/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminOrganizationsIndexRoute = AdminOrganizationsIndexRouteImport.update({
+  id: '/organizations/',
+  path: '/organizations/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminInstructorsIndexRoute = AdminInstructorsIndexRouteImport.update({
   id: '/instructors/',
   path: '/instructors/',
@@ -202,6 +255,11 @@ const AdminContactQueriesIndexRoute =
 const UserRoomsIndexRoute = UserRoomsIndexRouteImport.update({
   id: '/rooms/',
   path: '/rooms/',
+  getParentRoute: () => UserRouteRoute,
+} as any)
+const UserReferralsIndexRoute = UserReferralsIndexRouteImport.update({
+  id: '/referrals/',
+  path: '/referrals/',
   getParentRoute: () => UserRouteRoute,
 } as any)
 const UserPrivateSessionsIndexRoute =
@@ -236,33 +294,57 @@ const AdminUsersUserIdRoute = AdminUsersUserIdRouteImport.update({
   path: '/users/$userId',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminInstructorsInstructorIdRoute =
+  AdminInstructorsInstructorIdRouteImport.update({
+    id: '/instructors/$instructorId',
+    path: '/instructors/$instructorId',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
+const AdminInstructorsInstructorIdIndexRoute =
+  AdminInstructorsInstructorIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AdminInstructorsInstructorIdRoute,
+  } as any)
+const AdminInstructorsInstructorIdSessionsRoomIdRoute =
+  AdminInstructorsInstructorIdSessionsRoomIdRouteImport.update({
+    id: '/sessions/$roomId',
+    path: '/sessions/$roomId',
+    getParentRoute: () => AdminInstructorsInstructorIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/demo': typeof DemoRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/org': typeof OrgRouteRouteWithChildren
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login/': typeof AdminLoginIndexRoute
   '/contact/': typeof ContactIndexRoute
   '/demo/': typeof DemoIndexRoute
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/verify-email/': typeof VerifyEmailIndexRoute
+  '/admin/instructors/$instructorId': typeof AdminInstructorsInstructorIdRouteWithChildren
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/billing/': typeof UserBillingIndexRoute
   '/dashboard/': typeof UserDashboardIndexRoute
   '/edit-profile/': typeof UserEditProfileIndexRoute
   '/private-sessions/': typeof UserPrivateSessionsIndexRoute
+  '/referrals/': typeof UserReferralsIndexRoute
   '/rooms/': typeof UserRoomsIndexRoute
   '/admin/contact-queries/': typeof AdminContactQueriesIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
+  '/admin/organizations/': typeof AdminOrganizationsIndexRoute
+  '/admin/plans/': typeof AdminPlansIndexRoute
   '/admin/private-sessions/': typeof AdminPrivateSessionsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
@@ -273,18 +355,26 @@ export interface FileRoutesByFullPath {
   '/instructor/dashboard/': typeof InstructorDashboardIndexRoute
   '/instructor/earnings/': typeof InstructorEarningsIndexRoute
   '/instructor/profile/': typeof InstructorProfileIndexRoute
+  '/org/billing/': typeof OrgBillingIndexRoute
+  '/org/classes/': typeof OrgClassesIndexRoute
+  '/org/members/': typeof OrgMembersIndexRoute
   '/session/$roomId/': typeof SessionRoomIdIndexRoute
+  '/workshops/$workshopId/': typeof WorkshopsWorkshopIdIndexRoute
+  '/admin/instructors/$instructorId/': typeof AdminInstructorsInstructorIdIndexRoute
+  '/admin/instructors/$instructorId/sessions/$roomId': typeof AdminInstructorsInstructorIdSessionsRoomIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/org': typeof OrgRouteRouteWithChildren
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login': typeof AdminLoginIndexRoute
   '/contact': typeof ContactIndexRoute
   '/demo': typeof DemoIndexRoute
   '/experts': typeof ExpertsIndexRoute
   '/login': typeof LoginIndexRoute
+  '/onboarding': typeof OnboardingIndexRoute
   '/pricing': typeof PricingIndexRoute
   '/privacy': typeof PrivacyIndexRoute
   '/reset-password': typeof ResetPasswordIndexRoute
@@ -296,10 +386,13 @@ export interface FileRoutesByTo {
   '/dashboard': typeof UserDashboardIndexRoute
   '/edit-profile': typeof UserEditProfileIndexRoute
   '/private-sessions': typeof UserPrivateSessionsIndexRoute
+  '/referrals': typeof UserReferralsIndexRoute
   '/rooms': typeof UserRoomsIndexRoute
   '/admin/contact-queries': typeof AdminContactQueriesIndexRoute
   '/admin/demo-requests': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors': typeof AdminInstructorsIndexRoute
+  '/admin/organizations': typeof AdminOrganizationsIndexRoute
+  '/admin/plans': typeof AdminPlansIndexRoute
   '/admin/private-sessions': typeof AdminPrivateSessionsIndexRoute
   '/admin/reviews': typeof AdminReviewsIndexRoute
   '/admin/rooms': typeof AdminRoomsIndexRoute
@@ -310,7 +403,13 @@ export interface FileRoutesByTo {
   '/instructor/dashboard': typeof InstructorDashboardIndexRoute
   '/instructor/earnings': typeof InstructorEarningsIndexRoute
   '/instructor/profile': typeof InstructorProfileIndexRoute
+  '/org/billing': typeof OrgBillingIndexRoute
+  '/org/classes': typeof OrgClassesIndexRoute
+  '/org/members': typeof OrgMembersIndexRoute
   '/session/$roomId': typeof SessionRoomIdIndexRoute
+  '/workshops/$workshopId': typeof WorkshopsWorkshopIdIndexRoute
+  '/admin/instructors/$instructorId': typeof AdminInstructorsInstructorIdIndexRoute
+  '/admin/instructors/$instructorId/sessions/$roomId': typeof AdminInstructorsInstructorIdSessionsRoomIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -319,27 +418,33 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/demo': typeof DemoRouteRouteWithChildren
   '/instructor': typeof InstructorRouteRouteWithChildren
+  '/org': typeof OrgRouteRouteWithChildren
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login/': typeof AdminLoginIndexRoute
   '/contact/': typeof ContactIndexRoute
   '/demo/': typeof DemoIndexRoute
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/privacy/': typeof PrivacyIndexRoute
   '/reset-password/': typeof ResetPasswordIndexRoute
   '/terms/': typeof TermsIndexRoute
   '/verify-email/': typeof VerifyEmailIndexRoute
+  '/admin/instructors/$instructorId': typeof AdminInstructorsInstructorIdRouteWithChildren
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/instructor/dashboard/upcoming': typeof InstructorDashboardUpcomingRoute
   '/_user/billing/': typeof UserBillingIndexRoute
   '/_user/dashboard/': typeof UserDashboardIndexRoute
   '/_user/edit-profile/': typeof UserEditProfileIndexRoute
   '/_user/private-sessions/': typeof UserPrivateSessionsIndexRoute
+  '/_user/referrals/': typeof UserReferralsIndexRoute
   '/_user/rooms/': typeof UserRoomsIndexRoute
   '/admin/contact-queries/': typeof AdminContactQueriesIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
+  '/admin/organizations/': typeof AdminOrganizationsIndexRoute
+  '/admin/plans/': typeof AdminPlansIndexRoute
   '/admin/private-sessions/': typeof AdminPrivateSessionsIndexRoute
   '/admin/reviews/': typeof AdminReviewsIndexRoute
   '/admin/rooms/': typeof AdminRoomsIndexRoute
@@ -350,7 +455,13 @@ export interface FileRoutesById {
   '/instructor/dashboard/': typeof InstructorDashboardIndexRoute
   '/instructor/earnings/': typeof InstructorEarningsIndexRoute
   '/instructor/profile/': typeof InstructorProfileIndexRoute
+  '/org/billing/': typeof OrgBillingIndexRoute
+  '/org/classes/': typeof OrgClassesIndexRoute
+  '/org/members/': typeof OrgMembersIndexRoute
   '/session/$roomId/': typeof SessionRoomIdIndexRoute
+  '/workshops/$workshopId/': typeof WorkshopsWorkshopIdIndexRoute
+  '/admin/instructors/$instructorId/': typeof AdminInstructorsInstructorIdIndexRoute
+  '/admin/instructors/$instructorId/sessions/$roomId': typeof AdminInstructorsInstructorIdSessionsRoomIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -359,27 +470,33 @@ export interface FileRouteTypes {
     | '/admin'
     | '/demo'
     | '/instructor'
+    | '/org'
     | '/demo/success'
     | '/admin-login/'
     | '/contact/'
     | '/demo/'
     | '/experts/'
     | '/login/'
+    | '/onboarding/'
     | '/pricing/'
     | '/privacy/'
     | '/reset-password/'
     | '/terms/'
     | '/verify-email/'
+    | '/admin/instructors/$instructorId'
     | '/admin/users/$userId'
     | '/instructor/dashboard/upcoming'
     | '/billing/'
     | '/dashboard/'
     | '/edit-profile/'
     | '/private-sessions/'
+    | '/referrals/'
     | '/rooms/'
     | '/admin/contact-queries/'
     | '/admin/demo-requests/'
     | '/admin/instructors/'
+    | '/admin/organizations/'
+    | '/admin/plans/'
     | '/admin/private-sessions/'
     | '/admin/reviews/'
     | '/admin/rooms/'
@@ -390,18 +507,26 @@ export interface FileRouteTypes {
     | '/instructor/dashboard/'
     | '/instructor/earnings/'
     | '/instructor/profile/'
+    | '/org/billing/'
+    | '/org/classes/'
+    | '/org/members/'
     | '/session/$roomId/'
+    | '/workshops/$workshopId/'
+    | '/admin/instructors/$instructorId/'
+    | '/admin/instructors/$instructorId/sessions/$roomId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/instructor'
+    | '/org'
     | '/demo/success'
     | '/admin-login'
     | '/contact'
     | '/demo'
     | '/experts'
     | '/login'
+    | '/onboarding'
     | '/pricing'
     | '/privacy'
     | '/reset-password'
@@ -413,10 +538,13 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/edit-profile'
     | '/private-sessions'
+    | '/referrals'
     | '/rooms'
     | '/admin/contact-queries'
     | '/admin/demo-requests'
     | '/admin/instructors'
+    | '/admin/organizations'
+    | '/admin/plans'
     | '/admin/private-sessions'
     | '/admin/reviews'
     | '/admin/rooms'
@@ -427,7 +555,13 @@ export interface FileRouteTypes {
     | '/instructor/dashboard'
     | '/instructor/earnings'
     | '/instructor/profile'
+    | '/org/billing'
+    | '/org/classes'
+    | '/org/members'
     | '/session/$roomId'
+    | '/workshops/$workshopId'
+    | '/admin/instructors/$instructorId'
+    | '/admin/instructors/$instructorId/sessions/$roomId'
   id:
     | '__root__'
     | '/'
@@ -435,27 +569,33 @@ export interface FileRouteTypes {
     | '/admin'
     | '/demo'
     | '/instructor'
+    | '/org'
     | '/demo/success'
     | '/admin-login/'
     | '/contact/'
     | '/demo/'
     | '/experts/'
     | '/login/'
+    | '/onboarding/'
     | '/pricing/'
     | '/privacy/'
     | '/reset-password/'
     | '/terms/'
     | '/verify-email/'
+    | '/admin/instructors/$instructorId'
     | '/admin/users/$userId'
     | '/instructor/dashboard/upcoming'
     | '/_user/billing/'
     | '/_user/dashboard/'
     | '/_user/edit-profile/'
     | '/_user/private-sessions/'
+    | '/_user/referrals/'
     | '/_user/rooms/'
     | '/admin/contact-queries/'
     | '/admin/demo-requests/'
     | '/admin/instructors/'
+    | '/admin/organizations/'
+    | '/admin/plans/'
     | '/admin/private-sessions/'
     | '/admin/reviews/'
     | '/admin/rooms/'
@@ -466,7 +606,13 @@ export interface FileRouteTypes {
     | '/instructor/dashboard/'
     | '/instructor/earnings/'
     | '/instructor/profile/'
+    | '/org/billing/'
+    | '/org/classes/'
+    | '/org/members/'
     | '/session/$roomId/'
+    | '/workshops/$workshopId/'
+    | '/admin/instructors/$instructorId/'
+    | '/admin/instructors/$instructorId/sessions/$roomId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -475,10 +621,12 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   DemoRouteRoute: typeof DemoRouteRouteWithChildren
   InstructorRouteRoute: typeof InstructorRouteRouteWithChildren
+  OrgRouteRoute: typeof OrgRouteRouteWithChildren
   AdminLoginIndexRoute: typeof AdminLoginIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
   ExpertsIndexRoute: typeof ExpertsIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
+  OnboardingIndexRoute: typeof OnboardingIndexRoute
   PricingIndexRoute: typeof PricingIndexRoute
   PrivacyIndexRoute: typeof PrivacyIndexRoute
   ResetPasswordIndexRoute: typeof ResetPasswordIndexRoute
@@ -486,10 +634,18 @@ export interface RootRouteChildren {
   VerifyEmailIndexRoute: typeof VerifyEmailIndexRoute
   ExpertsExpertIdIndexRoute: typeof ExpertsExpertIdIndexRoute
   SessionRoomIdIndexRoute: typeof SessionRoomIdIndexRoute
+  WorkshopsWorkshopIdIndexRoute: typeof WorkshopsWorkshopIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/org': {
+      id: '/org'
+      path: '/org'
+      fullPath: '/org'
+      preLoaderRoute: typeof OrgRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/instructor': {
       id: '/instructor'
       path: '/instructor'
@@ -560,6 +716,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding/': {
+      id: '/onboarding/'
+      path: '/onboarding'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof OnboardingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login/': {
       id: '/login/'
       path: '/login'
@@ -602,12 +765,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoSuccessRouteImport
       parentRoute: typeof DemoRouteRoute
     }
+    '/workshops/$workshopId/': {
+      id: '/workshops/$workshopId/'
+      path: '/workshops/$workshopId'
+      fullPath: '/workshops/$workshopId/'
+      preLoaderRoute: typeof WorkshopsWorkshopIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/session/$roomId/': {
       id: '/session/$roomId/'
       path: '/session/$roomId'
       fullPath: '/session/$roomId/'
       preLoaderRoute: typeof SessionRoomIdIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/org/members/': {
+      id: '/org/members/'
+      path: '/members'
+      fullPath: '/org/members/'
+      preLoaderRoute: typeof OrgMembersIndexRouteImport
+      parentRoute: typeof OrgRouteRoute
+    }
+    '/org/classes/': {
+      id: '/org/classes/'
+      path: '/classes'
+      fullPath: '/org/classes/'
+      preLoaderRoute: typeof OrgClassesIndexRouteImport
+      parentRoute: typeof OrgRouteRoute
+    }
+    '/org/billing/': {
+      id: '/org/billing/'
+      path: '/billing'
+      fullPath: '/org/billing/'
+      preLoaderRoute: typeof OrgBillingIndexRouteImport
+      parentRoute: typeof OrgRouteRoute
     }
     '/instructor/profile/': {
       id: '/instructor/profile/'
@@ -679,6 +870,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPrivateSessionsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/plans/': {
+      id: '/admin/plans/'
+      path: '/plans'
+      fullPath: '/admin/plans/'
+      preLoaderRoute: typeof AdminPlansIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/organizations/': {
+      id: '/admin/organizations/'
+      path: '/organizations'
+      fullPath: '/admin/organizations/'
+      preLoaderRoute: typeof AdminOrganizationsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/instructors/': {
       id: '/admin/instructors/'
       path: '/instructors'
@@ -705,6 +910,13 @@ declare module '@tanstack/react-router' {
       path: '/rooms'
       fullPath: '/rooms/'
       preLoaderRoute: typeof UserRoomsIndexRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
+    '/_user/referrals/': {
+      id: '/_user/referrals/'
+      path: '/referrals'
+      fullPath: '/referrals/'
+      preLoaderRoute: typeof UserReferralsIndexRouteImport
       parentRoute: typeof UserRouteRoute
     }
     '/_user/private-sessions/': {
@@ -749,6 +961,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersUserIdRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/instructors/$instructorId': {
+      id: '/admin/instructors/$instructorId'
+      path: '/instructors/$instructorId'
+      fullPath: '/admin/instructors/$instructorId'
+      preLoaderRoute: typeof AdminInstructorsInstructorIdRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/instructors/$instructorId/': {
+      id: '/admin/instructors/$instructorId/'
+      path: '/'
+      fullPath: '/admin/instructors/$instructorId/'
+      preLoaderRoute: typeof AdminInstructorsInstructorIdIndexRouteImport
+      parentRoute: typeof AdminInstructorsInstructorIdRoute
+    }
+    '/admin/instructors/$instructorId/sessions/$roomId': {
+      id: '/admin/instructors/$instructorId/sessions/$roomId'
+      path: '/sessions/$roomId'
+      fullPath: '/admin/instructors/$instructorId/sessions/$roomId'
+      preLoaderRoute: typeof AdminInstructorsInstructorIdSessionsRoomIdRouteImport
+      parentRoute: typeof AdminInstructorsInstructorIdRoute
+    }
   }
 }
 
@@ -757,6 +990,7 @@ interface UserRouteRouteChildren {
   UserDashboardIndexRoute: typeof UserDashboardIndexRoute
   UserEditProfileIndexRoute: typeof UserEditProfileIndexRoute
   UserPrivateSessionsIndexRoute: typeof UserPrivateSessionsIndexRoute
+  UserReferralsIndexRoute: typeof UserReferralsIndexRoute
   UserRoomsIndexRoute: typeof UserRoomsIndexRoute
 }
 
@@ -765,6 +999,7 @@ const UserRouteRouteChildren: UserRouteRouteChildren = {
   UserDashboardIndexRoute: UserDashboardIndexRoute,
   UserEditProfileIndexRoute: UserEditProfileIndexRoute,
   UserPrivateSessionsIndexRoute: UserPrivateSessionsIndexRoute,
+  UserReferralsIndexRoute: UserReferralsIndexRoute,
   UserRoomsIndexRoute: UserRoomsIndexRoute,
 }
 
@@ -772,11 +1007,32 @@ const UserRouteRouteWithChildren = UserRouteRoute._addFileChildren(
   UserRouteRouteChildren,
 )
 
+interface AdminInstructorsInstructorIdRouteChildren {
+  AdminInstructorsInstructorIdIndexRoute: typeof AdminInstructorsInstructorIdIndexRoute
+  AdminInstructorsInstructorIdSessionsRoomIdRoute: typeof AdminInstructorsInstructorIdSessionsRoomIdRoute
+}
+
+const AdminInstructorsInstructorIdRouteChildren: AdminInstructorsInstructorIdRouteChildren =
+  {
+    AdminInstructorsInstructorIdIndexRoute:
+      AdminInstructorsInstructorIdIndexRoute,
+    AdminInstructorsInstructorIdSessionsRoomIdRoute:
+      AdminInstructorsInstructorIdSessionsRoomIdRoute,
+  }
+
+const AdminInstructorsInstructorIdRouteWithChildren =
+  AdminInstructorsInstructorIdRoute._addFileChildren(
+    AdminInstructorsInstructorIdRouteChildren,
+  )
+
 interface AdminRouteRouteChildren {
+  AdminInstructorsInstructorIdRoute: typeof AdminInstructorsInstructorIdRouteWithChildren
   AdminUsersUserIdRoute: typeof AdminUsersUserIdRoute
   AdminContactQueriesIndexRoute: typeof AdminContactQueriesIndexRoute
   AdminDemoRequestsIndexRoute: typeof AdminDemoRequestsIndexRoute
   AdminInstructorsIndexRoute: typeof AdminInstructorsIndexRoute
+  AdminOrganizationsIndexRoute: typeof AdminOrganizationsIndexRoute
+  AdminPlansIndexRoute: typeof AdminPlansIndexRoute
   AdminPrivateSessionsIndexRoute: typeof AdminPrivateSessionsIndexRoute
   AdminReviewsIndexRoute: typeof AdminReviewsIndexRoute
   AdminRoomsIndexRoute: typeof AdminRoomsIndexRoute
@@ -786,10 +1042,14 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminInstructorsInstructorIdRoute:
+    AdminInstructorsInstructorIdRouteWithChildren,
   AdminUsersUserIdRoute: AdminUsersUserIdRoute,
   AdminContactQueriesIndexRoute: AdminContactQueriesIndexRoute,
   AdminDemoRequestsIndexRoute: AdminDemoRequestsIndexRoute,
   AdminInstructorsIndexRoute: AdminInstructorsIndexRoute,
+  AdminOrganizationsIndexRoute: AdminOrganizationsIndexRoute,
+  AdminPlansIndexRoute: AdminPlansIndexRoute,
   AdminPrivateSessionsIndexRoute: AdminPrivateSessionsIndexRoute,
   AdminReviewsIndexRoute: AdminReviewsIndexRoute,
   AdminRoomsIndexRoute: AdminRoomsIndexRoute,
@@ -834,16 +1094,34 @@ const InstructorRouteRouteWithChildren = InstructorRouteRoute._addFileChildren(
   InstructorRouteRouteChildren,
 )
 
+interface OrgRouteRouteChildren {
+  OrgBillingIndexRoute: typeof OrgBillingIndexRoute
+  OrgClassesIndexRoute: typeof OrgClassesIndexRoute
+  OrgMembersIndexRoute: typeof OrgMembersIndexRoute
+}
+
+const OrgRouteRouteChildren: OrgRouteRouteChildren = {
+  OrgBillingIndexRoute: OrgBillingIndexRoute,
+  OrgClassesIndexRoute: OrgClassesIndexRoute,
+  OrgMembersIndexRoute: OrgMembersIndexRoute,
+}
+
+const OrgRouteRouteWithChildren = OrgRouteRoute._addFileChildren(
+  OrgRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   UserRouteRoute: UserRouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   DemoRouteRoute: DemoRouteRouteWithChildren,
   InstructorRouteRoute: InstructorRouteRouteWithChildren,
+  OrgRouteRoute: OrgRouteRouteWithChildren,
   AdminLoginIndexRoute: AdminLoginIndexRoute,
   ContactIndexRoute: ContactIndexRoute,
   ExpertsIndexRoute: ExpertsIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
+  OnboardingIndexRoute: OnboardingIndexRoute,
   PricingIndexRoute: PricingIndexRoute,
   PrivacyIndexRoute: PrivacyIndexRoute,
   ResetPasswordIndexRoute: ResetPasswordIndexRoute,
@@ -851,6 +1129,7 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyEmailIndexRoute: VerifyEmailIndexRoute,
   ExpertsExpertIdIndexRoute: ExpertsExpertIdIndexRoute,
   SessionRoomIdIndexRoute: SessionRoomIdIndexRoute,
+  WorkshopsWorkshopIdIndexRoute: WorkshopsWorkshopIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

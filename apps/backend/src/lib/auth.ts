@@ -1,10 +1,25 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { DEFAULT_BACKEND_PORT, DEFAULT_FRONTEND_URL } from "@yoga-app/shared";
+import {
+  DEFAULT_BACKEND_PORT,
+  DEFAULT_FRONTEND_URL,
+  ORGANIZATION_SIZE_BANDS,
+  type OrganizationSizeBand,
+} from "@yoga-app/shared";
 import { drizzle } from "../db";
 import * as schema from "../schema/schema";
 import { USER_ROLES, USER_ROLE_VALUES } from "../constants/roles";
+import { REFERRAL_COOKIE_NAME } from "../constants/referral";
+import {
+  PENDING_ORG_COOKIE_NAME,
+  PENDING_ORG_INVITE_COOKIE_NAME,
+} from "../constants/organization";
 import { EmailService } from "../services/EmailService";
+import { resolveReferrerByCode } from "../services/referral.service";
+import {
+  acceptOrgInvite,
+  createOrganizationForUser,
+} from "../services/organization.service";
 import { config } from "../config";
 
 const baseURL =
@@ -30,12 +45,105 @@ export const auth = betterAuth({
         defaultValue: USER_ROLES.USER,
         input: true,
       },
+      // Set once at signup from the referral code in the register request.
+      referredByUserId: {
+        type: "string",
+        required: false,
+        input: true,
+      },
+      // Server-generated shareable code (referral.service.ts) — never client input.
+      referralCode: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      // Set directly via organization.service.ts / user.controller.ts, never
+      // through better-auth's own create/update — never client input.
+      onboardingCompletedAt: {
+        type: "date",
+        required: false,
+        input: false,
+      },
     },
   },
   advanced: {
     useSecureCookies:false,
     database: {
       generateId: "uuid",
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        // Attaches the referrer for social sign-ups (email/password registration
+        // already sets referredByUserId explicitly via the /auth/register body).
+        // The referral code can't travel through the OAuth redirect as a query
+        // param, so the frontend stashes it in a cookie before redirecting to
+        // the provider, and we read it back here right before the row is inserted.
+        before: async (newUser, ctx) => {
+          if (newUser.referredByUserId) return;
+          // Only trust the cookie for user rows created by the OAuth callback
+          // itself — otherwise a stray/planted cookie (e.g. via a cross-site
+          // request to /auth/google) could silently attach a referrer to an
+          // unrelated email/password signup in the same browser.
+          if (ctx?.path !== "/callback/:id") return;
+          const code = ctx?.getCookie(REFERRAL_COOKIE_NAME);
+          if (!code) return;
+          const referrer = await resolveReferrerByCode(code);
+          if (referrer) return { data: { ...newUser, referredByUserId: referrer.id } };
+        },
+        // Same round-trip problem as the referral cookie above, but this one
+        // creates rows in OTHER tables (organizations/organization_members),
+        // which requires the user row to already exist — hence `after`, not
+        // `before`.
+        after: async (newUser, ctx) => {
+          if (ctx?.path !== "/callback/:id") return;
+
+          const orgRaw = ctx?.getCookie(PENDING_ORG_COOKIE_NAME);
+          if (orgRaw) {
+            try {
+              const parsed = JSON.parse(orgRaw) as {
+                name?: string;
+                sizeBand?: string;
+              };
+              if (
+                parsed.name &&
+                ORGANIZATION_SIZE_BANDS.includes(
+                  parsed.sizeBand as OrganizationSizeBand,
+                )
+              ) {
+                await createOrganizationForUser({
+                  createdByUserId: newUser.id,
+                  createdByEmail: newUser.email,
+                  name: parsed.name,
+                  sizeBand: parsed.sizeBand as OrganizationSizeBand,
+                });
+              }
+            } catch (err) {
+              console.error(
+                "[auth] failed to create organization from pending-org cookie",
+                err,
+              );
+            }
+            return;
+          }
+
+          const inviteToken = ctx?.getCookie(PENDING_ORG_INVITE_COOKIE_NAME);
+          if (inviteToken) {
+            try {
+              await acceptOrgInvite(inviteToken, {
+                id: newUser.id,
+                email: newUser.email,
+              });
+            } catch (err) {
+              console.error(
+                "[auth] failed to accept org invite from pending-org-invite cookie",
+                err,
+              );
+            }
+          }
+        },
+      },
     },
   },
   emailAndPassword: {

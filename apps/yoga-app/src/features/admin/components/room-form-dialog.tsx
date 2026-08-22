@@ -1,6 +1,7 @@
 import { toZonedTime, format as tzFormat } from "date-fns-tz";
 import { Video } from "lucide-react";
 import type { AdminInstructor, AdminRoom } from "@yoga-app/shared";
+import type { AdminOrganizationSummary } from "@/api/admin";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,16 +12,18 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/shared/lib/utils";
 import { US_TIMEZONES, PREVIEW_ZONES, formatInZone } from "./create-room-dialog-config";
+import { PUBLIC_ORGANIZATION_VALUE } from "./room-form-schema";
 import { useRoomForm } from "./use-room-form";
 
 interface RoomFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   instructors: AdminInstructor[];
+  organizations: AdminOrganizationSummary[];
   room: AdminRoom | null;
 }
 
-export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFormDialogProps) {
+export function RoomFormDialog({ open, onOpenChange, instructors, organizations, room }: RoomFormDialogProps) {
   const { form, error, startUtc, endUtc, handleSubmit, isEditing, isPending } = useRoomForm(
     open,
     room,
@@ -68,6 +71,21 @@ export function RoomFormDialog({ open, onOpenChange, instructors, room }: RoomFo
               className={cn("input", errors.name && "border-destructive")}
               {...register("name")}
             />
+          </Field>
+
+          {/* Organization restriction */}
+          <Field label="Visibility" error={errors.organizationId?.message}>
+            <select
+              className={cn("input", errors.organizationId && "border-destructive")}
+              {...register("organizationId")}
+            >
+              <option value={PUBLIC_ORGANIZATION_VALUE}>Public — anyone with a plan</option>
+              {organizations.map((org) => (
+                <option key={org.id} value={org.id}>
+                  {org.name} only
+                </option>
+              ))}
+            </select>
           </Field>
 
           {/* Timezone selector */}

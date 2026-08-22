@@ -11,6 +11,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import type { AvailabilityWindow } from "@yoga-app/shared";
 import {
   INSTRUCTOR_STATUS,
   INSTRUCTOR_STATUS_VALUES,
@@ -23,11 +24,7 @@ export const instructorStatusEnum = pgEnum(
   INSTRUCTOR_STATUS_VALUES as [string, ...string[]],
 );
 
-export type AvailabilityWindow = {
-  dow: number;
-  start: string;
-  end: string;
-};
+export type { AvailabilityWindow };
 
 export const instructorDetails = pgTable(
   "instructor_details",
@@ -46,7 +43,9 @@ export const instructorDetails = pgTable(
     maxConcurrentSessions: integer("max_concurrent_sessions")
       .notNull()
       .default(1),
+    // A day may have multiple availability windows (for example, 09:00–12:00 and 14:00–18:00).
     availabilityJson: jsonb("availability_json").$type<AvailabilityWindow[]>(),
+    availabilityUpdatedAt: timestamp("availability_updated_at", { withTimezone: true }),
 
     // Profile fields
     bio: text("bio"),

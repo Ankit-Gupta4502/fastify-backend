@@ -89,7 +89,10 @@ export async function openRazorpayCheckout(
         ondismiss: () => reject(new Error("Payment cancelled")),
       },
     });
-    rp.on("payment.failed", (response) => reject(response));
+    rp.on("payment.failed", (response) => {
+      const description = (response as { error?: { description?: string } })?.error?.description;
+      reject(new Error(description || "Payment failed"));
+    });
     rp.open();
   });
 }

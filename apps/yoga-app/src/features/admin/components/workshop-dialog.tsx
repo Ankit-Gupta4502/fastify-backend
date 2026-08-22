@@ -54,6 +54,19 @@ export function WorkshopDialog({ initial, onClose }: Props) {
             />
           </Field>
 
+          <Field label="Landing page content">
+            <textarea
+              placeholder="Longer-form copy shown on the workshop's public landing page (e.g. what's included, agenda, testimonials). Line breaks are preserved."
+              value={form.content ?? ""}
+              onChange={(e) => set("content", e.target.value || null)}
+              rows={8}
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 resize-none"
+            />
+            <p className="text-xs text-muted-foreground">
+              Optional. Shown on /workshops/&#123;id&#125; — the page you can link ads to. Falls back to the description above if left blank.
+            </p>
+          </Field>
+
           <Field label="Cover image">
             <WorkshopImageField
               image={form.image}
@@ -127,23 +140,31 @@ export function WorkshopDialog({ initial, onClose }: Props) {
             </p>
             <p className="text-xs text-muted-foreground -mt-1">
               Applied when a user arrives via a UTM source (e.g. Instagram, Facebook).
+              Setting either field to 0 makes the workshop free for that currency only —
+              double-check both fields before saving.
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="UTM Price INR (paise)">
+              <Field label="UTM Price INR (paise — 0 = free for India)">
                 <Input
                   type="number"
                   min={0}
-                  value={form.utmPriceInr ?? 9900}
-                  onChange={(e) => set("utmPriceInr", Number(e.target.value))}
+                  placeholder="9900"
+                  value={form.utmPriceInr ?? ""}
+                  onChange={(e) =>
+                    set("utmPriceInr", e.target.value === "" ? undefined : Number(e.target.value))
+                  }
                   className="rounded-xl"
                 />
               </Field>
-              <Field label="UTM Price USD (cents)">
+              <Field label="UTM Price USD (cents — 0 = free internationally)">
                 <Input
                   type="number"
                   min={0}
-                  value={form.utmPriceUsd ?? 100}
-                  onChange={(e) => set("utmPriceUsd", Number(e.target.value))}
+                  placeholder="100"
+                  value={form.utmPriceUsd ?? ""}
+                  onChange={(e) =>
+                    set("utmPriceUsd", e.target.value === "" ? undefined : Number(e.target.value))
+                  }
                   className="rounded-xl"
                 />
               </Field>

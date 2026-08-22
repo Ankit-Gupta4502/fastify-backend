@@ -1,12 +1,15 @@
 import type { AdminRoom } from "@yoga-app/shared";
+import type { AdminOrganizationSummary } from "@/api/admin";
 import { cn } from "@/shared/lib/utils";
 import { Video, Pencil, Ban } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell } from "@/components/ui/table";
 import { DataTable, type DataTableColumn } from "@/shared/components/tables";
 
 interface RoomsTableProps {
   rooms: AdminRoom[];
+  organizations: AdminOrganizationSummary[];
   isLoading: boolean;
   error: Error | null;
   onEdit: (room: AdminRoom) => void;
@@ -20,6 +23,7 @@ const COLUMNS: DataTableColumn[] = [
   { key: "ends", header: "Ends (UTC)" },
   { key: "spots", header: "Spots" },
   { key: "meet", header: "Meet" },
+  { key: "visibility", header: "Visibility" },
   { key: "status", header: "Status" },
   { key: "actions", header: "Actions", align: "right" },
 ];
@@ -38,7 +42,9 @@ const STATUS_DOT: Record<string, string> = {
   cancelled: "bg-destructive",
 };
 
-export function RoomsTable({ rooms, isLoading, error, onEdit, onCancel }: RoomsTableProps) {
+export function RoomsTable({ rooms, organizations, isLoading, error, onEdit, onCancel }: RoomsTableProps) {
+  const organizationNameById = new Map(organizations.map((org) => [org.id, org.name]));
+
   return (
     <DataTable
       columns={COLUMNS}
@@ -84,6 +90,13 @@ export function RoomsTable({ rooms, isLoading, error, onEdit, onCancel }: RoomsT
               </a>
             ) : (
               <span className="text-xs text-muted-foreground/50">—</span>
+            )}
+          </TableCell>
+          <TableCell>
+            {room.organizationId ? (
+              <Badge variant="secondary">{organizationNameById.get(room.organizationId) ?? "Org-only"}</Badge>
+            ) : (
+              <Badge variant="outline">Public</Badge>
             )}
           </TableCell>
           <TableCell>

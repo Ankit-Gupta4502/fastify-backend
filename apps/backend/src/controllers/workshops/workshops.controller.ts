@@ -9,29 +9,8 @@ import { registeredWorkshops, workshops } from "../../schema/schema";
 import { detectCountry, errorResponse, successResponse, validateWithZod } from "../../utils";
 import { deleteFile } from "../../services/upload.service";
 import { getRazorpay, getRazorpayKeyId, verifyPaymentSignature } from "../../services/razorpay.service";
-
-const joinBodySchema = z.object({
-  utmSource: z.string().max(200).optional().nullable(),
-  razorpayOrderId: z.string().optional(),
-  razorpayPaymentId: z.string().optional(),
-  razorpaySignature: z.string().optional(),
-});
-
-const createBodySchema = z.object({
-  name: z.string().min(1).max(200),
-  description: z.string().min(1).max(2000),
-  priceInr: z.number().int().min(0).optional().nullable(),
-  priceUsd: z.number().int().min(0).optional().nullable(),
-  utmPriceInr: z.number().int().min(0).optional(),
-  utmPriceUsd: z.number().int().min(0).optional(),
-  image: z.string().url().optional().nullable(),
-  meetLink: z.string().url().optional().nullable(),
-  scheduledAt: z.string().datetime().optional().nullable(),
-  maxAttendees: z.number().int().min(1).max(10000).optional(),
-  isActive: z.boolean().optional(),
-});
-
-const updateBodySchema = createBodySchema.partial();
+import { sendWorkshopConfirmationEmail } from "../../services/workshop-email.service";
+import { createBodySchema, joinBodySchema, updateBodySchema } from "../../validation/workshops.validation.schema";
 
 export class WorkshopsController {
   constructor(
@@ -64,12 +43,15 @@ export class WorkshopsController {
     );
   }
 
-  private listActive = async (_req: FastifyRequest, reply: FastifyReply) => {
+  private listActive = async (request: FastifyRequest, reply: FastifyReply) => {
+    const isIndia = detectCountry(request, undefined) === "IN";
+
     const rows = await drizzle
       .select({
         id: workshops.id,
         name: workshops.name,
         description: workshops.description,
+        content: workshops.content,
         priceInr: workshops.priceInr,
         priceUsd: workshops.priceUsd,
         utmPriceInr: workshops.utmPriceInr,
@@ -99,6 +81,7 @@ export class WorkshopsController {
       ...r,
       scheduledAt: r.scheduledAt ? r.scheduledAt.toISOString() : null,
       attendeeCount: countMap[r.id] ?? 0,
+      isIndia,
     }));
 
     const { statusCode, payload } = successResponse({ message: "Active workshops", data });
@@ -107,12 +90,14 @@ export class WorkshopsController {
 
   private getWorkshop = async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
+    const isIndia = detectCountry(request, undefined) === "IN";
 
     const [row] = await drizzle
       .select({
         id: workshops.id,
         name: workshops.name,
         description: workshops.description,
+        content: workshops.content,
         priceInr: workshops.priceInr,
         priceUsd: workshops.priceUsd,
         utmPriceInr: workshops.utmPriceInr,
@@ -130,15 +115,24 @@ export class WorkshopsController {
       return reply.status(statusCode).send(payload);
     }
 
-    const [attendees] = await drizzle
-      .select({ n: count() })
-      .from(registeredWorkshops)
-      .where(eq(registeredWorkshops.workshopId, id));
+    const optionalUser = await this.authMiddleware.getOptionalUser(request);
+
+    const [[attendees], existing] = await Promise.all([
+      drizzle.select({ n: count() }).from(registeredWorkshops).where(eq(registeredWorkshops.workshopId, id)),
+      optionalUser
+        ? drizzle
+            .select({ id: registeredWorkshops.id })
+            .from(registeredWorkshops)
+            .where(and(eq(registeredWorkshops.workshopId, id), eq(registeredWorkshops.email, optionalUser.email)))
+        : Promise.resolve([]),
+    ]);
 
     const data = {
       ...row,
       scheduledAt: row.scheduledAt ? row.scheduledAt.toISOString() : null,
       attendeeCount: Number(attendees?.n ?? 0),
+      isIndia,
+      isRegistered: existing.length > 0,
     };
 
     const { statusCode, payload } = successResponse({ message: "Workshop", data });
@@ -201,7 +195,7 @@ export class WorkshopsController {
 
     const { id } = request.params as { id: string };
     const body = request.body as z.infer<typeof joinBodySchema>;
-    const user = request.user as { name: string; email: string };
+    const user = request.user as { id: string; name: string; email: string };
 
     const [workshop] = await drizzle
       .select({ id: workshops.id, isActive: workshops.isActive, maxAttendees: workshops.maxAttendees, utmPriceInr: workshops.utmPriceInr, utmPriceUsd: workshops.utmPriceUsd })
@@ -237,11 +231,14 @@ export class WorkshopsController {
 
     const utmSource = body.utmSource ?? null;
 
-    // Payment is required if UTM source is present AND the workshop has a non-zero UTM price in any currency.
-    // The exact country/currency is resolved from the Razorpay order notes to avoid a second detectCountry
-    // call that may return a different result (VPN flip, CDN header mismatch between the two requests).
-    const hasAnyUtmPrice = workshop.utmPriceInr > 0 || workshop.utmPriceUsd > 0;
-    const requiresPayment = !!utmSource && hasAnyUtmPrice;
+    // Payment is required if UTM source is present AND the workshop's price for this visitor's
+    // detected country/currency is non-zero — must mirror createOrder's per-country resolution,
+    // otherwise a workshop priced free in one currency but paid in the other incorrectly blocks
+    // the free currency's registrations with a false "payment required" error.
+    const country = detectCountry(request, undefined);
+    const isIndia = country === "IN";
+    const expectedUtmPrice = isIndia ? workshop.utmPriceInr : workshop.utmPriceUsd;
+    const requiresPayment = !!utmSource && expectedUtmPrice > 0;
 
     let pricePaid: number | null = null;
     let currency: string | null = null;
@@ -298,6 +295,7 @@ export class WorkshopsController {
 
     await drizzle.insert(registeredWorkshops).values({
       workshopId: id,
+      userId: user.id,
       name: user.name,
       email: user.email,
       utmSource,
@@ -309,6 +307,15 @@ export class WorkshopsController {
       updatedAt: new Date().toISOString(),
     });
 
+    sendWorkshopConfirmationEmail({
+      userId: user.id,
+      userName: user.name,
+      userEmail: user.email,
+      workshopId: id,
+      pricePaid,
+      currency,
+    }).catch((err) => request.log.error({ err }, "workshop confirmation email failed"));
+
     const { statusCode, payload } = successResponse({ message: "Registered successfully", data: null, statusCode: 201 });
     return reply.status(statusCode).send(payload);
   };
@@ -319,6 +326,7 @@ export class WorkshopsController {
         id: workshops.id,
         name: workshops.name,
         description: workshops.description,
+        content: workshops.content,
         priceInr: workshops.priceInr,
         priceUsd: workshops.priceUsd,
         utmPriceInr: workshops.utmPriceInr,
@@ -367,6 +375,7 @@ export class WorkshopsController {
       .values({
         name: body.name,
         description: body.description,
+        content: body.content ?? null,
         priceInr: body.priceInr ?? null,
         priceUsd: body.priceUsd ?? null,
         utmPriceInr: body.utmPriceInr ?? 9900,
@@ -411,6 +420,7 @@ export class WorkshopsController {
       .set({
         ...(body.name !== undefined && { name: body.name }),
         ...(body.description !== undefined && { description: body.description }),
+        ...(body.content !== undefined && { content: body.content }),
         ...(body.priceInr !== undefined && { priceInr: body.priceInr }),
         ...(body.priceUsd !== undefined && { priceUsd: body.priceUsd }),
         ...(body.image !== undefined && { image: body.image }),
