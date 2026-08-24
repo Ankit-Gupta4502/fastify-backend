@@ -85,7 +85,7 @@ export function Hero() {
 
             <div className="flex items-center gap-3 pt-1 text-xs text-muted-foreground">
               <div className="flex -space-x-2">
-                {['AK', 'SM', 'RJ', 'PS'].map((initials, index) => (
+                {['AU', 'PY', 'NC', 'SM'].map((initials, index) => (
                   <span key={initials} className={`flex size-7 items-center justify-center rounded-full border-2 border-background text-[9px] font-bold text-white ${['bg-foreground', 'bg-primary', 'bg-emerald-700', 'bg-amber-700'][index]}`}>
                     {initials}
                   </span>
