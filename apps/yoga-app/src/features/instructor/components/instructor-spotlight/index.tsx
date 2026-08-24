@@ -34,7 +34,7 @@ function InstructorSpotlightRoot() {
       </div>
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="flex items-end justify-between mb-10">
+        <div className="flex items-end justify-between gap-5 mb-10">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <span className="h-px w-8 bg-primary/30" />
@@ -50,6 +50,9 @@ function InstructorSpotlightRoot() {
           </div>
 
           <div className="hidden md:flex items-center gap-2">
+            <Button asChild variant="outline" className="mr-2 rounded-full gap-2 sketch-border-sm">
+              <Link to="/experts">Explore all <ArrowRight className="size-3.5" /></Link>
+            </Button>
             {(["left", "right"] as const).map((dir) => (
               <button
                 key={dir}
@@ -63,18 +66,20 @@ function InstructorSpotlightRoot() {
           </div>
         </div>
 
-        <div
-          ref={scrollRef}
-          className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {isLoading
-            ? [...Array(4)].map((_, i) => <CardSkeleton key={i} />)
-            : instructors.map((instructor) => (
-                <div key={instructor.id} className="snap-start flex-none w-72">
-                  <ExpertCard instructor={instructor} />
-                </div>
-              ))}
+        <div className="rounded-[2rem] border border-border/50 bg-card/30 p-3 shadow-sm shadow-primary/5 sm:p-5 sketch-border-lg">
+          <div
+            ref={scrollRef}
+            className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {isLoading
+              ? [...Array(4)].map((_, i) => <CardSkeleton key={i} />)
+              : instructors.map((instructor) => (
+                  <div key={instructor.id} className="snap-start flex-none w-72">
+                    <ExpertCard instructor={instructor} />
+                  </div>
+                ))}
+          </div>
         </div>
 
         <div className="mt-8 text-center md:hidden">

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Zap } from "lucide-react";
+import { ArrowRight, CalendarClock, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/shared/lib/utils";
@@ -34,16 +34,16 @@ export function LiveScheduleSection() {
       )}
     >
       <div className="container mx-auto px-4 md:px-6">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <div className="flex flex-col justify-between gap-6 mb-10 md:flex-row md:items-end">
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               {hasLive && (
                 <span className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
                   <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Live now
                 </span>
               )}
-              <span className="text-[10px] font-bold tracking-[0.4em] text-primary uppercase">Upcoming Classes</span>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.4em] text-primary uppercase"><CalendarClock className="size-3" /> Upcoming classes</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight">
               What's on{" "}
@@ -68,11 +68,13 @@ export function LiveScheduleSection() {
             ))}
           </div>
         ) : sessions.length === 0 ? (
-          <div className="text-center py-16 space-y-3">
-            <div className="size-14 rounded-2xl bg-primary/8 flex items-center justify-center mx-auto">
+          <div className="relative overflow-hidden rounded-[2rem] border border-dashed border-primary/25 bg-primary/[0.035] py-14 text-center space-y-3 sketch-border-lg">
+            <div className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-primary/10 blur-2xl" />
+            <div className="relative mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary/10">
               <Zap className="size-6 text-primary" />
             </div>
-            <p className="font-semibold text-lg">New sessions dropping soon</p>
+            <p className="relative text-lg font-semibold">New sessions are on their way</p>
+            <p className="relative text-sm text-muted-foreground">Check back soon for your next chance to practise live.</p>
           </div>
         ) : (
           <div className="space-y-3">

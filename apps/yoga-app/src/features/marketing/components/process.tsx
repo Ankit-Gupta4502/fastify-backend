@@ -1,4 +1,4 @@
-import { UserPlus, CreditCard, CalendarCheck, Leaf } from "lucide-react";
+import { UserPlus, CreditCard, CalendarCheck, Leaf, Sparkles } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 const steps = [
@@ -38,19 +38,19 @@ const steps = [
 
 export function Process() {
   return (
-    <section className="py-20 relative overflow-hidden">
-      <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary/[0.02] to-transparent pointer-events-none" />
+    <section className="relative overflow-hidden py-24">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.02] to-transparent" />
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Header */}
-        <div className="max-w-2xl mb-16 space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="h-px w-8 bg-primary/30" />
-            <span className="text-[10px] font-bold tracking-[0.4em] text-primary uppercase">How It Works</span>
+        <div className="mb-16 max-w-2xl space-y-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/8 px-3.5 py-1.5">
+            <Sparkles className="size-3 text-primary" />
+            <span className="text-[10px] font-bold tracking-[0.32em] text-primary uppercase">How it works</span>
           </div>
           <h2 className="text-3xl md:text-5xl font-serif font-bold tracking-tight leading-[1.15]">
             From signup to{" "}
-            <span className="italic text-primary">first breath</span>
+            <span className="font-doodle italic text-primary doodle-underline">first breath</span>
             <br />in four steps
           </h2>
         </div>

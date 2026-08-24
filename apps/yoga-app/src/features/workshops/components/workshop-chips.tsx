@@ -8,20 +8,9 @@ export function WorkshopChips() {
   const workshops = data?.data ?? [];
   const tz = userTimezone();
 
-  if (isLoading) {
-    return (
-      <div className="border-b border-border/40 bg-secondary/30 py-2.5 px-4 overflow-hidden">
-        <div className="flex items-center gap-3">
-          <div className="h-4 w-20 rounded bg-muted animate-pulse shrink-0" />
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-7 w-36 rounded-full bg-muted animate-pulse shrink-0" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (workshops.length === 0) return null;
+  // Keep the layout collapsed until we have a real workshop to announce.
+  // An empty/loading placeholder pushes the hero down for no user benefit.
+  if (isLoading || workshops.length === 0) return null;
 
   return (
     <div className="border-b border-border/40 bg-secondary/30 py-2.5 overflow-hidden">
