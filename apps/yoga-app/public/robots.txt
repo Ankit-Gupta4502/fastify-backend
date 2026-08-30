@@ -4,5 +4,10 @@ Disallow: /admin/
 Disallow: /admin-login/
 Disallow: /instructor/
 Disallow: /session/
+Disallow: /org/
+Disallow: /onboarding/
+Disallow: /login/
+Disallow: /reset-password/
+Disallow: /verify-email/
 
 Sitemap: https://bookyouryogateacher.com/sitemap.xml

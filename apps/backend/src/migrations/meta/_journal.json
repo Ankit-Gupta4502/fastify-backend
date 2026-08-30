@@ -288,6 +288,13 @@
       "when": 1786192248504,
       "tag": "0040_org_billing_approval_and_per_org_pricing",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1788105254000,
+      "tag": "0041_corporate_inquiries",
+      "breakpoints": true
     }
   ]
 }

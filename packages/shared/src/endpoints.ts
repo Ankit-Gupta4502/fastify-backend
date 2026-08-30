@@ -94,6 +94,9 @@ export const API_ENDPOINTS = {
     SUBMIT: "/contact",
     ADMIN_LIST: "/admin/contact-queries",
     ADMIN_RESOLVE: (id: string) => `/admin/contact-queries/${id}/resolve`,
+    CORPORATE_SUBMIT: "/corporate-inquiries",
+    CORPORATE_ADMIN_LIST: "/admin/corporate-inquiries",
+    CORPORATE_ADMIN_RESOLVE: (id: string) => `/admin/corporate-inquiries/${id}/resolve`,
   },
   DEMO: {
     CREATE_REQUEST: "/demo/request",

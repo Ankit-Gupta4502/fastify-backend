@@ -53,6 +53,15 @@ export const PAGE_SEO = {
     canonical: `${SITE.url}/pricing`,
   }),
 
+  corporate: buildPageHead({
+    title: "Corporate Yoga & Employee Wellness | Book Your Yoga Teacher",
+    description:
+      "Give your team live, instructor-led online yoga with a corporate wellness plan designed for HR and People teams.",
+    keywords:
+      "corporate yoga, employee wellness, workplace yoga classes, HR wellness benefit, online yoga for companies, corporate wellness India",
+    canonical: `${SITE.url}/corporate`,
+  }),
+
   experts: buildPageHead({
     title: "Expert Yoga Instructors | Book Your Yoga Teacher",
     description:

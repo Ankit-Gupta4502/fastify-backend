@@ -1,6 +1,8 @@
 import type {
   AdminContactQuery,
+  AdminCorporateInquiry,
   CreateContactQueryBody,
+  CreateCorporateInquiryBody,
   CreateContactQueryResult,
 } from "@yoga-app/shared";
 import { API_ENDPOINTS } from "@yoga-app/shared";
@@ -18,6 +20,20 @@ export const contactApi = {
 
   adminResolve: (id: string) =>
     apiRequest<null>(API_ENDPOINTS.CONTACT.ADMIN_RESOLVE(id), {
+      method: "PATCH",
+    }),
+
+  submitCorporateInquiry: (body: CreateCorporateInquiryBody) =>
+    apiRequest<CreateContactQueryResult>(API_ENDPOINTS.CONTACT.CORPORATE_SUBMIT, {
+      method: "POST",
+      data: body,
+    }),
+
+  adminCorporateList: () =>
+    apiRequest<AdminCorporateInquiry[]>(API_ENDPOINTS.CONTACT.CORPORATE_ADMIN_LIST),
+
+  adminCorporateResolve: (id: string) =>
+    apiRequest<null>(API_ENDPOINTS.CONTACT.CORPORATE_ADMIN_RESOLVE(id), {
       method: "PATCH",
     }),
 };

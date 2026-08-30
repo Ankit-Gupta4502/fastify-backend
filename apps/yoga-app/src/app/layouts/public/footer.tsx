@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { XIcon } from "@/shared/components/icons/index";
 
 type FooterLink =
-  | { label: string; to: "/" | "/pricing" | "/privacy" | "/terms" | "/contact" }
+  | { label: string; to: "/" | "/pricing" | "/corporate" | "/privacy" | "/terms" | "/contact" }
   | { label: string; href: string };
 
 const footerSections: Array<{
@@ -18,6 +18,7 @@ const footerSections: Array<{
       { label: "Home", to: "/" },
       { label: "Features", href: "#features" },
       { label: "Reviews", href: "#reviews" },
+      { label: "For companies", to: "/corporate" },
     ],
   },
   {

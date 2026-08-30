@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { User, LogOut, LayoutDashboard, ShieldCheck, Tag, Menu, BookOpen, Home } from "lucide-react";
+import { User, LogOut, LayoutDashboard, ShieldCheck, Tag, Menu, BookOpen, Home, Building2 } from "lucide-react";
 import { USER_ROLES } from "@yoga-app/shared";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { to: "/", label: "Home", icon: Home },
   { to: "/experts", label: "Experts", icon: BookOpen },
   { to: "/pricing", label: "Pricing", icon: Tag },
+  { to: "/corporate", label: "For companies", icon: Building2 },
 ] as const;
 
 export function Header() {
@@ -45,6 +46,13 @@ export function Header() {
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
+            <Link
+              to="/corporate"
+              className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground group"
+            >
+              For companies
+              <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
+            </Link>
             <Link
               to="/experts"
               className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground group"

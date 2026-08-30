@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
-import { createContactQuerySchema } from "@yoga-app/shared";
+import { createContactQuerySchema, createCorporateInquirySchema } from "@yoga-app/shared";
 import { AuthMiddleware } from "../../middleware/auth.middleware";
 import { requireRole } from "../../middleware/role.middleware";
 import { USER_ROLES } from "../../constants/roles";
@@ -10,6 +10,9 @@ import {
   createContactQuery,
   listContactQueries,
   markContactQueryResolved,
+  createCorporateInquiry,
+  listCorporateInquiries,
+  markCorporateInquiryResolved,
 } from "../../services/contact.service";
 
 const contactQueryIdSchema = z.object({
@@ -37,6 +40,7 @@ export class ContactController {
       },
       { prefix: "/contact" },
     );
+    app.post("/corporate-inquiries", {}, this.submitCorporateInquiry);
 
     // Admin
     app.register(
@@ -51,6 +55,8 @@ export class ContactController {
           { preHandler: adminGuard },
           this.adminMarkResolved,
         );
+        router.get("/corporate-inquiries", { preHandler: adminGuard }, this.adminListCorporate);
+        router.patch("/corporate-inquiries/:id/resolve", { preHandler: adminGuard }, this.adminMarkCorporateResolved);
       },
       { prefix: "/admin" },
     );
@@ -106,6 +112,33 @@ export class ContactController {
       message: "Marked as resolved",
       data: null,
     });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private submitCorporateInquiry = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { body: createCorporateInquirySchema });
+    if (invalid) return invalid;
+    const created = await createCorporateInquiry(drizzle, request.body as z.infer<typeof createCorporateInquirySchema>);
+    const { statusCode, payload } = successResponse({ message: "Consultation request received", data: created, statusCode: 201 });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private adminListCorporate = async (_request: FastifyRequest, reply: FastifyReply) => {
+    const data = await listCorporateInquiries(drizzle);
+    const { statusCode, payload } = successResponse({ message: "Corporate inquiries", data });
+    return reply.status(statusCode).send(payload);
+  };
+
+  private adminMarkCorporateResolved = async (request: FastifyRequest, reply: FastifyReply) => {
+    const invalid = validateWithZod(request, reply, { params: contactQueryIdSchema });
+    if (invalid) return invalid;
+    const { id } = request.params as z.infer<typeof contactQueryIdSchema>;
+    const ok = await markCorporateInquiryResolved(drizzle, id);
+    if (!ok) {
+      const { statusCode, payload } = errorResponse({ message: "Corporate inquiry not found", statusCode: 404 });
+      return reply.status(statusCode).send(payload);
+    }
+    const { statusCode, payload } = successResponse({ message: "Marked as resolved", data: null });
     return reply.status(statusCode).send(payload);
   };
 }

@@ -21,6 +21,27 @@ import { userApi } from "../api";
 import type { RouterContext } from "../router";
 import appCss from "../styles.css?url";
 
+const STRUCTURED_DATA = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Book Your Yoga Teacher",
+    url: "https://bookyouryogateacher.com",
+    logo: "https://bookyouryogateacher.com/logo.svg",
+    sameAs: [
+      "https://www.instagram.com/bookyouryogateacher/",
+      "https://www.linkedin.com/company/bookyouryogateacher/about/",
+      "https://www.youtube.com/@Bookyouryogateacher",
+    ],
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Book Your Yoga Teacher",
+    url: "https://bookyouryogateacher.com",
+  },
+];
+
 // Runs once at module load, before the first render — must happen before any
 // component reads getStoredUtm() synchronously during render (see WorkshopCard, WorkshopDetail, etc).
 captureUtm();
@@ -119,6 +140,7 @@ function RootDocument({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }} />
       </head>
       <body>
         <ReactQueryProvider>

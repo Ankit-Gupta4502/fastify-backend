@@ -27,3 +27,23 @@ export const contactQueries = pgTable(
     index("idx_contact_queries_created_at").on(t.createdAt),
   ],
 );
+
+export const corporateInquiries = pgTable(
+  "corporate_inquiries",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    companyName: text("company_name").notNull(),
+    teamSize: text("team_size").notNull(),
+    phone: text("phone"),
+    wellnessGoal: text("wellness_goal").notNull(),
+    status: contactQueryStatusEnum("status").notNull().default("new"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  },
+  (t) => [
+    index("idx_corporate_inquiries_status").on(t.status),
+    index("idx_corporate_inquiries_created_at").on(t.createdAt),
+  ],
+);

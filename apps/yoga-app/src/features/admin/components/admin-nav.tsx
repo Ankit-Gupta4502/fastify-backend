@@ -13,6 +13,7 @@ import {
   MessageCircle,
   Tag,
   Building2,
+  Handshake,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ const navItems = [
   { label: "Workshops", to: "/admin/workshops", icon: BookOpen },
   { label: "Reviews", to: "/admin/reviews", icon: Star },
   { label: "Contact Queries", to: "/admin/contact-queries", icon: MessageCircle },
+  { label: "Corporate Inquiries", to: "/admin/corporate-inquiries", icon: Handshake },
 ] as const;
 
 export function AdminNav() {

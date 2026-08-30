@@ -24,6 +24,7 @@ import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as ExpertsIndexRouteImport } from './routes/experts/index'
 import { Route as DemoIndexRouteImport } from './routes/demo/index'
+import { Route as CorporateIndexRouteImport } from './routes/corporate/index'
 import { Route as ContactIndexRouteImport } from './routes/contact/index'
 import { Route as AdminLoginIndexRouteImport } from './routes/admin-login/index'
 import { Route as DemoSuccessRouteImport } from './routes/demo/success'
@@ -46,6 +47,7 @@ import { Route as AdminPlansIndexRouteImport } from './routes/admin/plans/index'
 import { Route as AdminOrganizationsIndexRouteImport } from './routes/admin/organizations/index'
 import { Route as AdminInstructorsIndexRouteImport } from './routes/admin/instructors/index'
 import { Route as AdminDemoRequestsIndexRouteImport } from './routes/admin/demo-requests/index'
+import { Route as AdminCorporateInquiriesIndexRouteImport } from './routes/admin/corporate-inquiries/index'
 import { Route as AdminContactQueriesIndexRouteImport } from './routes/admin/contact-queries/index'
 import { Route as UserRoomsIndexRouteImport } from './routes/_user/rooms/index'
 import { Route as UserReferralsIndexRouteImport } from './routes/_user/referrals/index'
@@ -132,6 +134,11 @@ const DemoIndexRoute = DemoIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DemoRouteRoute,
+} as any)
+const CorporateIndexRoute = CorporateIndexRouteImport.update({
+  id: '/corporate/',
+  path: '/corporate/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ContactIndexRoute = ContactIndexRouteImport.update({
   id: '/contact/',
@@ -246,6 +253,12 @@ const AdminDemoRequestsIndexRoute = AdminDemoRequestsIndexRouteImport.update({
   path: '/demo-requests/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminCorporateInquiriesIndexRoute =
+  AdminCorporateInquiriesIndexRouteImport.update({
+    id: '/corporate-inquiries/',
+    path: '/corporate-inquiries/',
+    getParentRoute: () => AdminRouteRoute,
+  } as any)
 const AdminContactQueriesIndexRoute =
   AdminContactQueriesIndexRouteImport.update({
     id: '/contact-queries/',
@@ -322,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login/': typeof AdminLoginIndexRoute
   '/contact/': typeof ContactIndexRoute
+  '/corporate/': typeof CorporateIndexRoute
   '/demo/': typeof DemoIndexRoute
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
@@ -341,6 +355,7 @@ export interface FileRoutesByFullPath {
   '/referrals/': typeof UserReferralsIndexRoute
   '/rooms/': typeof UserRoomsIndexRoute
   '/admin/contact-queries/': typeof AdminContactQueriesIndexRoute
+  '/admin/corporate-inquiries/': typeof AdminCorporateInquiriesIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
   '/admin/organizations/': typeof AdminOrganizationsIndexRoute
@@ -371,6 +386,7 @@ export interface FileRoutesByTo {
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login': typeof AdminLoginIndexRoute
   '/contact': typeof ContactIndexRoute
+  '/corporate': typeof CorporateIndexRoute
   '/demo': typeof DemoIndexRoute
   '/experts': typeof ExpertsIndexRoute
   '/login': typeof LoginIndexRoute
@@ -389,6 +405,7 @@ export interface FileRoutesByTo {
   '/referrals': typeof UserReferralsIndexRoute
   '/rooms': typeof UserRoomsIndexRoute
   '/admin/contact-queries': typeof AdminContactQueriesIndexRoute
+  '/admin/corporate-inquiries': typeof AdminCorporateInquiriesIndexRoute
   '/admin/demo-requests': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors': typeof AdminInstructorsIndexRoute
   '/admin/organizations': typeof AdminOrganizationsIndexRoute
@@ -422,6 +439,7 @@ export interface FileRoutesById {
   '/demo/success': typeof DemoSuccessRoute
   '/admin-login/': typeof AdminLoginIndexRoute
   '/contact/': typeof ContactIndexRoute
+  '/corporate/': typeof CorporateIndexRoute
   '/demo/': typeof DemoIndexRoute
   '/experts/': typeof ExpertsIndexRoute
   '/login/': typeof LoginIndexRoute
@@ -441,6 +459,7 @@ export interface FileRoutesById {
   '/_user/referrals/': typeof UserReferralsIndexRoute
   '/_user/rooms/': typeof UserRoomsIndexRoute
   '/admin/contact-queries/': typeof AdminContactQueriesIndexRoute
+  '/admin/corporate-inquiries/': typeof AdminCorporateInquiriesIndexRoute
   '/admin/demo-requests/': typeof AdminDemoRequestsIndexRoute
   '/admin/instructors/': typeof AdminInstructorsIndexRoute
   '/admin/organizations/': typeof AdminOrganizationsIndexRoute
@@ -474,6 +493,7 @@ export interface FileRouteTypes {
     | '/demo/success'
     | '/admin-login/'
     | '/contact/'
+    | '/corporate/'
     | '/demo/'
     | '/experts/'
     | '/login/'
@@ -493,6 +513,7 @@ export interface FileRouteTypes {
     | '/referrals/'
     | '/rooms/'
     | '/admin/contact-queries/'
+    | '/admin/corporate-inquiries/'
     | '/admin/demo-requests/'
     | '/admin/instructors/'
     | '/admin/organizations/'
@@ -523,6 +544,7 @@ export interface FileRouteTypes {
     | '/demo/success'
     | '/admin-login'
     | '/contact'
+    | '/corporate'
     | '/demo'
     | '/experts'
     | '/login'
@@ -541,6 +563,7 @@ export interface FileRouteTypes {
     | '/referrals'
     | '/rooms'
     | '/admin/contact-queries'
+    | '/admin/corporate-inquiries'
     | '/admin/demo-requests'
     | '/admin/instructors'
     | '/admin/organizations'
@@ -573,6 +596,7 @@ export interface FileRouteTypes {
     | '/demo/success'
     | '/admin-login/'
     | '/contact/'
+    | '/corporate/'
     | '/demo/'
     | '/experts/'
     | '/login/'
@@ -592,6 +616,7 @@ export interface FileRouteTypes {
     | '/_user/referrals/'
     | '/_user/rooms/'
     | '/admin/contact-queries/'
+    | '/admin/corporate-inquiries/'
     | '/admin/demo-requests/'
     | '/admin/instructors/'
     | '/admin/organizations/'
@@ -624,6 +649,7 @@ export interface RootRouteChildren {
   OrgRouteRoute: typeof OrgRouteRouteWithChildren
   AdminLoginIndexRoute: typeof AdminLoginIndexRoute
   ContactIndexRoute: typeof ContactIndexRoute
+  CorporateIndexRoute: typeof CorporateIndexRoute
   ExpertsIndexRoute: typeof ExpertsIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   OnboardingIndexRoute: typeof OnboardingIndexRoute
@@ -743,6 +769,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/demo/'
       preLoaderRoute: typeof DemoIndexRouteImport
       parentRoute: typeof DemoRouteRoute
+    }
+    '/corporate/': {
+      id: '/corporate/'
+      path: '/corporate'
+      fullPath: '/corporate/'
+      preLoaderRoute: typeof CorporateIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/contact/': {
       id: '/contact/'
@@ -898,6 +931,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDemoRequestsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/corporate-inquiries/': {
+      id: '/admin/corporate-inquiries/'
+      path: '/corporate-inquiries'
+      fullPath: '/admin/corporate-inquiries/'
+      preLoaderRoute: typeof AdminCorporateInquiriesIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/contact-queries/': {
       id: '/admin/contact-queries/'
       path: '/contact-queries'
@@ -1029,6 +1069,7 @@ interface AdminRouteRouteChildren {
   AdminInstructorsInstructorIdRoute: typeof AdminInstructorsInstructorIdRouteWithChildren
   AdminUsersUserIdRoute: typeof AdminUsersUserIdRoute
   AdminContactQueriesIndexRoute: typeof AdminContactQueriesIndexRoute
+  AdminCorporateInquiriesIndexRoute: typeof AdminCorporateInquiriesIndexRoute
   AdminDemoRequestsIndexRoute: typeof AdminDemoRequestsIndexRoute
   AdminInstructorsIndexRoute: typeof AdminInstructorsIndexRoute
   AdminOrganizationsIndexRoute: typeof AdminOrganizationsIndexRoute
@@ -1046,6 +1087,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
     AdminInstructorsInstructorIdRouteWithChildren,
   AdminUsersUserIdRoute: AdminUsersUserIdRoute,
   AdminContactQueriesIndexRoute: AdminContactQueriesIndexRoute,
+  AdminCorporateInquiriesIndexRoute: AdminCorporateInquiriesIndexRoute,
   AdminDemoRequestsIndexRoute: AdminDemoRequestsIndexRoute,
   AdminInstructorsIndexRoute: AdminInstructorsIndexRoute,
   AdminOrganizationsIndexRoute: AdminOrganizationsIndexRoute,
@@ -1119,6 +1161,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrgRouteRoute: OrgRouteRouteWithChildren,
   AdminLoginIndexRoute: AdminLoginIndexRoute,
   ContactIndexRoute: ContactIndexRoute,
+  CorporateIndexRoute: CorporateIndexRoute,
   ExpertsIndexRoute: ExpertsIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   OnboardingIndexRoute: OnboardingIndexRoute,
