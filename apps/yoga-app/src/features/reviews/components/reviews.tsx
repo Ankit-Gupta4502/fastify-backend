@@ -98,7 +98,7 @@ export function Reviews() {
             </div>
             <div className="h-10 w-px bg-border/50" />
             <div>
-              <p className="font-bold text-sm">1,000+</p>
+              <p className="font-bold text-sm">200+</p>
               <p className="text-[11px] text-muted-foreground">happy practitioners</p>
             </div>
           </div>
@@ -123,7 +123,7 @@ export function Reviews() {
         >
           <div className="absolute inset-0 bg-linear-to-br from-primary/4 via-transparent to-accent/4 pointer-events-none" />
           <div className="relative grid grid-cols-2 divide-x divide-border/40">
-            <StatBlock value="1k+"  label="Mindful souls" delay={250} isVisible={isVisible} />
+            <StatBlock value="300+" label="Community"     delay={250} isVisible={isVisible} />
             <StatBlock value="98%"  label="Calm index"    delay={350} isVisible={isVisible} />
           </div>
         </div>

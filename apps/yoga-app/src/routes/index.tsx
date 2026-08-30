@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PAGE_SEO } from "@/shared/lib/seo";
-import { lazy, Suspense, useEffect } from "react";
+import { useEffect } from "react";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { getStoredUtm, hasSavedAcquisition, markAcquisitionSaved } from "@/shared/lib/utm";
 import { userPreferencesApi } from "@/api/user-preferences";
@@ -10,16 +10,13 @@ import { getQueryClient } from "@/lib/react-query/query-client.tsx";
 import { Hero } from "@/features/marketing/components/hero";
 import { WorkshopChips } from "@/features/workshops/components/workshop-chips";
 
-// ── Below-fold: code-split with React.lazy ────────────────────────────────────
-// Vercel best practice: split every non-critical section so the initial bundle
-// only includes what the user sees immediately.
-const WorkshopsSection   = lazy(() => import("@/features/workshops/components/workshops-section").then(m => ({ default: m.WorkshopsSection })));
-const LiveScheduleSection = lazy(() => import("@/features/marketing/components/live-schedule-section").then(m => ({ default: m.LiveScheduleSection })));
-const QuizSection        = lazy(() => import("@/features/marketing/components/quiz-section").then(m => ({ default: m.QuizSection })));
-const InstructorSpotlight = lazy(() => import("@/features/instructor/components/instructor-spotlight/index").then(m => ({ default: m.InstructorSpotlight })));
-const Features           = lazy(() => import("@/features/marketing/components/features").then(m => ({ default: m.Features })));
-const Process            = lazy(() => import("@/features/marketing/components/process").then(m => ({ default: m.Process })));
-const Reviews            = lazy(() => import("@/features/reviews/components/reviews").then(m => ({ default: m.Reviews })));
+import { WorkshopsSection } from "@/features/workshops/components/workshops-section";
+import { LiveScheduleSection } from "@/features/marketing/components/live-schedule-section";
+import { QuizSection } from "@/features/marketing/components/quiz-section";
+import { InstructorSpotlight } from "@/features/instructor/components/instructor-spotlight";
+import { Features } from "@/features/marketing/components/features";
+import { Process } from "@/features/marketing/components/process";
+import { Reviews } from "@/features/reviews/components/reviews";
 
 // ── Route ─────────────────────────────────────────────────────────────────────
 
@@ -34,27 +31,19 @@ export const Route = createFileRoute("/")({
     const { roomQueryOptions }    = await import("@/features/booking/hooks/use-rooms");
     const { reviewQueryOptions }  = await import("@/features/reviews/hooks/use-reviews");
     const { instructorQueryOptions } = await import("@/features/instructor/hooks/use-instructors");
+    const { workshopQueryOptions } = await import("@/features/workshops/hooks/use-workshops");
 
-    // Fire-and-forget: all three run in parallel, results land in cache before
-    // the component tree requests them.
+    // Fetch every home-page data source in parallel so section hooks read from
+    // the cache on their first render.
     await Promise.allSettled([
       qc.prefetchQuery(roomQueryOptions.publicPreview()),
       qc.prefetchQuery(reviewQueryOptions.public()),
       qc.prefetchQuery(instructorQueryOptions.list()),
+      qc.prefetchQuery(workshopQueryOptions.list()),
     ]);
   },
   component: Home,
 });
-
-// ── Fallback ──────────────────────────────────────────────────────────────────
-
-function SectionFallback({ height = "h-64" }: { height?: string }) {
-  return (
-    <div className={`${height} flex items-center justify-center`}>
-      <div className="size-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
-    </div>
-  );
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -76,37 +65,13 @@ function Home() {
         <Hero />
       </div>
 
-      {/* ── Below fold: each section independently suspended ──
-          Independent Suspense boundaries mean one slow section never blocks
-          the others from rendering (Vercel best practice: parallel streaming). */}
-
-      <Suspense fallback={<SectionFallback height="h-48" />}>
-        <LiveScheduleSection />
-      </Suspense>
-
-      <Suspense fallback={<SectionFallback height="h-[560px]" />}>
-        <QuizSection />
-      </Suspense>
-
-      <Suspense fallback={<SectionFallback height="h-[700px]" />}>
-        <Reviews />
-      </Suspense>
-
-      <Suspense fallback={<SectionFallback />}>
-        <InstructorSpotlight />
-      </Suspense>
-
-      <Suspense fallback={<SectionFallback />}>
-        <WorkshopsSection />
-      </Suspense>
-
-      <Suspense fallback={<SectionFallback height="h-96" />}>
-        <Process />
-      </Suspense>
-
-      <Suspense fallback={<SectionFallback height="h-[640px]" />}>
-        <Features />
-      </Suspense>
+      <LiveScheduleSection />
+      <QuizSection />
+      <Reviews />
+      <InstructorSpotlight />
+      <WorkshopsSection />
+      <Process />
+      <Features />
 
     </div>
   );

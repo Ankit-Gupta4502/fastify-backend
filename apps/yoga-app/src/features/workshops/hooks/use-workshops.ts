@@ -8,14 +8,16 @@ import { getStoredUtm } from "@/shared/lib/utm";
 import { ApiRequestError } from "@/lib/http";
 
 export function useWorkshops() {
-  return useQuery({
-    queryKey: queryKeys.workshops.list(),
-    queryFn: workshopsApi.list,
-    staleTime: 60_000,
-  });
+  return useQuery(workshopQueryOptions.list());
 }
 
 export const workshopQueryOptions = {
+  list: () =>
+    queryOptions({
+      queryKey: queryKeys.workshops.list(),
+      queryFn: workshopsApi.list,
+      staleTime: 60_000,
+    }),
   detail: (id: string) =>
     queryOptions({
       queryKey: queryKeys.workshops.detail(id),

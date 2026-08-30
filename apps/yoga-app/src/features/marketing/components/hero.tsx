@@ -6,7 +6,7 @@ import { StarDoodle, CircleDoodle, WaveDoodle, PlusDoodle } from "@/shared/compo
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pb-8 pt-10 md:pb-12 md:pt-20">
+    <section className="relative overflow-hidden pb-8 md:pb-12">
       {/* Ambient background glow */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 size-[700px] bg-primary/5 blur-[130px] rounded-full" />

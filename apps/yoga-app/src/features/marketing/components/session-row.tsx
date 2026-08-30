@@ -65,6 +65,7 @@ export function SessionRow({ room }: { room: PublicRoomPreview }) {
           <span className="text-muted-foreground text-xs">Started</span>
         ) : (
           <div className="font-mono text-sm font-bold tabular-nums text-foreground/80">
+            {time.days > 0 && `${time.days}d `}
             {String(time.hours).padStart(2, "0")}:
             {String(time.minutes).padStart(2, "0")}:
             {String(time.seconds).padStart(2, "0")}
