@@ -10,9 +10,6 @@ const config = defineConfig({
   resolve: { tsconfigPaths: true },
   plugins: [devtools(), tailwindcss(), tanstackStart(), nitro(), viteReact()],
   nitro: {},
-  server:{
-    allowedHosts:["1772-203-192-253-26.ngrok-free.app"]
-  }
 })
 
 export default config
